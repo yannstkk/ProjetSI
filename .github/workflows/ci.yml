@@ -10,7 +10,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-
     defaults:
       run:
         working-directory: backend
@@ -26,6 +25,8 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Give execute permission to mvnw
+        run: chmod +x mvnw
 
       - name: Build and test backend
         run: ./mvnw clean verify
