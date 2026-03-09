@@ -28,7 +28,7 @@ export default function LoginPage() {
 
             <div className="w-full max-w-md">
 
-                /* ici Logo */
+                {/* ici Logo */}
                 <div className="text-center mb-8">
                     <img
                         src={logo}
@@ -41,7 +41,7 @@ export default function LoginPage() {
                     </p>
                 </div>
 
-                /* ici conteneur */
+                {/* ici conteneur */}
                 <div className="bg-white rounded-xl shadow-lg p-8">
 
                     <h2 className="text-2xl font-bold mb-6">
@@ -72,7 +72,7 @@ export default function LoginPage() {
                             />
                         </div>
 
-                       /* ici traitement mot de passe */
+                        {/* ici traitement mot de passe */}
                         <div>
                             <label className="block text-sm font-medium mb-2">
                                 Password
@@ -102,7 +102,7 @@ export default function LoginPage() {
 
                             </div>
 
-                            /* ici regles de mot de passe */
+                            {/* ici regles de mot de passe */}
                             <div className="mt-3 text-sm space-y-1">
 
                                 <div className={lengthValid ? "text-green-600" : "text-gray-500"}>
