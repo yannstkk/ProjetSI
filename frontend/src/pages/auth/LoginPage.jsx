@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import logo from "../../assets/logo.png";
+import Button from "../../components/common/Button";
+import Input from "../../components/common/Input";
 
 export default function LoginPage() {
-
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -18,123 +19,116 @@ export default function LoginPage() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if(emailValid && passwordValid){
-            console.log("Login ok");
+        if (emailValid && passwordValid) {
+            console.log("Connexion ok");
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
-
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-blue-50 px-4">
             <div className="w-full max-w-md">
-
-                {/* ici Logo */}
-                <div className="text-center mb-8">
+                {/* Logo */}
+                <div className="text-center mb-10">
                     <img
                         src={logo}
                         alt="logo"
-                        className="mx-auto h-32"
+                        className="mx-auto h-36 object-contain"
                     />
-
-                    <p className="mt-4 text-2xl font-semibold text-slate-700">
-                        Business Analysis Tool
-                    </p>
                 </div>
 
-                {/* ici conteneur */}
-                <div className="bg-white rounded-xl shadow-lg p-8">
-
-                    <h2 className="text-2xl font-bold mb-6">
-                        Login
+                {/* Conteneur */}
+                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+                    <h2 className="text-2xl font-bold mb-6 text-center">
+                        Connexion
                     </h2>
-
                     <form onSubmit={handleSubmit} className="space-y-5">
-
-                        {/* ici traitement email */}
+                        {/* Email */}
                         <div>
                             <label className="block text-sm font-medium mb-2">
                                 Email
                             </label>
 
-                            {!emailValid && email.length > 0 && (
-                                <p className="text-red-500 text-sm mb-2">
-                                    Email must contain @ and a valid domain
-                                </p>
+                            {email.length > 0 && (
+                                emailValid ? (
+                                    <p className="text-green-600 text-sm mb-2">
+                                        Adresse email valide
+                                    </p>
+                                ) : (
+                                    <p className="text-red-500 text-sm mb-2">
+                                        L’email doit contenir @ et un domaine valide
+                                    </p>
+                                )
                             )}
 
-                            <input
+                            <Input
                                 type="email"
-                                placeholder="example@email.com"
                                 value={email}
-                                onChange={(e)=>setEmail(e.target.value)}
-                                className={`w-full border rounded-lg px-4 py-3 outline-none
-                ${email.length > 0 ? (emailValid ? "border-green-500" : "border-red-500") : "border-gray-300"}`}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="exemple@email.com"
+                                isValid={emailValid && email.length > 0}
+                                error={null}
                             />
                         </div>
 
-                        {/* ici traitement mot de passe */}
+                        {/* Mot de passe */}
                         <div>
                             <label className="block text-sm font-medium mb-2">
-                                Password
+                                Mot de passe
                             </label>
 
                             <div className="relative">
-
                                 <input
                                     type={showPassword ? "text" : "password"}
-                                    placeholder="Enter your password"
+                                    placeholder="Entrez votre mot de passe"
                                     value={password}
-                                    onChange={(e)=>setPassword(e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 outline-none"
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className={`w-full border rounded-lg px-4 py-3 pr-10 outline-none focus:border-blue-500 ${
+                                        password.length > 0
+                                            ? passwordValid
+                                                ? "border-green-500"
+                                                : "border-gray-300"
+                                            : "border-gray-300"
+                                    }`}
                                 />
 
                                 <button
                                     type="button"
-                                    onClick={()=>setShowPassword(!showPassword)}
+                                    onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
                                 >
                                     {showPassword ? (
-                                        <EyeSlashIcon className="h-5 w-5"/>
+                                        <EyeSlashIcon className="h-5 w-5" />
                                     ) : (
-                                        <EyeIcon className="h-5 w-5"/>
+                                        <EyeIcon className="h-5 w-5" />
                                     )}
                                 </button>
-
                             </div>
 
-                            {/* ici regles de mot de passe */}
+                            {/* Règles mot de passe */}
                             <div className="mt-3 text-sm space-y-1">
-
                                 <div className={lengthValid ? "text-green-600" : "text-gray-500"}>
-                                    {lengthValid ? "✓" : "○"} At least 8 characters
+                                    {lengthValid ? "✓" : "○"} Au moins 8 caractères
                                 </div>
 
                                 <div className={uppercaseValid ? "text-green-600" : "text-gray-500"}>
-                                    {uppercaseValid ? "✓" : "○"} One uppercase letter
+                                    {uppercaseValid ? "✓" : "○"} Une majuscule
                                 </div>
 
                                 <div className={specialValid ? "text-green-600" : "text-gray-500"}>
-                                    {specialValid ? "✓" : "○"} One special character
+                                    {specialValid ? "✓" : "○"} Un caractère spécial
                                 </div>
-
                             </div>
-
                         </div>
 
-                        <button
+                        <Button
                             type="submit"
                             disabled={!emailValid || !passwordValid}
-                            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-300"
                         >
-                            Login
-                        </button>
-
+                            Se connecter
+                        </Button>
                     </form>
-
                 </div>
-
             </div>
-
         </div>
     );
 }
