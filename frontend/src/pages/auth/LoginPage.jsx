@@ -50,7 +50,7 @@ export default function LoginPage() {
 
                     <form onSubmit={handleSubmit} className="space-y-5">
 
-                        /* ici traitement email */
+                        {/* ici traitement email */}
                         <div>
                             <label className="block text-sm font-medium mb-2">
                                 Email
