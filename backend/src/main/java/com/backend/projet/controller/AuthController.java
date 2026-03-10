@@ -1,23 +1,29 @@
 package com.backend.projet.controller;
 
-import com.backend.projet.exception.InvalidLoginException;
 import com.backend.projet.service.api.JumpCloudService;
 import com.backend.projet.dto.response.ApiResponse;
 import com.backend.projet.dto.request.LoginRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class AuthController {
 
     private final JumpCloudService jumpCloudService;
 
-    public AuthController(JumpCloudService jumpCloudService){
+    public AuthController(JumpCloudService jumpCloudService) {
         this.jumpCloudService = jumpCloudService;
     }
 
-    @PostMapping("/api/interne/auth/login")
-    public ApiResponse login(@RequestBody LoginRequest data) {
-        return this.jumpCloudService.login(data.getUsername(), data.getPassword());
+    // BUG CORRIGÉ : chemin était /api/interne/auth/login, aligné sur /api/auth/login
+    @PostMapping("/api/auth/login")
+    public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest data) {
+        ApiResponse response = this.jumpCloudService.login(data.getUsername(), data.getPassword());
+
+        if (response.getIsError()) {
+            return ResponseEntity.status(401).body(response);
+        }
+        return ResponseEntity.ok(response);
     }
 }
-
