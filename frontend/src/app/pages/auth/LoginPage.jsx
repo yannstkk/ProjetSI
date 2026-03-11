@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import logo from "../../assets/logo.png";
-import Button from "../../components/common/Button";
-import Input from "../../components/common/Input";
+import logo from "../../../assets/logo.png";
 
 export default function LoginPage() {
 
@@ -20,34 +18,34 @@ export default function LoginPage() {
     const passwordValid = lengthValid && uppercaseValid && specialValid;
 
     const handleSubmit = async (e) => {
-           e.preventDefault();
-           if (!usernameValid || !passwordValid) return;
+        e.preventDefault();
+        if (!usernameValid || !passwordValid) return;
 
-           setLoading(true);
-           setError("");
+        setLoading(true);
+        setError("");
 
-           try {
-               const response = await fetch("http://localhost:8080/api/auth/login", {
-                   method: "POST",
-                   headers: { "Content-Type": "application/json" },
-                   credentials: "include",
-                   body: JSON.stringify({ username, password }),
-               });
+        try {
+            const response = await fetch("http://localhost:8080/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ username, password }),
+            });
 
-               const data = await response.json();
+            const data = await response.json();
 
-               if (!response.ok || data.isError) {
-                   alert("Identifiants incorrects. Veuillez réessayer.");
-               } else {
-                   alert("Connexion réussie !");
+            if (!response.ok || data.isError) {
+                alert("Identifiants incorrects. Veuillez réessayer.");
+            } else {
+                alert("Connexion réussie !");
 
-               }
-           } catch (err) {
-               setError("Impossible de contacter le serveur. Vérifiez votre connexion.");
-           } finally {
-               setLoading(false);
-           }
-       };
+            }
+        } catch (err) {
+            setError("Impossible de contacter le serveur. Vérifiez votre connexion.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
