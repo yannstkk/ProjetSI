@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import logo from "../../assets/logo.png";
+import logo from "../../../assets/logo.png";
 
 export default function LoginPage() {
 
