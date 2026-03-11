@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.backend.projet.projet.dto.ProjetResponse;
+import com.backend.projet.projet.dto.response.ProjetResponse;
 import com.backend.projet.projet.service.ProjetService;
 
 @RestController

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.backend.projet.projet.dto.ProjetResponse;
+import com.backend.projet.projet.dto.response.ProjetResponse;
 import com.backend.projet.projet.entity.Projet;
 import com.backend.projet.projet.repository.ProjetRepository;
 
