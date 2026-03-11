@@ -131,7 +131,10 @@ public class MistralService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(setBody(systemNotesPrompt, notes), setHeaders());
         // on peut se concentrer sur l'envoi
         try {
-            return restTemplate.postForObject(urlApi, entity, String.class);
+            Map<String, Object> response =  restTemplate.postForObject(urlApi, entity, Map.class);
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+            return (String) message.get("content");
         }catch (Exception e){
             return "Erreur API : " + e.getMessage();
         }
