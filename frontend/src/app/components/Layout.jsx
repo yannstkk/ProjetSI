@@ -1,9 +1,15 @@
-import { Outlet } from "react-router";
+import { Outlet, Navigate } from "react-router-dom";
 import { Sidebar } from "./layout/Sidebar";
 import { Header } from "./layout/Header";
 import { UserProfile } from "./layout/UserProfile";
 
 export function Layout() {
+    const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+
+    if (!isLoggedIn) {
+        return <Navigate to="/login" replace />;
+    }
+
     return (
         <div className="min-h-screen flex bg-gray-50">
             {/* Sidebar */}

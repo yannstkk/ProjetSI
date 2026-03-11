@@ -38,10 +38,12 @@ export default function LoginPage() {
             const data = await response.json();
 
             if (!response.ok || data.isError) {
-                alert("Identifiants incorrects. Veuillez réessayer.");
+                setError("Identifiants incorrects. Veuillez réessayer.");
             } else {
+                // On marque l'utilisateur comme connecté
+                sessionStorage.setItem("isLoggedIn", "true");
+                sessionStorage.setItem("username", username);
                 navigate("/projects");
-
             }
         } catch (err) {
             setError("Impossible de contacter le serveur. Vérifiez votre connexion.");

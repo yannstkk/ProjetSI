@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
+import { ProtectedRoute } from "./app/components/ProtectedRoute";
 import { Layout } from "./app/components/Layout";
 import { Cockpit } from "./app/pages/Cockpit";
 
@@ -43,14 +44,20 @@ import { Phase7A } from "./app/pages/phase7/Phase7A";
 import { Phase7B } from "./app/pages/phase7/Phase7B";
 import { Phase7C } from "./app/pages/phase7/Phase7C";
 
+const protect = (element) => (
+    <ProtectedRoute>{element}</ProtectedRoute>
+);
+
 export const router = createBrowserRouter([
     { path: "/", element: <Login /> },
     { path: "/login", element: <Login /> },
-    { path: "/projects", element: <Projects /> },
-    { path: "/projects/new", element: <NewProject /> },
+
+    { path: "/projects", element: protect(<Projects />) },
+    { path: "/projects/new", element: protect(<NewProject />) },
+
     {
         path: "/dashboard",
-        element: <Layout />,
+        element: protect(<Layout />),
         children: [
             { index: true, element: <Cockpit /> },
 
