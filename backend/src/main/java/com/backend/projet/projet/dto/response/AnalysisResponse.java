@@ -1,4 +1,5 @@
-package com.backend.projet.dto.response;
+package com.backend.projet.projet.dto.response;
+
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class AnalysisResponse {
