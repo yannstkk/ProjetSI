@@ -1,5 +1,5 @@
 package com.backend.projet.common.exception;
 
-public class ApiException {
+public class ApiException extends Exception {
 
 }

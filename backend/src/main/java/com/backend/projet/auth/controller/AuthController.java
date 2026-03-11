@@ -1,7 +1,7 @@
 package com.backend.projet.auth.controller;
 
 import com.backend.projet.auth.service.JumpCloudService;
-import com.backend.projet.common.util.ApiResponse;
+import com.backend.projet.common.util.response.ApiResponse;
 import com.backend.projet.auth.dto.LoginRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

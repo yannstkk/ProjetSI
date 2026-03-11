@@ -1,7 +1,7 @@
 package com.backend.projet.auth.service;
 
 import com.backend.projet.auth.dao.JumpCloudDao;
-import com.backend.projet.common.util.ApiResponse;
+import com.backend.projet.common.util.response.ApiResponse;
 import org.springframework.stereotype.Service;
 import java.util.concurrent.atomic.AtomicLong;
 

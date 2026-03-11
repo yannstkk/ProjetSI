@@ -1,4 +1,4 @@
-package com.backend.projet.common.util;
+package com.backend.projet.common.util.response;
 
 public class ApiResponse {
     private final long responseId;

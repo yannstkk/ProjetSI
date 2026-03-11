@@ -1,5 +1,7 @@
-package com.backend.projet.auth.service;
+package com.backend.projet.common.util.service;
 
+import com.backend.projet.common.config.MistralConfig;
+import com.backend.projet.common.exception.ApiException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,8 +36,8 @@ public class MistralService {
      * Constructeur pour l'injection de dépendances.
      * * @param restTemplate Le client HTTP configuré dans MistralConfig permettant d'effectuer les appels API.
      */
-    public MistralService(RestTemplate restTemplate){
-        this.restTemplate = restTemplate;
+    public MistralService(){
+        this.restTemplate = MistralConfig.restTemplate();
     }
 
     /**
@@ -54,10 +56,11 @@ public class MistralService {
 
     /**
      * Constuit le corps de la requête au format attendu par Mistral AI.
+     * @param instructions les instructions, le prompt.
      * @param content content Le texte brut des notes d'entretien à analyser.
      * @return Une Map représentant l'arborescence JSON du corps de la requête.
      */
-    public Map<String, Object> setBody(String content){
+    public Map<String, Object> setBody(String instructions, String content){
         /*
             Ce que l'api attends de nous comme body.
             { "model": "mistral-medium-latest",
@@ -76,8 +79,40 @@ public class MistralService {
         // 2. le contenu associé au prompt (ici les notes)
 
         List<Map<String, String>> messages = new ArrayList<>();
-        messages.add(Map.of("role", "system", "content", systemNotesPrompt));
+        messages.add(Map.of("role", "system", "content", instructions));
         messages.add(Map.of("role", "user", "content", content));
+
+        body.put("messages", messages);
+        body.put("response_format", Map.of("type", "json_object"));
+
+        return body;
+    }
+
+    /**
+     * Constuit le corps de la requête au format attendu par Mistral AI.
+     * @param instructions le prompt.
+     * @return Une Map représentant l'arborescence JSON du corps de la requête.
+     */
+    public Map<String, Object> setBody(String instructions){
+        /*
+            Ce que l'api attends de nous comme body.
+            { "model": "mistral-medium-latest",
+              "messages": [  --> une liste de map.
+                {"role": "system", "content": "Tu es expert AFSI..."},
+                {"role": "user", "content": "Texte des notes..."}
+                           ],
+              "response_format": { "type": "json_object" }}
+        */
+        Map<String, Object> body = new HashMap<>();
+        body.put("model", "mistral-medium-latest");
+
+        // les messages : /!\ Attention point de compréhension /!\
+        // les appels API mistral se scindent en 2 :
+        // 1. le prompt (fixe, ici systemNotesPromptes)
+        // 2. le contenu associé au prompt (ici les notes)
+
+        List<Map<String, String>> messages = new ArrayList<>();
+        messages.add(Map.of("role", "system", "content", instructions));
 
         body.put("messages", messages);
         body.put("response_format", Map.of("type", "json_object"));
@@ -93,7 +128,7 @@ public class MistralService {
      *
      */
     public String analyserNotes(String notes){
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(setBody(notes), setHeaders());
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(setBody(systemNotesPrompt, notes), setHeaders());
         // on peut se concentrer sur l'envoi
         try {
             return restTemplate.postForObject(urlApi, entity, String.class);
@@ -103,4 +138,13 @@ public class MistralService {
     }
 
     /** Dans cette classe, je vais définir tous les appels api à mistral pour nettoyer les données ou gérer la cohérence bref tout ce qui utilise de près ou de loin */
+
+    public String prompt(String prompt, String ressources) throws ApiException{
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(setBody(prompt, ressources), setHeaders());
+        try {
+            return restTemplate.postForObject(urlApi, entity, String.class);
+        }catch (Exception e){
+            throw new ApiException();
+        }
+    }
 }

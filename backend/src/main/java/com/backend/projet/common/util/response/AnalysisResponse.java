@@ -1,4 +1,4 @@
-package com.backend.projet.common.util;
+package com.backend.projet.common.util.response;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class AnalysisResponse {
