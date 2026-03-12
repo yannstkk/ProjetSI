@@ -4,6 +4,7 @@ import com.backend.projet.auth.dao.JumpCloudDao;
 import com.backend.projet.common.util.ApiResponse;
 import org.springframework.stereotype.Service;
 import java.util.concurrent.atomic.AtomicLong;
+import com.backend.projet.common.exception.AuthentificationException;
 
 @Service
 public class JumpCloudService {
@@ -11,7 +12,7 @@ public class JumpCloudService {
     private final AtomicLong counter = new AtomicLong();
     private final JumpCloudDao jumpCloudDao;
     private static final String SUCCESS = "LOGIN_OK";
-    private static final String FAILURE = "IDENTIFIANTS_INVALIDES";
+    private static final String FAILURE = "IDENTIFIERS_INVALIDS";
 
     public JumpCloudService(JumpCloudDao jumpcloud) {
         this.jumpCloudDao = jumpcloud;
@@ -21,14 +22,14 @@ public class JumpCloudService {
         long startTime = System.currentTimeMillis();
         long requestId = counter.incrementAndGet();
 
-        boolean ok = this.jumpCloudDao.checkLogin(username, password);
+        try {
 
-        String duration = (System.currentTimeMillis() - startTime) + " ms";
-
-        // BUG CORRIGÉ : avant c'était if (!ok) { isError=true } ce qui était inversé
-        if (ok) {
+            this.jumpCloudDao.checkLogin(username, password);
+            String duration = (System.currentTimeMillis() - startTime) + " ms";
             return new ApiResponse(requestId, false, duration, SUCCESS);
-        } else {
+
+        } catch (AuthentificationException e) {
+            String duration = (System.currentTimeMillis() - startTime) + " ms";
             return new ApiResponse(requestId, true, duration, FAILURE);
         }
     }
