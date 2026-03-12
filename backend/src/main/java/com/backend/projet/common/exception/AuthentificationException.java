@@ -6,15 +6,11 @@ public class AuthentificationException extends Exception {
         super();
     }
 
+    /**
+     * Creates a new InvalidLoginException.
+     * @param message description of the error
+     */
     public AuthentificationException(String message) {
         super(message);
-    }
-
-    public AuthentificationException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public AuthentificationException(Throwable cause) {
-        super(cause);
     }
 }
