@@ -1,5 +1,6 @@
 package com.backend.projet.elicitation.controller;
 
+import com.backend.projet.common.util.response.AnalysisResponse;
 import com.backend.projet.common.util.service.MistralService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,12 +18,12 @@ public class EliciationController {
     }
 
     @PostMapping("/analyser")
-    public ResponseEntity<String> analyser(@RequestBody String notesBrutes){
+    public ResponseEntity<AnalysisResponse> analyser(@RequestBody String notesBrutes){
         try{
-            String resultat = mistral.analyserNotes(notesBrutes);
+            AnalysisResponse resultat = mistral.analyserNotes(notesBrutes);
             return  ResponseEntity.ok(resultat);
         }catch(Exception e){
-            return ResponseEntity.internalServerError().body("Erreur :" + e.getMessage());
+            return ResponseEntity.internalServerError().build();
         }
     }
 
