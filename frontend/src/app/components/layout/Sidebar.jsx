@@ -17,8 +17,6 @@ const phases = [
         icon: MessageSquare,
         screens: [
             { path: "/dashboard/phase1/interviews", label: "Interviews" },
-            { path: "/dashboard/phase1/control", label: "Contrôle" },
-            { path: "/dashboard/phase1/trace", label: "Traçabilité" },
         ],
     },
     {

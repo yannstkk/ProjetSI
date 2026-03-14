@@ -12,10 +12,7 @@ import { NewProject } from "./app/pages/NewProject";
 import InterviewsList from "./app/pages/phase1/InterviewsList";
 import NewInterview from "./app/pages/phase1/NewInterview";
 import InterviewDetail from "./app/pages/phase1/InterviewDetail";
-import { Phase1A } from "./app/pages/phase1/Phase1A";
 import { Phase1B } from "./app/pages/phase1/Phase1B";
-import { Phase1C } from "./app/pages/phase1/Phase1C";
-import { Phase1D } from "./app/pages/phase1/Phase1D";
 
 // Phase 2
 import { Phase2A } from "./app/pages/phase2/Phase2A";
@@ -64,10 +61,7 @@ export const router = createBrowserRouter([
             { path: "phase1/interviews", element: <InterviewsList /> },
             { path: "phase1/interview/new", element: <NewInterview /> },
             { path: "phase1/interview/:id", element: <InterviewDetail /> },
-            { path: "phase1/prepare", element: <Phase1A /> },
             { path: "phase1/interview", element: <Phase1B /> },
-            { path: "phase1/control", element: <Phase1C /> },
-            { path: "phase1/trace", element: <Phase1D /> },
 
             { path: "phase2/actors", element: <Phase2A /> },
             { path: "phase2/flows", element: <Phase2B /> },
