@@ -1,4 +1,4 @@
-package com.backend.projet.common.config;
+package com.backend.projet.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

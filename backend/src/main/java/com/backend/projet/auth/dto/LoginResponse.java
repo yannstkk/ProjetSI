@@ -1,12 +1,12 @@
-package com.backend.projet.common.util;
+package com.backend.projet.auth.dto;
 
-public class ApiResponse {
+public class LoginResponse {
     private final long responseId;
     private final boolean isError;
     private final String duration;
     private final String content;
 
-    public ApiResponse(long responseId, boolean isError, String duration, String content){
+    public LoginResponse(long responseId, boolean isError, String duration, String content){
         this.responseId = responseId;
         this.isError = isError;
         this.duration = duration;
