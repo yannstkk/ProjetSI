@@ -2,9 +2,12 @@ package com.backend.projet.elicitation.entity.service;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import com.backend.projet.elicitation.entity.dto.response.NotesResponse;
 import com.backend.projet.elicitation.entity.repository.NotesRepository;
 
+@Service
 public class NotesService {
 	
 	private final NotesRepository notesRepository;
