@@ -12,6 +12,10 @@ public class JwtUtil {
 
     private JwtConfig jwtConfig;
 
+    public JwtUtil(JwtConfig jwtConfig) {
+        this.jwtConfig = jwtConfig;
+    }
+
 
     public String generateToken(String username){
         return Jwts.builder()
