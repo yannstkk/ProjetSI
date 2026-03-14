@@ -1,4 +1,4 @@
-package com.backend.projet.projet.dto;
+package com.backend.projet.projet.dto.response;
 
 import java.time.LocalDate;
 
