@@ -1,10 +1,10 @@
 package com.backend.projet.auth.dao;
-import com.backend.projet.common.exception.AuthentificationException;
+import com.backend.projet.auth.AuthentificationException;
 import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
 import org.springframework.stereotype.Repository;
-import com.backend.projet.common.config.LdapConfig;
+import com.backend.projet.config.LdapConfig;
 
 import java.io.IOException;
 

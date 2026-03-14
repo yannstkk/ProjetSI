@@ -1,4 +1,4 @@
-package com.backend.projet.common.exception;
+package com.backend.projet.auth;
 
 public class AuthentificationException extends Exception {
     /**

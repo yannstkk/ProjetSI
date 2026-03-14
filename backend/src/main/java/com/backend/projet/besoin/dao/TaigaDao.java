@@ -1,7 +1,7 @@
 package com.backend.projet.besoin.dao;
 
 
-import com.backend.projet.common.config.TaigaConfig;
+import com.backend.projet.config.TaigaConfig;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
