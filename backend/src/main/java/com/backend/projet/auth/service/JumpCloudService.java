@@ -1,35 +1,40 @@
 package com.backend.projet.auth.service;
 
 import com.backend.projet.auth.dao.JumpCloudDao;
-import com.backend.projet.common.util.ApiResponse;
+import com.backend.projet.auth.dto.LoginResponse;
+import com.backend.projet.auth.security.JwtUtil;
 import org.springframework.stereotype.Service;
 import java.util.concurrent.atomic.AtomicLong;
+import com.backend.projet.auth.AuthentificationException;
 
 @Service
 public class JumpCloudService {
 
     private final AtomicLong counter = new AtomicLong();
     private final JumpCloudDao jumpCloudDao;
+    private final JwtUtil jwtUtil;
     private static final String SUCCESS = "LOGIN_OK";
-    private static final String FAILURE = "IDENTIFIANTS_INVALIDES";
+    private static final String FAILURE = "IDENTIFIERS_INVALIDS";
 
-    public JumpCloudService(JumpCloudDao jumpcloud) {
+    public JumpCloudService(JumpCloudDao jumpcloud, JwtUtil jwtUtil) {
         this.jumpCloudDao = jumpcloud;
+        this.jwtUtil = jwtUtil;
     }
   
-    public ApiResponse login(String username, String password) {
+    public LoginResponse login(String username, String password) {
         long startTime = System.currentTimeMillis();
         long requestId = counter.incrementAndGet();
 
-        boolean ok = this.jumpCloudDao.checkLogin(username, password);
+        try {
 
-        String duration = (System.currentTimeMillis() - startTime) + " ms";
+            this.jumpCloudDao.checkLogin(username, password);
+            String duration = (System.currentTimeMillis() - startTime) + " ms";
+            String token = this.jwtUtil.generateToken(username);
+            return new LoginResponse(requestId, false, duration, token);
 
-        // BUG CORRIGÉ : avant c'était if (!ok) { isError=true } ce qui était inversé
-        if (ok) {
-            return new ApiResponse(requestId, false, duration, SUCCESS);
-        } else {
-            return new ApiResponse(requestId, true, duration, FAILURE);
+        } catch (AuthentificationException e) {
+            String duration = (System.currentTimeMillis() - startTime) + " ms";
+            return new LoginResponse(requestId, true, duration, FAILURE);
         }
     }
 }
