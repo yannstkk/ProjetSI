@@ -1,7 +1,7 @@
 package com.backend.projet.elicitation.controller;
 
-import com.backend.projet.common.util.response.AnalysisResponse;
-import com.backend.projet.common.util.service.MistralService;
+import com.backend.projet.elicitation.dto.response.AnalysisResponse;
+import com.backend.projet.mistral.service.MistralService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
