@@ -11,6 +11,8 @@ import { Input } from "../../components/ui/input";
 import { useInterviewLive } from "../../../hooks/useInterviewLive";
 import { useSuggererQuestions } from "../../../hooks/useSuggererQuestions";
 import { useRef } from "react";
+import { useEffect } from "react";
+
 import { useEnregistrement } from "../../../hooks/useEnregistrement";
 
 // Composant onglet texte simple (Besoins, Règles, Solutions)
@@ -232,6 +234,10 @@ export function Phase1B() {
     const { questions, loading, error, genererQuestions, resetQuestions } = useSuggererQuestions();
     const [showConfirm, setShowConfirm] = useState(false);
 
+     useEffect(() => {
+            sessionStorage.setItem("phase1_last", window.location.pathname);
+        }, []);
+
 
     const [showConfirmNouvelEnreg, setShowConfirmNouvelEnreg] = useState(false);
 
@@ -289,7 +295,6 @@ export function Phase1B() {
 
     function handleConfirmRetour() {
         clearLive();
-        // Nettoyer aussi questions et enregistrement
         sessionStorage.removeItem("interview_questions");
         sessionStorage.removeItem("interview_audio");
         sessionStorage.removeItem("interview_marqueurs");

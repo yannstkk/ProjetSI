@@ -1,9 +1,17 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { User, LogOut, Settings, ChevronUp } from "lucide-react";
 
 export function UserProfile() {
     const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+
+
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        sessionStorage.clear();
+        navigate("/login");
+    };
 
     return (
         <div className="border-t border-gray-200 p-3">
@@ -42,13 +50,13 @@ export function UserProfile() {
                             <span className="text-sm">Mes projets</span>
                         </Link>
 
-                        <Link
-                            to="/login"
-                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-red-600"
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-red-600 w-full"
                         >
                             <LogOut className="w-4 h-4" />
                             <span className="text-sm">Se déconnecter</span>
-                        </Link>
+                        </button>
 
                     </div>
                 )}

@@ -80,6 +80,7 @@ const phases = [
 
 export function Sidebar() {
     const location = useLocation();
+    const phase1Last = sessionStorage.getItem("phase1_last") || "/dashboard/phase1/interviews"; // ← ici
 
     const currentPhase = phases.find((phase) =>
         phase.screens.some((screen) =>
@@ -130,7 +131,9 @@ export function Sidebar() {
                                     {phase.screens.map((screen) => (
                                         <Link
                                             key={screen.path}
-                                            to={screen.path}
+                                                to={screen.path === "/dashboard/phase1/interviews"
+                                                    ? phase1Last
+                                                    : screen.path}
                                             className={`block px-3 py-1.5 text-sm rounded transition-colors ${
                                                 location.pathname.startsWith(screen.path)
                                                     ? "bg-gray-100 text-gray-900"

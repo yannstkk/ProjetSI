@@ -4,9 +4,9 @@ import { Header } from "./layout/Header";
 import { UserProfile } from "./layout/UserProfile";
 
 export function Layout() {
-    const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+    const token = sessionStorage.getItem("token");
 
-    if (!isLoggedIn) {
+    if (!token) {
         return <Navigate to="/login" replace />;
     }
 

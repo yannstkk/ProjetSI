@@ -1,20 +1,14 @@
-import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Plus, FileText } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/card";
+import { useEffect } from "react";
 
-export default function InterviewsList() {
-    const navigate = useNavigate();
 
-    useEffect(() => {
-        if (sessionStorage.getItem("interview_live")) {
-            navigate("/dashboard/phase1/interview");
-            return;
-        }
-        if (sessionStorage.getItem("interview_draft")) {
-            navigate("/dashboard/phase1/interview/new");
-        }
-    }, [navigate]);
+    export default function InterviewsList() {
+        useEffect(() => {
+                sessionStorage.setItem("phase1_last", window.location.pathname);
+            }, []);
+
 
     return (
         <div className="p-6">
