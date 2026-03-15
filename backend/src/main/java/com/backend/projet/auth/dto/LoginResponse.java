@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:backend/src/main/java/com/backend/projet/auth/dto/LoginResponse.java
 package com.backend.projet.auth.dto;
-========
-package com.backend.projet.common.util.response;
->>>>>>>> 390f512 (gestion du service api mistral):backend/src/main/java/com/backend/projet/common/util/response/ApiResponse.java
 
 public class LoginResponse {
     private final long responseId;

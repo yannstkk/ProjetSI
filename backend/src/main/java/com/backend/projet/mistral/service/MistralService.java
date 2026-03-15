@@ -49,7 +49,7 @@ public class MistralService {
             - "emetteur" : L'acteur à l'origine.
             - "recepteur" : L'acteur de destination.
             - "description" : Une brève explication du but du flux.
-            - "data" : Liste les objets métiers ou documents précis circulant dans ce flux (ex: "Facture", "Client", "RIB"). C'est CRUCIAL pour la cohérence avec le MCD/BPMN.
+            - "data" : Liste les objets métiers sous forme d'une SEULE chaîne de caractères séparés par des virgules (ex: \\"Facture, Client, RIB\\").". C'est CRUCIAL pour la cohérence avec le MCD/BPMN.
             
             Réponds UNIQUEMENT en JSON brut : 
             { "flux" : [ { "nom" : "", "emetteur" : "", "recepteur" : "", "description" : "", "data" :"" }]}
@@ -112,13 +112,19 @@ public class MistralService {
                 setBody(plantUmlContent, systemMFCPrompt),
                 setHeaders()
         );
-        try{
-            String reponseMistral = restTemplate.postForObject(urlApi, entity, String.class);
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(reponseMistral, FluxResponse.class);
+        try {
+            Map<String, Object> response = restTemplate.postForObject(urlApi, entity, Map.class);
 
-        }catch(Exception e){
-            System.err.println("Erreur API : " + e.getMessage());
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+            String analyseDeMistral = (String) message.get("content");
+
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(analyseDeMistral, FluxResponse.class);
+
+        } catch (Exception e) {
+            System.err.println("Erreur technique lors de l'analyse MFC : " + e.getMessage());
+            e.printStackTrace(); // ça m'aide à mieux lire les erreurs !!!
             return new FluxResponse();
         }
     }
