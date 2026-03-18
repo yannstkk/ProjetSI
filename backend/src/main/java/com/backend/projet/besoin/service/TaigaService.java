@@ -6,7 +6,9 @@ import com.backend.projet.besoin.dto.request.UserStoryRequest;
 import com.backend.projet.besoin.dto.response.CreateProjectTaigaResponse;
 import com.backend.projet.besoin.dto.response.TaigaAuthResponse;
 import com.backend.projet.besoin.dto.response.UserStoryResponse;
+import org.springframework.stereotype.Service;
 
+@Service
 public class TaigaService {
 
     private TaigaDao taigaDao;
