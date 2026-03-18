@@ -1,6 +1,7 @@
 package com.backend.projet.modelisation.service;
 
 
+import com.backend.projet.mistral.enums.Prompt;
 import com.backend.projet.mistral.service.MistralService;
 import com.backend.projet.modelisation.dto.FluxResponse;
 import com.backend.projet.modelisation.entity.Acteur;
@@ -20,7 +21,7 @@ public class MFCService {
     }
 
     public FluxResponse analyserPlantUML(String content) {
-        return mistralService.analyserMFC(content);
+        return mistralService.executerAnalyse(content, Prompt.MFC.getPrompt(),FluxResponse.class );
     }
 
 

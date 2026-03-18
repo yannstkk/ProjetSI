@@ -1,6 +1,7 @@
 package com.backend.projet.elicitation.controller;
 
 import com.backend.projet.elicitation.dto.response.AnalysisResponse;
+import com.backend.projet.elicitation.service.ElicitationService;
 import com.backend.projet.mistral.service.MistralService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,16 +12,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/elicitation/notes")
 public class EliciationController {
-    private final MistralService mistral;
+    private final ElicitationService elicitation;
 
-    public EliciationController(MistralService mistral){
-        this.mistral=mistral;
+    public EliciationController(ElicitationService elicitation){
+        this.elicitation=elicitation;
     }
 
     @PostMapping("/analyser")
     public ResponseEntity<AnalysisResponse> analyser(@RequestBody String notesBrutes){
         try{
-            AnalysisResponse resultat = mistral.analyserNotes(notesBrutes);
+            AnalysisResponse resultat = elicitation.analyserNotes(notesBrutes);
             return  ResponseEntity.ok(resultat);
         }catch(Exception e){
             return ResponseEntity.internalServerError().build();
