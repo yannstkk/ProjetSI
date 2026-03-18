@@ -1,5 +1,6 @@
 package com.backend.projet.mistral.service;
 import com.backend.projet.elicitation.dto.response.AnalysisResponse;
+import com.backend.projet.mistral.exceptions.MistralApiException;
 import com.backend.projet.modelisation.dto.FluxResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +19,8 @@ import java.util.ArrayList;
 public class MistralService {
 
     private RestTemplate restTemplate;
+
+    private ObjectMapper mapper;
 
     @Value("${mistral.api.key}")
     private String cleApi;
@@ -55,11 +58,20 @@ public class MistralService {
             { "flux" : [ { "nom" : "", "emetteur" : "", "recepteur" : "", "description" : "", "data" :"" }]}
             """;
 
+    /**
+     * Initialise le service avec le RestTemplate requis et configure l'ObjectMapper.
+     * @param restTemplate le client HTTP utilisé pour les appels API.
+     */
     public MistralService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
+        this.mapper = new ObjectMapper();
     }
 
-    public HttpHeaders setHeaders() {
+    /**
+     * Configure les en-têtes HTTP pour l'API Mistral, incluant l'authentification Bearer.
+     * @return HttpHeaders configurés pour une requête JSON avec authentification.
+     */
+    private HttpHeaders setHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -67,7 +79,14 @@ public class MistralService {
         return headers;
     }
 
-    public Map<String, Object> setBody(String content, String systemPrompt) {
+    /**
+     * Construit le corps de la requête JSON pour l'API Mistral.
+     * Définit le modèle, les rôles (system/user) et force le format de réponse en JSON.
+     * @param content Le contenu textuel fourni par l'utilisateur.
+     * @param systemPrompt Les instructions spécifiques pour guider l'IA.
+     * @return Une Map représentant la structure JSON attendue par Mistral.
+     */
+    private Map<String, Object> setBody(String content, String systemPrompt) {
         Map<String, Object> body = new HashMap<>();
         body.put("model", "mistral-medium-latest");
         List<Map<String, String>> messages = new ArrayList<>();
@@ -78,15 +97,71 @@ public class MistralService {
         return body;
     }
 
+    /**
+     * Exécute l'appel à l'API et extrait uniquement le contenu textuel de la réponse.
+     * Nettoie également les éventuelles balises Markdown (ex: ```json) envoyées par l'IA.
+     * @param entity L'entité HTTP contenant le corps et les headers.
+     * @return La chaîne de caractères JSON épurée provenant de Mistral.
+     */
+    private String extractMistralsResponse(HttpEntity<Map<String, Object>> entity){
+        Map<String, Object> response = restTemplate.postForObject(urlApi, entity, Map.class);
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+        String content = (String) message.get("content");
+        return content.replace("```json", "").replace("```", "").trim();
+    }
+
+    /**
+     * Méthode utilitaire pour initialiser l'entité HTTP à partir du contenu et du prompt.
+     * @param userContent Texte de l'utilisateur.
+     * @param prompt Instructions système.
+     * @return L'objet HttpEntity prêt pour l'envoi.
+     */
+    private HttpEntity<Map<String, Object>> initEntity(String userContent, String prompt){
+        return new HttpEntity<>(setBody(userContent, prompt),setHeaders());
+    }
+
+    /**
+     * Méthode générique orchestrant l'analyse complète : préparation, appel et désérialisation.
+     * @param <T> Le type de DTO de réponse attendu.
+     * @param userContent Le contenu à analyser.
+     * @param prompt Le prompt système à appliquer.
+     * @param returnType La classe de destination pour le mapping JSON.
+     * @return Une instance de returnType contenant les données extraites par l'IA.
+     * @throws MistralApiException Si une erreur survient lors de l'appel ou du parsing.
+     */
+    public <T> T executerAnalyse(String userContent, String prompt, Class<T> returnType) throws MistralApiException {
+        HttpEntity<Map<String, Object>> entity = initEntity(userContent, prompt);
+        try{
+            String analyseDeMistral = extractMistralsResponse(entity);
+
+            return mapper.readValue(analyseDeMistral, returnType);
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new MistralApiException(e.getMessage());
+        }
+    }
+
+
+    /**
+     * Analyse des notes textuelles pour en extraire les concepts métiers (Acteurs, Actions, etc.).
+     * @param notes Le texte brut des notes d'entretien.
+     * @return Un objet AnalysisResponse contenant la liste des éléments catégorisés.
+     */
     public AnalysisResponse analyserNotes(String notes) {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
                 setBody(notes, systemNotesPrompt),
                 setHeaders()
         );
         try {
-            String res = restTemplate.postForObject(urlApi, entity, String.class);
+            Map<String, Object> response = restTemplate.postForObject(urlApi, entity, Map.class);
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+            String analyseDeMistral = (String) message.get("content");
+
             ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(res, AnalysisResponse.class);
+            return mapper.readValue(analyseDeMistral, AnalysisResponse.class);
+
 
         } catch (Exception e) {
             System.err.println("Erreur API : " + e.getMessage());
@@ -94,6 +169,11 @@ public class MistralService {
         }
     }
 
+    /**
+     * Génère une suggestion de 5 questions d'entretien à partir de notes existantes.
+     * @param notes Les notes de base pour générer les questions.
+     * @return Une String au format JSON contenant les questions suggérées.
+     */
     public String suggererQuestions(String notes) {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
                 setBody(notes, systemQuestionsPrompt),
@@ -107,6 +187,11 @@ public class MistralService {
         }
     }
 
+    /**
+     * Analyse un diagramme de flux PlantUML pour extraire les interactions entre acteurs.
+     * @param plantUmlContent Le code source du diagramme PlantUML.
+     * @return Un objet FluxResponse contenant la liste structurée des flux et données.
+     */
     public FluxResponse analyserMFC(String plantUmlContent) {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
                 setBody(plantUmlContent, systemMFCPrompt),
