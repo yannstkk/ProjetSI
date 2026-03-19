@@ -41,12 +41,6 @@ public class Projet {
     @Column(name = "id_user")
     private String idUser;
 
-    public String getIdUser() {
-		return idUser;
-	}
-	public void setIdUser(String idUser) {
-		this.idUser = idUser;
-	}
 	@OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
     private List<Interview> interviews = new ArrayList<>();
 
@@ -92,6 +86,13 @@ public class Projet {
 	}
 	public void setDateCreation(LocalDate dateCreation) {
 		this.dateCreation = dateCreation;
+	}
+	
+    public String getIdUser() {
+		return idUser;
+	}
+	public void setIdUser(String idUser) {
+		this.idUser = idUser;
 	}
 
 }
