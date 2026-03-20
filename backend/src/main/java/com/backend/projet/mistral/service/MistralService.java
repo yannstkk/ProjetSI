@@ -1,7 +1,4 @@
 package com.backend.projet.mistral.service;
-import com.backend.projet.elicitation.dto.response.AnalysisResponse;
-import com.backend.projet.modelisation.dto.FluxResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,20 +37,6 @@ public class MistralService {
             "Réponds UNIQUEMENT en JSON brut sans aucun texte avant ou après, avec cette structure : " +
             "{ \"questions\": [ { \"question\": \"\" } ] }";
 
-    private String systemMFCPrompt = """
-            Tu es un expert AFSI spécialisé dans l'analyse systémique et Merise.
-            Analyse ce diagramme de flux MFC (PlantUML) et extrais chaque interaction.
-            
-            Pour chaque flux, remplis :
-            - "nom" : Le libellé du flux.
-            - "emetteur" : L'acteur à l'origine.
-            - "recepteur" : L'acteur de destination.
-            - "description" : Une brève explication du but du flux.
-            - "data" : Liste les objets métiers sous forme d'une SEULE chaîne de caractères séparés par des virgules (ex: \\"Facture, Client, RIB\\").". C'est CRUCIAL pour la cohérence avec le MCD/BPMN.
-            
-            Réponds UNIQUEMENT en JSON brut : 
-            { "flux" : [ { "nom" : "", "emetteur" : "", "recepteur" : "", "description" : "", "data" :"" }]}
-            """;
 
     public MistralService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -78,19 +61,15 @@ public class MistralService {
         return body;
     }
 
-    public AnalysisResponse analyserNotes(String notes) {
+    public String analyserNotes(String notes) {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
                 setBody(notes, systemNotesPrompt),
                 setHeaders()
         );
         try {
-            String res = restTemplate.postForObject(urlApi, entity, String.class);
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(res, AnalysisResponse.class);
-
+            return restTemplate.postForObject(urlApi, entity, String.class);
         } catch (Exception e) {
-            System.err.println("Erreur API : " + e.getMessage());
-            return new AnalysisResponse();
+            return "Erreur API : " + e.getMessage();
         }
     }
 
@@ -104,28 +83,6 @@ public class MistralService {
             return restTemplate.postForObject(urlApi, entity, String.class);
         } catch (Exception e) {
             return "Erreur API : " + e.getMessage();
-        }
-    }
-
-    public FluxResponse analyserMFC(String plantUmlContent) {
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
-                setBody(plantUmlContent, systemMFCPrompt),
-                setHeaders()
-        );
-        try {
-            Map<String, Object> response = restTemplate.postForObject(urlApi, entity, Map.class);
-
-            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
-            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-            String analyseDeMistral = (String) message.get("content");
-
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(analyseDeMistral, FluxResponse.class);
-
-        } catch (Exception e) {
-            System.err.println("Erreur technique lors de l'analyse MFC : " + e.getMessage());
-            e.printStackTrace(); // ça m'aide à mieux lire les erreurs !!!
-            return new FluxResponse();
         }
     }
 }

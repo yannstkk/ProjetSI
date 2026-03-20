@@ -31,9 +31,6 @@ public class Flux {
     @Column(name = "type")
     private String type;
 
-	@Column(name = "data")
-	private String data;
-
     @ManyToOne
     @JoinColumn(name = "id_acteur_entree")
     private Acteur acteurEntree;
@@ -82,10 +79,6 @@ public class Flux {
 	public void setType(String type) {
 		this.type = type;
 	}
-
-	public String getData(){ return data;}
-
-	public void setData(String data){this.data = data;}
 
 	public Acteur getActeurEntree() {
 		return acteurEntree;

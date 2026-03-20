@@ -1,9 +1,7 @@
-package com.backend.projet.elicitation.dto.response;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+package com.backend.projet.projet.dto.response;
 
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class AnalysisResponse {
     public List<AnalyseElement> elements;
 

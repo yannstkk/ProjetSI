@@ -25,7 +25,8 @@ public class ProjetService {
         		.map(projet -> new ProjetResponse(
                         projet.getIdProjet(),
                         projet.getNom(),
-                        projet.getDateCreation()
+                        projet.getDateCreation(),
+                        projet.getIdUtilisateur() 
                 ))
                 .toList();
     }
@@ -40,8 +41,21 @@ public class ProjetService {
         return new ProjetResponse(
                 saved.getIdProjet(),
                 saved.getNom(),
-                saved.getDateCreation()
+                saved.getDateCreation(),
+                saved.getIdUtilisateur()
         );
+	}
+	
+	public List<ProjetResponse> getProjetsByUser(String idUtilisateur) {
+	    return projetRepository.findByIdUtilisateur(idUtilisateur)
+	            .stream()
+	            .map(projet -> new ProjetResponse(
+	                    projet.getIdProjet(),
+	                    projet.getNom(),
+	                    projet.getDateCreation(),
+	                    projet.getIdUtilisateur()
+	            ))
+	            .toList();
 	}
 
 }
