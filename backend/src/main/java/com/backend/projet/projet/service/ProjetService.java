@@ -25,7 +25,8 @@ public class ProjetService {
         		.map(projet -> new ProjetResponse(
                         projet.getIdProjet(),
                         projet.getNom(),
-                        projet.getDateCreation()
+                        projet.getDateCreation(),
+                        projet.getIdUtilisateur() 
                 ))
                 .toList();
     }
@@ -34,14 +35,42 @@ public class ProjetService {
         Projet projet = new Projet();
         projet.setNom(request.getNom());
         projet.setDateCreation(LocalDate.now());
+		projet.setIdUtilisateur(request.getUser());
 
-        Projet saved = projetRepository.save(projet);
+
+
+		Projet saved = projetRepository.save(projet);
 
         return new ProjetResponse(
                 saved.getIdProjet(),
                 saved.getNom(),
-                saved.getDateCreation()
+                saved.getDateCreation(),
+                saved.getIdUtilisateur()
         );
+	}
+	
+	public List<ProjetResponse> getProjetsByUser(String idUtilisateur) {
+	    return projetRepository.findByIdUtilisateur(idUtilisateur)
+	            .stream()
+	            .map(projet -> new ProjetResponse(
+	                    projet.getIdProjet(),
+	                    projet.getNom(),
+	                    projet.getDateCreation(),
+	                    projet.getIdUtilisateur()
+	            ))
+	            .toList();
+	}
+
+	// ← nouveau
+	public ProjetResponse getProjetById(Long id) {
+		Projet projet = projetRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Projet introuvable : " + id));
+		return new ProjetResponse(
+				projet.getIdProjet(),
+				projet.getNom(),
+				projet.getDateCreation(),
+				projet.getIdUtilisateur()
+		);
 	}
 
 }
