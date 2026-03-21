@@ -55,12 +55,14 @@ export function Phase2A() {
             }
 
             const nomsExistants = new Set(acteurs.map((a) => a.nom.toLowerCase()));
+
             const nouveaux = acteursDetectes
                 .filter((a) => !nomsExistants.has(a.nom.toLowerCase()))
                 .map((a) => ({
                     id: Date.now() + Math.random(),
                     nom: a.nom,
-                    role: "",
+                    // Le rôle est pré-rempli si l'IA l'a identifié, sinon chaîne vide
+                    role: a.role || "",
                     type: "internal",
                     source: "ia",
                     phraseSource: a.phraseSource || "",
@@ -193,6 +195,14 @@ export function Phase2A() {
                         <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                             <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                             {iaError}
+                        </div>
+                    )}
+
+                    {/* Info : rôles pré-remplis par l'IA */}
+                    {iaRan && !iaLoading && acteurs.some((a) => a.source === "ia" && a.role) && (
+                        <div className="flex items-center gap-2 p-3 bg-purple-50 border border-purple-200 rounded-lg text-purple-800 text-sm">
+                            <Sparkles className="w-4 h-4 flex-shrink-0" />
+                            Certains rôles ont été détectés automatiquement par l'IA. Vérifiez et complétez-les si nécessaire.
                         </div>
                     )}
 

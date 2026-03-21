@@ -1,6 +1,5 @@
 import { authFetch } from "../../../../../services/authFetch";
 
-// ─── Storage ──────────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = "phase2_acteurs";
 
@@ -17,7 +16,6 @@ export function saveActeurs(acteurs) {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(acteurs));
 }
 
-// ─── Notes ───────────────────────────────────────────────────────────────────
 
 export function getNotesTexte() {
     try {
@@ -30,29 +28,27 @@ export function getNotesTexte() {
     }
 }
 
-// ─── Appel IA ─────────────────────────────────────────────────────────────────
+// ─── Appel endpoint dédié ─────────────────────────────────────────────────────
 
+/**
+ * Appelle le nouvel endpoint /api/mistral/detecter-acteurs.
+ * Retourne une liste d'objets { nom, role, phraseSource }.
+ * - nom       : toujours présent (obligatoire côté back)
+ * - role      : peut être une chaîne vide si non identifiable
+ * - phraseSource : citation extraite des notes
+ */
 export async function appelDetectionActeurs(notesTexte) {
-    const promptActeurs =
-        `Tu es un expert AFSI. Voici des notes d'entretien métier :\n\n${notesTexte}\n\n` +
-        `Identifie tous les acteurs (personnes, rôles, systèmes, organisations) mentionnés ou implicites dans ces notes. ` +
-        `Pour chaque acteur, fournis son nom court et la phrase exacte des notes qui justifie sa présence. ` +
-        `Réponds UNIQUEMENT en JSON brut sans aucun texte avant ou après, avec cette structure exacte : ` +
-        `{ "acteurs": [ { "nom": "", "phraseSource": "" } ] }`;
-
-    const response = await authFetch("/api/mistral/suggerer-questions", {
+    const response = await authFetch("/api/mistral/detecter-acteurs", {
         method: "POST",
-        body: JSON.stringify({ notes: promptActeurs }),
+        body: JSON.stringify({ notes: notesTexte }),
     });
 
-    if (!response.ok) throw new Error(`Erreur serveur : ${response.status}`);
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Erreur serveur ${response.status} : ${text}`);
+    }
 
     const data = await response.json();
-    const content = data?.choices?.[0]?.message?.content;
-    if (!content) throw new Error("Réponse inattendue de l'API.");
 
-    const cleaned = content.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(cleaned);
-
-    return parsed.acteurs || [];
+    return data.acteurs || [];
 }

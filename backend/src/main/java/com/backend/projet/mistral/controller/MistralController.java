@@ -24,7 +24,18 @@ public class MistralController {
             );
         }
         String result = mistralService.suggererQuestions(request.getNotes());
-        return ResponseEntity.ok(result);
+
+        // MistralService retourne "Erreur API : ..." en cas d'échec
+        // On détecte ce cas et on renvoie un 502 plutôt qu'un 200 avec du texte non-JSON
+        if (result != null && result.startsWith("Erreur API")) {
+            return ResponseEntity.status(502)
+                    .body("{\"error\": \" hallucination IA \uD83D\uDE35\u200D\uD83D\uDCAB\u200B\"}");
+        }else {
+
+            return ResponseEntity.ok(result);
+        }
+
+
     }
 
 
