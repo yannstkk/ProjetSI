@@ -9,8 +9,18 @@ import { BarreEnregistrement } from "./components/BarreEnregistrement";
 import { PanneauQuestions } from "./components/PanneauQuestions";
 import { NotesStructurees } from "./components/NotesStructurees";
 
+import { getProjetCourant } from "../../../services/projetCourant";
+import {
+    buildInterviewPayload,
+    createInterview,
+    updateInterview,
+    interviewExistsInDb,
+} from "../../../services/interviewService";
+import { saveNotesFromSession } from "../../../services/notesService";
 
-function ModaleConfirmation({ titre, message, onConfirmer, onAnnuler, labelConfirmer = "Confirmer" }) {
+// ─── Modale générique ─────────────────────────────────────────────────────────
+
+function Modale({ titre, message, onConfirmer, onAnnuler, labelConfirmer = "Confirmer", danger = false }) {
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
             <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full mx-4">
@@ -25,7 +35,11 @@ function ModaleConfirmation({ titre, message, onConfirmer, onAnnuler, labelConfi
                     </button>
                     <button
                         onClick={onConfirmer}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                        className={`px-4 py-2 text-white rounded-lg ${
+                            danger
+                                ? "bg-red-600 hover:bg-red-700"
+                                : "bg-blue-600 hover:bg-blue-700"
+                        }`}
                     >
                         {labelConfirmer}
                     </button>
@@ -35,6 +49,7 @@ function ModaleConfirmation({ titre, message, onConfirmer, onAnnuler, labelConfi
     );
 }
 
+// ─── Helpers sessionStorage ───────────────────────────────────────────────────
 
 function getDraftInfo() {
     try {
@@ -49,24 +64,31 @@ function getNotesTexte(draft) {
     return draft?.notesImportees?.map((n) => n.contenu).join("\n\n") || "";
 }
 
+// ─── Composant principal ──────────────────────────────────────────────────────
 
 export function Phase1B() {
     const navigate = useNavigate();
 
     const { live, ajouterElement, supprimerElement, clearLive } = useInterviewLive();
-    const { questions, loading, error, genererQuestions, resetQuestions } = useSuggererQuestions();
+    const { questions, loading: questionsLoading, error: questionsError, genererQuestions, resetQuestions } = useSuggererQuestions();
     const enregistrement = useEnregistrement();
 
-    const [showConfirmRetour, setShowConfirmRetour] = useState(false);
+    const [showConfirmRetour, setShowConfirmRetour]       = useState(false);
     const [showConfirmNouvelEnreg, setShowConfirmNouvelEnreg] = useState(false);
+    const [showConfirmSave, setShowConfirmSave]           = useState(false);
 
-    const draft = getDraftInfo();
+    const [saveLoading, setSaveLoading] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
+    const [saveError, setSaveError]     = useState("");
+
+    const draft      = getDraftInfo();
     const notesTexte = getNotesTexte(draft);
 
     useEffect(() => {
         sessionStorage.setItem("phase1_last", window.location.pathname);
     }, []);
 
+    // ── Retour vers préparation ───────────────────────────────────────────────
 
     function handleConfirmRetour() {
         clearLive();
@@ -78,12 +100,48 @@ export function Phase1B() {
         navigate("/dashboard/phase1/interview/new");
     }
 
+    // ── Enregistrement en BDD ─────────────────────────────────────────────────
 
-    function handleConfirmNouvelEnreg() {
-        enregistrement.clearEnregistrement();
-        setShowConfirmNouvelEnreg(false);
+    async function handleConfirmSave() {
+        setShowConfirmSave(false);
+        setSaveLoading(true);
+        setSaveError("");
+        setSaveSuccess(false);
+
+        const projet = getProjetCourant();
+        if (!projet) {
+            setSaveError("Aucun projet sélectionné.");
+            setSaveLoading(false);
+            return;
+        }
+
+        try {
+            const payload  = buildInterviewPayload(projet.id);
+            const existsDb = interviewExistsInDb();
+
+            // 1. Sauvegarder l'interview
+            if (existsDb) {
+                await updateInterview(projet.id, payload);
+            } else {
+                await createInterview(payload);
+                // Marquer comme existante en BDD pour les prochains saves
+                sessionStorage.setItem("interview_exists_in_db", "true");
+            }
+
+            // 2. Sauvegarder les notes importées
+            await saveNotesFromSession(projet.id);
+
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+
+        } catch (err) {
+            setSaveError("Erreur lors de l'enregistrement : " + err.message);
+        } finally {
+            setSaveLoading(false);
+        }
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
 
     return (
         <div className="p-6">
@@ -91,40 +149,73 @@ export function Phase1B() {
 
                 {/* Modales */}
                 {showConfirmRetour && (
-                    <ModaleConfirmation
+                    <Modale
                         titre="Confirmer le retour"
-                        message={
-                            <>
-                                Si vous retournez à la préparation, toutes les données saisies dans
-                                le mode interview live seront{" "}
-                                <strong>perdues définitivement</strong>. Voulez-vous continuer ?
-                            </>
-                        }
+                        message="Si vous retournez à la préparation, toutes les données du mode live seront perdues définitivement."
                         onConfirmer={handleConfirmRetour}
                         onAnnuler={() => setShowConfirmRetour(false)}
                         labelConfirmer="Confirmer le retour"
+                        danger
                     />
                 )}
 
                 {showConfirmNouvelEnreg && (
-                    <ModaleConfirmation
+                    <Modale
                         titre="Nouvel enregistrement"
-                        message={
-                            <>
-                                L'enregistrement actuel sera{" "}
-                                <strong>perdu définitivement</strong>. Voulez-vous continuer ?
-                            </>
-                        }
-                        onConfirmer={handleConfirmNouvelEnreg}
+                        message="L'enregistrement actuel sera perdu définitivement."
+                        onConfirmer={() => {
+                            enregistrement.clearEnregistrement();
+                            setShowConfirmNouvelEnreg(false);
+                        }}
                         onAnnuler={() => setShowConfirmNouvelEnreg(false)}
+                        danger
+                    />
+                )}
+
+                {showConfirmSave && (
+                    <Modale
+                        titre="Enregistrer en base de données"
+                        message={
+                            interviewExistsInDb()
+                                ? "Les données existantes seront mises à jour. Confirmer ?"
+                                : "L'interview et les notes vont être sauvegardées en base de données. Confirmer ?"
+                        }
+                        onConfirmer={handleConfirmSave}
+                        onAnnuler={() => setShowConfirmSave(false)}
+                        labelConfirmer="Enregistrer"
                     />
                 )}
 
                 {/* Titre */}
-                <div className="mb-6">
-                    <h1 className="text-2xl font-semibold text-gray-900">Mode Interview Live</h1>
-                    <p className="text-gray-600">Phase 1B</p>
+                <div className="mb-4 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-semibold text-gray-900">
+                            Mode Interview Live
+                        </h1>
+                        <p className="text-gray-600">Phase 1B</p>
+                    </div>
+
+                    {/* Bouton Enregistrer */}
+                    <button
+                        onClick={() => setShowConfirmSave(true)}
+                        disabled={saveLoading}
+                        className="flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-300 transition-colors font-medium"
+                    >
+                        {saveLoading ? "Enregistrement..." : "💾 Enregistrer"}
+                    </button>
                 </div>
+
+                {/* Messages save */}
+                {saveSuccess && (
+                    <div className="mb-4 p-3 bg-green-50 border border-green-300 rounded-lg text-green-700 text-sm">
+                        ✓ Interview enregistrée avec succès en base de données.
+                    </div>
+                )}
+                {saveError && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-lg text-red-700 text-sm">
+                        {saveError}
+                    </div>
+                )}
 
                 {/* Infos brouillon */}
                 {draft && (
@@ -166,19 +257,19 @@ export function Phase1B() {
                 {/* Layout principal */}
                 <div className="grid grid-cols-12 gap-4">
 
-                    {/* Colonne gauche — Questions IA */}
+                    {/* Questions IA */}
                     <div className="col-span-4">
                         <PanneauQuestions
                             questions={questions}
-                            loading={loading}
-                            error={error}
+                            loading={questionsLoading}
+                            error={questionsError}
                             notesTexte={notesTexte}
                             onGenerer={() => genererQuestions(notesTexte)}
                             onReset={resetQuestions}
                         />
                     </div>
 
-                    {/* Colonne centrale — Notes structurées */}
+                    {/* Notes structurées */}
                     <div className="col-span-8">
                         <NotesStructurees
                             live={live}
@@ -189,7 +280,7 @@ export function Phase1B() {
 
                 </div>
 
-                {/* Actions */}
+                {/* Actions bas de page */}
                 <div className="mt-6 flex gap-3">
                     <button
                         onClick={() => setShowConfirmRetour(true)}
