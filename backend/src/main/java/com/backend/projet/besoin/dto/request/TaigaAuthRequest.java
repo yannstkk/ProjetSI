@@ -6,6 +6,9 @@ public class TaigaAuthRequest {
     private String password;
     private String type;
 
+    public TaigaAuthRequest() {
+    }
+
     public TaigaAuthRequest(String username, String password){
         this.username = username;
         this.password = password;

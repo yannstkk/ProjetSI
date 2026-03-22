@@ -1,12 +1,18 @@
 package com.backend.projet.besoin.controller;
 
 
+import com.backend.projet.besoin.AuthTaigaException;
+import com.backend.projet.besoin.TaigaDataException;
+import com.backend.projet.besoin.dto.request.TaigaAuthRequest;
 import com.backend.projet.besoin.dto.request.UserStoryRequest;
-import com.backend.projet.besoin.dto.response.CreateProjectTaigaResponse;
+import com.backend.projet.besoin.dto.response.ProjectTaigaResponse;
+import com.backend.projet.besoin.dto.response.TaigaAuthResponse;
 import com.backend.projet.besoin.dto.response.UserStoryResponse;
 import com.backend.projet.besoin.service.TaigaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/taiga")
@@ -19,18 +25,38 @@ public class TaigaController {
         this.taigaService = taigaService;
     }
 
-    @PostMapping("/createProject")
-    public ResponseEntity<CreateProjectTaigaResponse> createProject(){
-        CreateProjectTaigaResponse project = this.taigaService.createProjectTaiga();
-        return ResponseEntity.ok(project);
-
+    @PostMapping("/login")
+    public ResponseEntity<TaigaAuthResponse> auth(@RequestBody TaigaAuthRequest request) {
+        try {
+            TaigaAuthResponse response = this.taigaService.authentificationTaiga(request.getUsername(), request.getPassword());
+            return ResponseEntity.ok(response);
+        } catch (AuthTaigaException e) {
+            return ResponseEntity.status(401).build();
+        }
     }
 
-    @PostMapping("/exportUs")
-    ResponseEntity<UserStoryResponse> exportUserStory(@RequestBody UserStoryRequest request){
-        UserStoryResponse response = this.taigaService.exportUserStory(request.getSubject(), request.getProject());
-        return ResponseEntity.ok(response);
+
+
+    @GetMapping("/projects")
+    public ResponseEntity<List<ProjectTaigaResponse>> getProjects(@PathVariable Long userId, @RequestHeader("Authorization") String token){
+        try {
+            List<ProjectTaigaResponse> allProjects = this.taigaService.getProjects(userId, token);
+            return ResponseEntity.ok(allProjects);
+        } catch (AuthTaigaException e) {
+            return ResponseEntity.status(401).build();
+        } catch (TaigaDataException e) {
+            return ResponseEntity.status(502).build();
+        }
     }
 
+    @PostMapping("/exporter-us")
+    ResponseEntity<UserStoryResponse> exportUserStory(@PathVariable Long projectId, @RequestBody UserStoryRequest userStory, @RequestHeader("AUthorization") String token){
+        try {
+            UserStoryResponse response = this.taigaService.exportUserStory(projectId, userStory, token);
+            return ResponseEntity.ok(response);
+        } catch (AuthTaigaException e) {
+            return ResponseEntity.status(401).build();
+        }
+    }
 
 }

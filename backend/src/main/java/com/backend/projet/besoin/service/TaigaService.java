@@ -1,47 +1,36 @@
 package com.backend.projet.besoin.service;
 
+import com.backend.projet.besoin.AuthTaigaException;
+import com.backend.projet.besoin.TaigaDataException;
 import com.backend.projet.besoin.dao.TaigaDao;
-import com.backend.projet.besoin.dto.request.CreateProjectTaigaRequest;
 import com.backend.projet.besoin.dto.request.UserStoryRequest;
-import com.backend.projet.besoin.dto.response.CreateProjectTaigaResponse;
+import com.backend.projet.besoin.dto.response.ProjectTaigaResponse;
 import com.backend.projet.besoin.dto.response.TaigaAuthResponse;
 import com.backend.projet.besoin.dto.response.UserStoryResponse;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class TaigaService {
 
     private TaigaDao taigaDao;
-    private String description;
-    private CreateProjectTaigaResponse currentProjet;
-
-    private int projectNumber;
 
     public TaigaService(TaigaDao taigaDao){
         this.taigaDao = taigaDao;
-        this.description = "AnalyzeChecker Project";
-        this.projectNumber = 1;
-        this.currentProjet = null;
     }
 
-    public CreateProjectTaigaResponse createProjectTaiga(){
-        if (this.currentProjet == null) {
-            TaigaAuthResponse authentification = this.taigaDao.authentificationTaiga();
-            String token = authentification.getToken();
-            String projectName = "Project " + this.projectNumber;
-            CreateProjectTaigaRequest request = new CreateProjectTaigaRequest(projectName, this.description);
-            this.currentProjet = this.taigaDao.createProject(request, token);
-            this.projectNumber++;
-        }
-        return this.currentProjet;
-
-
+    public TaigaAuthResponse authentificationTaiga(String username, String password) throws AuthTaigaException {
+        return this.taigaDao.authentificationTaiga(username, password);
     }
 
-    public UserStoryResponse exportUserStory(String subject, Long projectId){
-        TaigaAuthResponse authentification = this.taigaDao.authentificationTaiga();
-        String token = authentification.getToken();
-        UserStoryRequest request = new UserStoryRequest(subject, projectId);
-        return this.taigaDao.createUserStory(request, token);
+    public List<ProjectTaigaResponse> getProjects(Long userId, String token) throws AuthTaigaException, TaigaDataException {
+        return this.taigaDao.getProjects(userId, token);
     }
+
+
+    public UserStoryResponse exportUserStory(Long projectId, UserStoryRequest userStory, String token) throws AuthTaigaException {
+        return this.taigaDao.createUserStory(projectId, userStory, token);
+    }
+
 }
