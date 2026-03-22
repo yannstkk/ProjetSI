@@ -1,18 +1,21 @@
 import { authFetch } from "./authFetch";
 
+
 /**
- * Récupère l'interview d'un projet depuis la BDD
- * Retourne null si aucune interview n'existe (404)
+ * Récupère la liste des interviews d'un projet depuis la BDD.
+ * Retourne le premier élément s'il existe, null sinon.
  */
 export async function getInterviewByProjet(idProjet) {
     const res = await authFetch(`/api/interviews/projet/${idProjet}`);
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error(`Erreur serveur : ${res.status}`);
-    return res.json();
+    if (!res.ok) return null;
+    const liste = await res.json();
+    return liste.length > 0 ? liste[0] : null;
 }
 
+
 /**
- * Crée une nouvelle interview en BDD (POST)
+ * Crée une nouvelle interview en BDD (POST).
+ * Retourne l'interview créée avec son numeroInterview.
  */
 export async function createInterview(data) {
     const res = await authFetch("/api/interviews", {
@@ -24,10 +27,12 @@ export async function createInterview(data) {
 }
 
 /**
- * Met à jour une interview existante en BDD (PUT)
+ * Met à jour une interview existante en BDD (PUT).
+ * @param {number} numeroInterview - L'ID de l'interview à mettre à jour
+ * @param {object} data - Les données à envoyer
  */
-export async function updateInterview(idProjet, data) {
-    const res = await authFetch(`/api/interviews/${idProjet}`, {
+export async function updateInterview(numeroInterview, data) {
+    const res = await authFetch(`/api/interviews/${numeroInterview}`, {
         method: "PUT",
         body: JSON.stringify(data),
     });
@@ -35,82 +40,80 @@ export async function updateInterview(idProjet, data) {
     return res.json();
 }
 
+
 /**
- * Construit l'objet à envoyer au back depuis sessionStorage
+ * Construit l'objet à envoyer au backend depuis le sessionStorage.
+ * Ne garde que les champs reconnus par InterviewRequest.java.
  */
 export function buildInterviewPayload(idProjet) {
     try {
         const draft = JSON.parse(sessionStorage.getItem("interview_draft") || "{}");
-        const live  = JSON.parse(sessionStorage.getItem("interview_live")  || "{}");
+        const dateHeure = draft.dateHeure || "";
 
         return {
             idProjet,
-            sujet:        draft.objectifs   || draft.titre || "",
-            dateInterview: draft.dateHeure  ? draft.dateHeure.split("T")[0] : null,
+            titre:          draft.titre     || "",
+            objectifs:      draft.objectifs || "",
+            dateInterview:  dateHeure ? dateHeure.split("T")[0]  : null,
+            heureInterview: dateHeure || null,
             nomInterviewer: draft.participants
-                ? JSON.stringify(draft.participants)
-                : "[]",
-            participants:  JSON.stringify(draft.participants || []),
-            besoins:       JSON.stringify(live.besoins      || []),
-            regles:        JSON.stringify(live.regles        || []),
-            donnees:       JSON.stringify(live.donnees       || []),
-            contraintes:   JSON.stringify(live.contraintes   || []),
-            solutions:     JSON.stringify(live.solutions     || []),
+                ? draft.participants
+                    .filter((p) => p.nom && p.nom.trim())
+                    .map((p) => p.nom.trim())
+                    .join(", ")
+                : "",
         };
     } catch {
         return null;
     }
 }
 
+
 /**
- * Charge une interview depuis la BDD vers sessionStorage
+ * Charge une interview BDD dans sessionStorage.
+ * Reconstruit interview_draft depuis les champs de InterviewResponse.java.
  */
 export function loadInterviewIntoSession(interview) {
-    // Reconstruire interview_draft
     const draft = {
-        titre:          interview.sujet || "",
-        dateHeure:      interview.dateInterview || "",
+        titre:          interview.titre          || "",
+        objectifs:      interview.objectifs      || "",
+        dateHeure:      interview.heureInterview || "",
         duree:          "",
-        objectifs:      interview.sujet || "",
-        participants:   safeParseJson(interview.participants, []),
+        participants:   [],
         notesImportees: [],
     };
 
-    // Reconstruire interview_live
-    const live = {
-        besoins:     safeParseJson(interview.besoins,     []),
-        regles:      safeParseJson(interview.regles,      []),
-        donnees:     safeParseJson(interview.donnees,     []),
-        contraintes: safeParseJson(interview.contraintes, []),
-        solutions:   safeParseJson(interview.solutions,   []),
-    };
-
-    sessionStorage.setItem("interview_draft", JSON.stringify(draft));
-    sessionStorage.setItem("interview_live",  JSON.stringify(live));
-    sessionStorage.setItem("interview_exists_in_db", "true");
+    sessionStorage.setItem("interview_draft",         JSON.stringify(draft));
+    sessionStorage.setItem("interview_id",            String(interview.numeroInterview));
+    sessionStorage.setItem("interview_exists_in_db",  "true");
 }
 
-function safeParseJson(value, fallback) {
-    try {
-        return value ? JSON.parse(value) : fallback;
-    } catch {
-        return fallback;
-    }
-}
+
 
 /**
- * Indique si l'interview courante existe déjà en BDD
+ * Indique si l'interview courante existe déjà en BDD.
  */
 export function interviewExistsInDb() {
     return sessionStorage.getItem("interview_exists_in_db") === "true";
 }
 
 /**
- * Réinitialise les flags interview en sessionStorage
+ * Retourne le numeroInterview stocké en session, ou null.
+ */
+export function getInterviewId() {
+    const id = sessionStorage.getItem("interview_id");
+    return id ? Number(id) : null;
+}
+
+
+
+/**
+ * Réinitialise toutes les clés interview du sessionStorage.
  */
 export function clearInterviewSession() {
     sessionStorage.removeItem("interview_draft");
     sessionStorage.removeItem("interview_live");
+    sessionStorage.removeItem("interview_id");
     sessionStorage.removeItem("interview_exists_in_db");
     sessionStorage.removeItem("interview_questions");
     sessionStorage.removeItem("interview_audio");

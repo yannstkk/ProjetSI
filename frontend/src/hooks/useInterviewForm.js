@@ -3,24 +3,20 @@ import { useState } from "react";
 const STORAGE_KEY = "interview_draft";
 
 const initialState = {
-    titre: "",
-    dateHeure: "",
-    duree: "",
-    participants: [
-        { nom: "", role: "" },
-        { nom: "", role: "" },
-    ],
-    objectifs: "",
+    titre:          "",
+    dateHeure:      "",
+    duree:          "",
+    participants:   [{ nom: "", role: "" }, { nom: "", role: "" }],
+    objectifs:      "",
     notesImportees: [],
 };
 
 export function useInterviewForm() {
-    const [form, setForm] = useState(() => {
+    const [form, setFormState] = useState(() => {
         try {
             const saved = sessionStorage.getItem(STORAGE_KEY);
             if (saved) {
                 const parsed = JSON.parse(saved);
-                // Fusion avec initialState pour garantir tous les champs
                 return { ...initialState, ...parsed };
             }
             return initialState;
@@ -30,32 +26,52 @@ export function useInterviewForm() {
     });
 
     const [savedMessage, setSavedMessage] = useState("");
-    const [notesError, setNotesError] = useState("");
+    const [notesError, setNotesError]     = useState("");
+
+    // Exposé pour permettre un rechargement complet depuis l'extérieur (ex: import BDD)
+    function setForm(newForm) {
+        setFormState({ ...initialState, ...newForm });
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ ...initialState, ...newForm }));
+    }
 
     function updateField(field, value) {
-        setForm((prev) => ({ ...prev, [field]: value }));
+        setFormState((prev) => {
+            const updated = { ...prev, [field]: value };
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+            return updated;
+        });
     }
 
     function updateParticipant(index, field, value) {
-        setForm((prev) => {
+        setFormState((prev) => {
             const updated = [...prev.participants];
             updated[index] = { ...updated[index], [field]: value };
-            return { ...prev, participants: updated };
+            const newForm = { ...prev, participants: updated };
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(newForm));
+            return newForm;
         });
     }
 
     function addParticipant() {
-        setForm((prev) => ({
-            ...prev,
-            participants: [...prev.participants, { nom: "", role: "" }],
-        }));
+        setFormState((prev) => {
+            const newForm = {
+                ...prev,
+                participants: [...prev.participants, { nom: "", role: "" }],
+            };
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(newForm));
+            return newForm;
+        });
     }
 
     function removeParticipant(index) {
-        setForm((prev) => ({
-            ...prev,
-            participants: prev.participants.filter((_, i) => i !== index),
-        }));
+        setFormState((prev) => {
+            const newForm = {
+                ...prev,
+                participants: prev.participants.filter((_, i) => i !== index),
+            };
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(newForm));
+            return newForm;
+        });
     }
 
     function importTxtFile(file) {
@@ -72,15 +88,16 @@ export function useInterviewForm() {
 
         reader.onload = (e) => {
             const contenu = e.target.result;
-            const nouvelleNote = {
-                nom: file.name,
-                contenu,
-            };
+            const nouvelleNote = { nom: file.name, contenu };
 
-            setForm((prev) => ({
-                ...prev,
-                notesImportees: [...prev.notesImportees, nouvelleNote],
-            }));
+            setFormState((prev) => {
+                const newForm = {
+                    ...prev,
+                    notesImportees: [...prev.notesImportees, nouvelleNote],
+                };
+                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(newForm));
+                return newForm;
+            });
         };
 
         reader.onerror = () => {
@@ -91,10 +108,14 @@ export function useInterviewForm() {
     }
 
     function removeNote(index) {
-        setForm((prev) => ({
-            ...prev,
-            notesImportees: prev.notesImportees.filter((_, i) => i !== index),
-        }));
+        setFormState((prev) => {
+            const newForm = {
+                ...prev,
+                notesImportees: prev.notesImportees.filter((_, i) => i !== index),
+            };
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(newForm));
+            return newForm;
+        });
     }
 
     function saveDraft() {
@@ -105,11 +126,12 @@ export function useInterviewForm() {
 
     function clearDraft() {
         sessionStorage.removeItem(STORAGE_KEY);
-        setForm(initialState);
+        setFormState(initialState);
     }
 
     return {
         form,
+        setForm,
         savedMessage,
         notesError,
         updateField,

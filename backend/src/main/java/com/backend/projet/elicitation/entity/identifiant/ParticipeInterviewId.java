@@ -8,21 +8,22 @@ import java.util.Objects;
 @Embeddable
 public class ParticipeInterviewId implements Serializable {
 
-    @Column(name = "ID_PARTICIPANT")
+    @Column(name = "id_participant")
     private Long idParticipant;
 
-    @Column(name = "NUMERO_INTERVIEW")
+    @Column(name = "numero_interview")
     private Long numeroInterview;
 
     public ParticipeInterviewId() {}
 
     public ParticipeInterviewId(Long idParticipant, Long numeroInterview) {
-        this.idParticipant = idParticipant;
+        this.idParticipant  = idParticipant;
         this.numeroInterview = numeroInterview;
     }
 
     public Long getIdParticipant() { return idParticipant; }
     public void setIdParticipant(Long idParticipant) { this.idParticipant = idParticipant; }
+
     public Long getNumeroInterview() { return numeroInterview; }
     public void setNumeroInterview(Long numeroInterview) { this.numeroInterview = numeroInterview; }
 

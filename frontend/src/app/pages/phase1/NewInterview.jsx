@@ -1,24 +1,39 @@
-import { useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Plus, Upload, Calendar, Users, CheckCircle, FileText, X } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Upload, Calendar, Users, CheckCircle, FileText, X, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Textarea } from "../../components/ui/textarea";
 import { useInterviewForm } from "../../../hooks/useInterviewForm";
-import { useEffect } from "react";
-
+import { getProjetCourant } from "../../../services/projetCourant";
+import {
+    getInterviewByProjet,
+    loadInterviewIntoSession,
+} from "../../../services/interviewService";
+import {
+    loadNotesIntoSession,
+    loadParticipantsIntoSession,
+    loadNotesStructureesIntoSession,
+    loadQuestionsIntoSession,
+} from "../../../services/notesService";
 
 export default function NewInterview() {
-    const navigate = useNavigate();
+    const navigate     = useNavigate();
     const fileInputRef = useRef(null);
-    const [showConfirmRetour, setShowConfirmRetour] = useState(false);
 
-      useEffect(() => {
-            sessionStorage.setItem("phase1_last", window.location.pathname);
-        }, []);
+    const [showConfirmRetour, setShowConfirmRetour] = useState(false);
+    const [showConfirmImport, setShowConfirmImport] = useState(false);
+    const [importLoading, setImportLoading]         = useState(false);
+    const [importSuccess, setImportSuccess]         = useState(false);
+    const [importError, setImportError]             = useState("");
+
+    useEffect(() => {
+        sessionStorage.setItem("phase1_last", window.location.pathname);
+    }, []);
 
     const {
         form,
+        setForm,
         savedMessage,
         notesError,
         updateField,
@@ -37,14 +52,72 @@ export default function NewInterview() {
         e.target.value = "";
     }
 
-    function handleCancel() {
-        setShowConfirmRetour(true);
-    }
+    // ── Retour → /dashboard/phase1/interviews ────────────────────────────────
 
     function handleConfirmRetour() {
         clearDraft();
         navigate("/dashboard/phase1/interviews");
     }
+
+    // ── Créer l'entretien → mode live ────────────────────────────────────────
+
+    function handleCreerEntretien() {
+        saveDraft();
+        navigate("/dashboard/phase1/interview");
+    }
+
+    // ── Importer depuis la base ───────────────────────────────────────────────
+
+    async function handleConfirmImport() {
+        setShowConfirmImport(false);
+        setImportLoading(true);
+        setImportError("");
+
+        const projet = getProjetCourant();
+        if (!projet) {
+            setImportError("Aucun projet sélectionné.");
+            setImportLoading(false);
+            return;
+        }
+
+        try {
+            const interview = await getInterviewByProjet(projet.id);
+            if (!interview) {
+                setImportError("Aucune interview trouvée en base pour ce projet.");
+                setImportLoading(false);
+                return;
+            }
+
+            loadInterviewIntoSession(interview);
+            await loadNotesIntoSession(interview.numeroInterview);
+            await loadParticipantsIntoSession(interview.numeroInterview);
+            await loadNotesStructureesIntoSession(interview.numeroInterview);
+            await loadQuestionsIntoSession(interview.numeroInterview);
+
+            // Recharger le formulaire depuis le sessionStorage mis à jour
+            const updatedDraft = JSON.parse(
+                sessionStorage.getItem("interview_draft") || "{}"
+            );
+            setForm({
+                titre:          updatedDraft.titre          || "",
+                objectifs:      updatedDraft.objectifs      || "",
+                dateHeure:      updatedDraft.dateHeure      || "",
+                duree:          updatedDraft.duree          || "",
+                participants:   updatedDraft.participants   || [{ nom: "", role: "" }, { nom: "", role: "" }],
+                notesImportees: updatedDraft.notesImportees || [],
+            });
+
+            setImportSuccess(true);
+            setTimeout(() => setImportSuccess(false), 3000);
+
+        } catch (err) {
+            setImportError("Erreur lors de l'import : " + err.message);
+        } finally {
+            setImportLoading(false);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     return (
         <>
@@ -56,8 +129,7 @@ export default function NewInterview() {
                             Confirmer le retour
                         </h3>
                         <p className="text-sm text-gray-600 mb-6">
-                            Si vous retournez à la liste, toutes les données
-                            saisies dans ce formulaire seront{" "}
+                            Si vous retournez à la liste, toutes les données saisies seront{" "}
                             <strong>perdues définitivement</strong>. Voulez-vous continuer ?
                         </p>
                         <div className="flex gap-3 justify-end">
@@ -78,24 +150,76 @@ export default function NewInterview() {
                 </div>
             )}
 
+            {/* Modale confirmation import */}
+            {showConfirmImport && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+                    <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full mx-4">
+                        <h3 className="font-semibold text-lg text-gray-900 mb-2">
+                            Importer depuis la base de données
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-6">
+                            Les données actuellement saisies seront{" "}
+                            <strong>écrasées</strong> par les données enregistrées en base.
+                            Confirmer ?
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setShowConfirmImport(false)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                onClick={handleConfirmImport}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            >
+                                Importer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="p-6">
                 <div className="max-w-5xl mx-auto space-y-6">
 
-                    {/* Title */}
-                    <div>
-                        <h1 className="text-2xl font-semibold text-gray-900">
-                            Créer un nouvel entretien
-                        </h1>
-                        <p className="text-gray-600">
-                            Phase 1 : Configuration de l'interview
-                        </p>
+                    {/* Titre + bouton Importer */}
+                    <div className="flex items-start justify-between">
+                        <div>
+                            <h1 className="text-2xl font-semibold text-gray-900">
+                                Créer un nouvel entretien
+                            </h1>
+                            <p className="text-gray-600">
+                                Phase 1 : Configuration de l'interview
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={() => setShowConfirmImport(true)}
+                            disabled={importLoading}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors font-medium"
+                        >
+                            <Download className="w-4 h-4" />
+                            {importLoading ? "Import..." : "Importer depuis la base"}
+                        </button>
                     </div>
 
-                    {/* Message confirmation */}
+                    {/* Messages */}
                     {savedMessage && (
                         <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-300 rounded-lg text-green-700 text-sm">
                             <CheckCircle className="w-4 h-4" />
                             {savedMessage}
+                        </div>
+                    )}
+                    {importSuccess && (
+                        <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-300 rounded-lg text-blue-700 text-sm">
+                            <Download className="w-4 h-4" />
+                            Données importées depuis la base de données.
+                        </div>
+                    )}
+                    {importError && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                            {importError}
                         </div>
                     )}
 
@@ -130,7 +254,6 @@ export default function NewInterview() {
                                         onChange={(e) => updateField("dateHeure", e.target.value)}
                                     />
                                 </div>
-
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Durée estimée
@@ -173,7 +296,7 @@ export default function NewInterview() {
                                                 }
                                             />
                                             <button
-                                                className="text-sm text-red-600 hover:text-red-700 px-2"
+                                                className="text-sm text-red-600 hover:text-red-700 px-2 flex-shrink-0"
                                                 onClick={() => removeParticipant(index)}
                                             >
                                                 Retirer
@@ -215,7 +338,6 @@ export default function NewInterview() {
 
                         <CardContent className="space-y-4">
 
-                            {/* Zone drop */}
                             <div
                                 className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
                                 onClick={() => fileInputRef.current?.click()}
@@ -230,15 +352,10 @@ export default function NewInterview() {
                                 <p className="text-sm font-medium text-gray-700">
                                     Glissez-déposez vos notes ici
                                 </p>
-                                <p className="text-xs text-gray-500 mt-1">
-                                    ou cliquez pour parcourir
-                                </p>
-                                <p className="text-xs text-gray-500 mt-2">
-                                    Format accepté : .txt
-                                </p>
+                                <p className="text-xs text-gray-500 mt-1">ou cliquez pour parcourir</p>
+                                <p className="text-xs text-gray-500 mt-2">Format accepté : .txt</p>
                             </div>
 
-                            {/* Input fichier caché */}
                             <input
                                 ref={fileInputRef}
                                 type="file"
@@ -247,12 +364,10 @@ export default function NewInterview() {
                                 onChange={handleFileChange}
                             />
 
-                            {/* Erreur */}
                             {notesError && (
                                 <p className="text-sm text-red-600">{notesError}</p>
                             )}
 
-                            {/* Fichiers importés */}
                             {form.notesImportees.length > 0 && (
                                 <div className="space-y-2">
                                     <p className="text-sm font-medium text-gray-700">
@@ -288,14 +403,13 @@ export default function NewInterview() {
                         </CardContent>
                     </Card>
 
-                    {/* Actions */}
+                    {/* Actions bas de page */}
                     <div className="flex gap-3">
-
                         <button
-                            onClick={handleCancel}
+                            onClick={() => setShowConfirmRetour(true)}
                             className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                         >
-                            Annuler
+                            Retour
                         </button>
 
                         <button
@@ -306,15 +420,11 @@ export default function NewInterview() {
                         </button>
 
                         <button
-                            onClick={() => {
-                                saveDraft();
-                                navigate("/dashboard/phase1/interview");
-                            }}
+                            onClick={handleCreerEntretien}
                             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium ml-auto"
                         >
                             Créer l'entretien
                         </button>
-
                     </div>
 
                 </div>

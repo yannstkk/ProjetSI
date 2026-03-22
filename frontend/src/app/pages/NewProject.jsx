@@ -2,14 +2,14 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { Textarea } from "../components/ui/textarea";
 import { authFetch } from "../../services/authFetch";
 import { setProjetCourant } from "../../services/projetCourant";
+import { clearInterviewSession } from "../../services/interviewService";
 
 export function NewProject() {
-    const [nom, setNom] = useState("");
+    const [nom, setNom]         = useState("");
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [error, setError]     = useState("");
     const navigate = useNavigate();
 
     const handleCreer = async () => {
@@ -27,8 +27,8 @@ export function NewProject() {
             const res = await authFetch("/api/projets", {
                 method: "POST",
                 body: JSON.stringify({
-                    nom: nom.trim(),
-                    idUtilisateur: username,
+                    nom:    nom.trim(),
+                    idUser: username,   // ← idUser (pas idUtilisateur)
                 }),
             });
 
@@ -36,13 +36,18 @@ export function NewProject() {
 
             const projet = await res.json();
 
+            // Stocker le projet courant
             setProjetCourant({
-                id: projet.idProjet,
-                nom: projet.nom,
+                id:           projet.idProjet,
+                nom:          projet.nom,
                 dateCreation: projet.dateCreation,
-                idUtilisateur: projet.idUtilisateur,
+                idUser:       projet.idUser,
             });
 
+            // Nouveau projet = sessionStorage interview vierge
+            clearInterviewSession();
+
+            // Rediriger vers le cockpit (pas vers interviews)
             navigate("/dashboard");
 
         } catch (err) {
@@ -55,6 +60,7 @@ export function NewProject() {
 
     return (
         <div className="min-h-screen bg-gray-50">
+
             {/* Header */}
             <header className="bg-white border-b border-gray-200 px-6 py-4">
                 <div className="max-w-5xl mx-auto">
@@ -89,6 +95,7 @@ export function NewProject() {
                                 placeholder="Nom du projet"
                                 value={nom}
                                 onChange={(e) => setNom(e.target.value)}
+                                onKeyDown={(e) => e.key === "Enter" && handleCreer()}
                             />
                         </div>
                     </CardContent>
@@ -110,6 +117,7 @@ export function NewProject() {
                         {loading ? "Création..." : "Créer le projet"}
                     </button>
                 </div>
+
             </main>
         </div>
     );

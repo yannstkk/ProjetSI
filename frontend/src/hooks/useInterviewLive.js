@@ -3,15 +3,15 @@ import { useState, useEffect } from "react";
 const STORAGE_KEY = "interview_live";
 
 const initialState = {
-    besoins: [],
-    regles: [],
-    donnees: [],
+    besoins:     [],
+    regles:      [],
+    donnees:     [],
     contraintes: [],
-    solutions: [],
+    solutions:   [],
 };
 
 export function useInterviewLive() {
-    const [live, setLive] = useState(() => {
+    const [live, setLiveState] = useState(() => {
         try {
             const saved = sessionStorage.getItem(STORAGE_KEY);
             if (saved) return { ...initialState, ...JSON.parse(saved) };
@@ -25,15 +25,19 @@ export function useInterviewLive() {
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(live));
     }, [live]);
 
+    function setLive(newLive) {
+        setLiveState(newLive);
+    }
+
     function ajouterElement(onglet, element) {
-        setLive((prev) => ({
+        setLiveState((prev) => ({
             ...prev,
             [onglet]: [...prev[onglet], { id: Date.now(), ...element }],
         }));
     }
 
     function supprimerElement(onglet, id) {
-        setLive((prev) => ({
+        setLiveState((prev) => ({
             ...prev,
             [onglet]: prev[onglet].filter((el) => el.id !== id),
         }));
@@ -41,8 +45,8 @@ export function useInterviewLive() {
 
     function clearLive() {
         sessionStorage.removeItem(STORAGE_KEY);
-        setLive(initialState);
+        setLiveState(initialState);
     }
 
-    return { live, ajouterElement, supprimerElement, clearLive };
+    return { live, setLive, ajouterElement, supprimerElement, clearLive };
 }

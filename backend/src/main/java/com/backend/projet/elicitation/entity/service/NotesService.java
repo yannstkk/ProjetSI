@@ -10,9 +10,7 @@ import com.backend.projet.elicitation.entity.dto.request.NotesRequest;
 import com.backend.projet.elicitation.entity.dto.response.NotesResponse;
 import com.backend.projet.elicitation.entity.repository.InterviewRepository;
 import com.backend.projet.elicitation.entity.repository.NotesRepository;
-import com.backend.projet.projet.entity.Projet;
 import com.backend.projet.projet.exception.ResourceNotFoundException;
-import com.backend.projet.projet.repository.ProjetRepository;
 
 @Service
 public class NotesService {
@@ -20,7 +18,8 @@ public class NotesService {
     private final NotesRepository notesRepository;
     private final InterviewRepository interviewRepository;
 
-    public NotesService(NotesRepository notesRepository, InterviewRepository interviewRepository) {
+    public NotesService(NotesRepository notesRepository,
+                        InterviewRepository interviewRepository) {
         this.notesRepository = notesRepository;
         this.interviewRepository = interviewRepository;
     }
@@ -48,7 +47,8 @@ public class NotesService {
     }
 
     public NotesResponse ajouterNote(NotesRequest request) {
-        Interview interview = interviewRepository.findById(request.getNumeroInterview())
+        Interview interview = interviewRepository
+                .findById(request.getNumeroInterview())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Interview non trouvée : " + request.getNumeroInterview()));
 
@@ -63,5 +63,10 @@ public class NotesService {
                 saved.getInterview().getNumeroInterview(),
                 saved.getContenu()
         );
+    }
+
+    public void deleteByInterview(Long numeroInterview) {
+        List<Notes> liste = notesRepository.findByInterviewNumeroInterview(numeroInterview);
+        notesRepository.deleteAll(liste);
     }
 }

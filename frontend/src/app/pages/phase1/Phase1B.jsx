@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import { Download, Save } from "lucide-react";
 
 import { useInterviewLive } from "../../../hooks/useInterviewLive";
 import { useSuggererQuestions } from "../../../hooks/useSuggererQuestions";
@@ -15,8 +16,20 @@ import {
     createInterview,
     updateInterview,
     interviewExistsInDb,
+    getInterviewId,
+    loadInterviewIntoSession,
+    getInterviewByProjet,
 } from "../../../services/interviewService";
-import { saveNotesFromSession } from "../../../services/notesService";
+import {
+    saveNotesFromSession,
+    saveNotesStructureesFromSession,
+    saveQuestionsFromSession,
+    saveParticipantsFromSession,
+    loadNotesIntoSession,
+    loadNotesStructureesIntoSession,
+    loadQuestionsIntoSession,
+    loadParticipantsIntoSession,
+} from "../../../services/notesService";
 
 // ─── Modale générique ─────────────────────────────────────────────────────────
 
@@ -36,9 +49,7 @@ function Modale({ titre, message, onConfirmer, onAnnuler, labelConfirmer = "Conf
                     <button
                         onClick={onConfirmer}
                         className={`px-4 py-2 text-white rounded-lg ${
-                            danger
-                                ? "bg-red-600 hover:bg-red-700"
-                                : "bg-blue-600 hover:bg-blue-700"
+                            danger ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"
                         }`}
                     >
                         {labelConfirmer}
@@ -49,19 +60,23 @@ function Modale({ titre, message, onConfirmer, onAnnuler, labelConfirmer = "Conf
     );
 }
 
-// ─── Helpers sessionStorage ───────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function getDraftInfo() {
+function getNotesTexte() {
     try {
-        const saved = sessionStorage.getItem("interview_draft");
-        return saved ? JSON.parse(saved) : null;
+        const draft = JSON.parse(sessionStorage.getItem("interview_draft") || "{}");
+        return (draft.notesImportees || []).map((n) => n.contenu).join("\n\n");
     } catch {
-        return null;
+        return "";
     }
 }
 
-function getNotesTexte(draft) {
-    return draft?.notesImportees?.map((n) => n.contenu).join("\n\n") || "";
+function getDraftInfo() {
+    try {
+        return JSON.parse(sessionStorage.getItem("interview_draft") || "{}");
+    } catch {
+        return {};
+    }
 }
 
 // ─── Composant principal ──────────────────────────────────────────────────────
@@ -69,24 +84,39 @@ function getNotesTexte(draft) {
 export function Phase1B() {
     const navigate = useNavigate();
 
-    const { live, ajouterElement, supprimerElement, clearLive } = useInterviewLive();
-    const { questions, loading: questionsLoading, error: questionsError, genererQuestions, resetQuestions } = useSuggererQuestions();
+    const { live, ajouterElement, supprimerElement, clearLive, setLive } = useInterviewLive();
+    const {
+        questions,
+        loading: questionsLoading,
+        error: questionsError,
+        genererQuestions,
+        resetQuestions,
+        setQuestions,
+    } = useSuggererQuestions();
     const enregistrement = useEnregistrement();
 
-    const [showConfirmRetour, setShowConfirmRetour]       = useState(false);
+    const [showConfirmRetour, setShowConfirmRetour]           = useState(false);
     const [showConfirmNouvelEnreg, setShowConfirmNouvelEnreg] = useState(false);
-    const [showConfirmSave, setShowConfirmSave]           = useState(false);
+    const [showConfirmSave, setShowConfirmSave]               = useState(false);
+    const [showConfirmImport, setShowConfirmImport]           = useState(false);
 
-    const [saveLoading, setSaveLoading] = useState(false);
-    const [saveSuccess, setSaveSuccess] = useState(false);
-    const [saveError, setSaveError]     = useState("");
+    const [saveLoading, setSaveLoading]     = useState(false);
+    const [importLoading, setImportLoading] = useState(false);
+    const [saveSuccess, setSaveSuccess]     = useState(false);
+    const [importSuccess, setImportSuccess] = useState(false);
+    const [saveError, setSaveError]         = useState("");
 
-    const draft      = getDraftInfo();
-    const notesTexte = getNotesTexte(draft);
+    const [draft, setDraft] = useState(getDraftInfo());
+    const notesTexte = (draft.notesImportees || []).map((n) => n.contenu).join("\n\n");
 
     useEffect(() => {
         sessionStorage.setItem("phase1_last", window.location.pathname);
     }, []);
+
+    // Rafraîchit le draft affiché quand le sessionStorage change
+    function refreshDraft() {
+        setDraft(getDraftInfo());
+    }
 
     // ── Retour vers préparation ───────────────────────────────────────────────
 
@@ -98,6 +128,50 @@ export function Phase1B() {
         sessionStorage.removeItem("interview_statut");
         setShowConfirmRetour(false);
         navigate("/dashboard/phase1/interview/new");
+    }
+
+    // ── Importer depuis la BDD ────────────────────────────────────────────────
+
+    async function handleConfirmImport() {
+        setShowConfirmImport(false);
+        setImportLoading(true);
+        setSaveError("");
+
+        const projet = getProjetCourant();
+        if (!projet) {
+            setSaveError("Aucun projet sélectionné.");
+            setImportLoading(false);
+            return;
+        }
+
+        try {
+            const interview = await getInterviewByProjet(projet.id);
+            if (!interview) {
+                setSaveError("Aucune interview trouvée en base pour ce projet.");
+                setImportLoading(false);
+                return;
+            }
+
+            // Charger tout depuis la BDD dans sessionStorage
+            loadInterviewIntoSession(interview);
+            await loadNotesIntoSession(interview.numeroInterview);
+            await loadParticipantsIntoSession(interview.numeroInterview);
+            const newLive = await loadNotesStructureesIntoSession(interview.numeroInterview);
+            const newQuestions = await loadQuestionsIntoSession(interview.numeroInterview);
+
+            // Forcer le re-render des hooks
+            if (newLive)      setLive(newLive);
+            if (newQuestions) setQuestions(newQuestions);
+            refreshDraft();
+
+            setImportSuccess(true);
+            setTimeout(() => setImportSuccess(false), 3000);
+
+        } catch (err) {
+            setSaveError("Erreur lors de l'import : " + err.message);
+        } finally {
+            setImportLoading(false);
+        }
     }
 
     // ── Enregistrement en BDD ─────────────────────────────────────────────────
@@ -118,18 +192,22 @@ export function Phase1B() {
         try {
             const payload  = buildInterviewPayload(projet.id);
             const existsDb = interviewExistsInDb();
+            let   numeroInterview;
 
-            // 1. Sauvegarder l'interview
             if (existsDb) {
-                await updateInterview(projet.id, payload);
+                numeroInterview = getInterviewId();
+                await updateInterview(numeroInterview, payload);
             } else {
-                await createInterview(payload);
-                // Marquer comme existante en BDD pour les prochains saves
+                const created = await createInterview(payload);
+                numeroInterview = created.numeroInterview;
+                sessionStorage.setItem("interview_id",           String(numeroInterview));
                 sessionStorage.setItem("interview_exists_in_db", "true");
             }
 
-            // 2. Sauvegarder les notes importées
-            await saveNotesFromSession(projet.id);
+            await saveNotesFromSession(numeroInterview);
+            await saveNotesStructureesFromSession(numeroInterview);
+            await saveQuestionsFromSession(numeroInterview);
+            await saveParticipantsFromSession(numeroInterview);
 
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
@@ -178,7 +256,7 @@ export function Phase1B() {
                         message={
                             interviewExistsInDb()
                                 ? "Les données existantes seront mises à jour. Confirmer ?"
-                                : "L'interview et les notes vont être sauvegardées en base de données. Confirmer ?"
+                                : "L'interview et les notes vont être sauvegardées. Confirmer ?"
                         }
                         onConfirmer={handleConfirmSave}
                         onAnnuler={() => setShowConfirmSave(false)}
@@ -186,29 +264,45 @@ export function Phase1B() {
                     />
                 )}
 
-                {/* Titre */}
+                {showConfirmImport && (
+                    <Modale
+                        titre="Importer depuis la base de données"
+                        message="Les données actuelles en session seront écrasées par les données de la base. Confirmer ?"
+                        onConfirmer={handleConfirmImport}
+                        onAnnuler={() => setShowConfirmImport(false)}
+                        labelConfirmer="Importer"
+                        danger
+                    />
+                )}
+
+                {/* Titre + bouton Importer */}
                 <div className="mb-4 flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900">
                             Mode Interview Live
                         </h1>
-                        <p className="text-gray-600">Phase 1B</p>
+                        <p className="text-gray-600">Phase 1 — Interview en cours</p>
                     </div>
 
-                    {/* Bouton Enregistrer */}
                     <button
-                        onClick={() => setShowConfirmSave(true)}
-                        disabled={saveLoading}
-                        className="flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-300 transition-colors font-medium"
+                        onClick={() => setShowConfirmImport(true)}
+                        disabled={importLoading}
+                        className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors font-medium"
                     >
-                        {saveLoading ? "Enregistrement..." : "💾 Enregistrer"}
+                        <Download className="w-4 h-4" />
+                        {importLoading ? "Import..." : "Importer depuis la base"}
                     </button>
                 </div>
 
-                {/* Messages save */}
+                {/* Messages */}
                 {saveSuccess && (
                     <div className="mb-4 p-3 bg-green-50 border border-green-300 rounded-lg text-green-700 text-sm">
-                        ✓ Interview enregistrée avec succès en base de données.
+                        Interview enregistrée avec succès en base de données.
+                    </div>
+                )}
+                {importSuccess && (
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-300 rounded-lg text-blue-700 text-sm">
+                        Données importées depuis la base de données.
                     </div>
                 )}
                 {saveError && (
@@ -218,24 +312,22 @@ export function Phase1B() {
                 )}
 
                 {/* Infos brouillon */}
-                {draft && (
+                {draft.titre && (
                     <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p className="text-sm font-medium text-blue-900">
-                            {draft.titre || "Entretien sans titre"}
-                        </p>
+                        <p className="text-sm font-medium text-blue-900">{draft.titre}</p>
                         {draft.participants?.filter((p) => p.nom).length > 0 && (
                             <p className="text-xs text-blue-700 mt-1">
                                 Participants :{" "}
                                 {draft.participants
                                     .filter((p) => p.nom)
-                                    .map((p) => p.nom)
+                                    .map((p) => p.role ? `${p.nom} (${p.role})` : p.nom)
                                     .join(", ")}
                             </p>
                         )}
                     </div>
                 )}
 
-                {/* Barre enregistrement */}
+                {/* Barre enregistrement audio */}
                 <BarreEnregistrement
                     statut={enregistrement.statut}
                     tempsEcoule={enregistrement.tempsEcoule}
@@ -256,8 +348,6 @@ export function Phase1B() {
 
                 {/* Layout principal */}
                 <div className="grid grid-cols-12 gap-4">
-
-                    {/* Questions IA */}
                     <div className="col-span-4">
                         <PanneauQuestions
                             questions={questions}
@@ -268,8 +358,6 @@ export function Phase1B() {
                             onReset={resetQuestions}
                         />
                     </div>
-
-                    {/* Notes structurées */}
                     <div className="col-span-8">
                         <NotesStructurees
                             live={live}
@@ -277,16 +365,24 @@ export function Phase1B() {
                             supprimerElement={supprimerElement}
                         />
                     </div>
-
                 </div>
 
                 {/* Actions bas de page */}
-                <div className="mt-6 flex gap-3">
+                <div className="mt-6 flex items-center justify-between">
                     <button
                         onClick={() => setShowConfirmRetour(true)}
                         className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                     >
-                        Retour
+                        Retour à la préparation
+                    </button>
+
+                    <button
+                        onClick={() => setShowConfirmSave(true)}
+                        disabled={saveLoading}
+                        className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-300 transition-colors font-medium"
+                    >
+                        <Save className="w-4 h-4" />
+                        {saveLoading ? "Enregistrement..." : "Enregistrer"}
                     </button>
                 </div>
 

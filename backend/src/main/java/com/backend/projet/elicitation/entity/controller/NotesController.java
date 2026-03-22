@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,5 +41,12 @@ public class NotesController {
     public ResponseEntity<NotesResponse> ajouterNote(@RequestBody NotesRequest request) {
         NotesResponse response = notesService.ajouterNote(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping("/interview/{numeroInterview}")
+    public ResponseEntity<Void> deleteByInterview(
+            @PathVariable Long numeroInterview) {
+        notesService.deleteByInterview(numeroInterview);
+        return ResponseEntity.noContent().build();
     }
 }
