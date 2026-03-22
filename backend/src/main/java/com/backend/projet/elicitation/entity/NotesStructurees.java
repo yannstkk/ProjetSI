@@ -10,27 +10,48 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "NOTES")
-public class Notes {
+@Table(name = "NOTES_STRUCTUREES")
+public class NotesStructurees {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "numero_notes")
-    private Long numeroNotes;
+    @Column(name = "id_notes_structurees")
+    private Long idNotesStructurees;
 
     @ManyToOne
     @JoinColumn(name = "numero_interview")
     private Interview interview;
 
+    @Column(name = "categorie", length = 30)
+    private String categorie;
+
     @Column(name = "contenu", length = 4000)
     private String contenu;
 
-    public Long getNumeroNotes() {
-		return numeroNotes;
+    public NotesStructurees() {}
+
+	public Long getIdNotesStructurees() {
+		return idNotesStructurees;
 	}
 
-	public void setNumeroNotes(Long numeroNotes) {
-		this.numeroNotes = numeroNotes;
+	public void setIdNotesStructurees(Long idNotesStructurees) {
+		this.idNotesStructurees = idNotesStructurees;
+	}
+
+	public Interview getInterview() {
+		return interview;
+	}
+
+	public void setInterview(Interview interview) {
+		this.interview = interview;
+	}
+
+	public String getCategorie() {
+		return categorie;
+	}
+
+	public void setCategorie(String categorie) {
+		this.categorie = categorie;
 	}
 
 	public String getContenu() {
@@ -41,14 +62,5 @@ public class Notes {
 		this.contenu = contenu;
 	}
 
-	public Notes() {}
-
-	public Interview getInterview() {
-		return interview;
-	}
-
-	public void setInterview(Interview interview) {
-		this.interview = interview;
-	}
     
 }

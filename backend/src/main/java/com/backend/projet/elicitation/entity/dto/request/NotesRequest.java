@@ -1,16 +1,19 @@
 package com.backend.projet.elicitation.entity.dto.request;
 
+
 public class NotesRequest {
 
-    private Long idProjet;
+    private Long numeroInterview;
     private String contenu;
 
-    public Long getIdProjet() { 
-    	return idProjet; 
+    public NotesRequest() {}
+
+    public Long getNumeroInterview() { 
+    	return numeroInterview; 
     }
     
-    public void setIdProjet(Long idProjet) {
-    	this.idProjet = idProjet; 
+    public void setNumeroInterview(Long numeroInterview) { 
+    	this.numeroInterview = numeroInterview; 
     }
     
     public String getContenu() { 
@@ -20,5 +23,4 @@ public class NotesRequest {
     public void setContenu(String contenu) { 
     	this.contenu = contenu; 
     }
-    
 }
