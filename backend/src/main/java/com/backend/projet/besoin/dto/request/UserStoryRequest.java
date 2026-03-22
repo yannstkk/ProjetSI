@@ -1,29 +1,26 @@
 package com.backend.projet.besoin.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserStoryRequest {
 
-    @JsonProperty("id")
-    private Long taigaId;
+    private Long project;
+    private String subject;
 
-    @JsonProperty("ref")
-    private int taigaRef;
-
-
-   public Long getTaigaId(){
-       return this.taigaId;
-   }
-
-    public String getTaigaRef() {
-        return "US-" + this.taigaRef;
+    public String getSubject() {
+        return this.subject;
     }
 
-    public void setTaigaId(Long taigaId) {
-        this.taigaId = taigaId;
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 
-    public void setTaigaRef(int taigaRef) {
-        this.taigaRef = taigaRef;
+    public Long getProject() {
+        return this.project;
+    }
+
+    public void setProject(Long project) {
+        this.project = project;
     }
 }
