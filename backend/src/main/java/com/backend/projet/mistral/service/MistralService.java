@@ -1,5 +1,5 @@
 package com.backend.projet.mistral.service;
-import com.backend.projet.elicitation.entity.dto.response.AnalysisResponse;
+import com.backend.projet.elicitation.dto.response.AnalysisResponse;
 import com.backend.projet.mistral.exceptions.MistralApiException;
 import com.backend.projet.modelisation.dto.FluxResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
