@@ -7,13 +7,13 @@ public class ProjetResponse {
     private Long idProjet;
     private String nom;
     private LocalDate dateCreation;
-    private String idUtilisateur;
+    private String idUser;
 
-    public ProjetResponse(Long idProjet, String nom, LocalDate dateCreation, String idUtilisateur) {
+    public ProjetResponse(Long idProjet, String nom, LocalDate dateCreation, String idUser) {
         this.idProjet = idProjet;
         this.nom = nom;
         this.dateCreation = dateCreation;
-        this.idUtilisateur = idUtilisateur;
+        this.idUser = idUser;
     }
 
     public Long getIdProjet() { 
@@ -28,7 +28,7 @@ public class ProjetResponse {
     	return dateCreation; 
     }
     
-    public String getIdUtilisateur() { 
-    	return idUtilisateur; 
+    public String getIdUser() { 
+    	return idUser; 
     }
 }

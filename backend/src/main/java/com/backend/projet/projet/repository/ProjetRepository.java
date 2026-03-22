@@ -10,5 +10,5 @@ import com.backend.projet.projet.entity.Projet;
 @Repository
 public interface ProjetRepository extends JpaRepository<Projet, Long> {
 
-    List<Projet> findByIdUtilisateur(String idUtilisateur);
+	List<Projet> findByIdUser(String idUser);
 }

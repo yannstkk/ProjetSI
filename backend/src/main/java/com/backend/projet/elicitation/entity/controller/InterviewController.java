@@ -1,11 +1,20 @@
-package com.backend.projet.elicitation.controller;
+package com.backend.projet.elicitation.entity.controller;
 
-import com.backend.projet.elicitation.dto.request.InterviewRequest;
-import com.backend.projet.elicitation.dto.response.InterviewResponse;
-import com.backend.projet.elicitation.service.InterviewService;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.backend.projet.elicitation.entity.dto.request.InterviewRequest;
+import com.backend.projet.elicitation.entity.dto.response.InterviewResponse;
+import com.backend.projet.elicitation.entity.service.InterviewService;
 
 @RestController
 @RequestMapping("/api/interviews")
@@ -18,10 +27,8 @@ public class InterviewController {
     }
 
     @GetMapping("/projet/{idProjet}")
-    public ResponseEntity<InterviewResponse> getByProjet(@PathVariable Long idProjet) {
-        return interviewService.getByProjet(idProjet)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<List<InterviewResponse>> getByProjet(@PathVariable Long idProjet) {
+    	return ResponseEntity.ok(interviewService.getByProjet(idProjet));
     }
 
     @PostMapping

@@ -1,15 +1,16 @@
 package com.backend.projet.elicitation.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.backend.projet.elicitation.entity.identifiant.InterviewId;
-import com.backend.projet.projet.entity.Client;
 import com.backend.projet.projet.entity.Projet;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
@@ -21,96 +22,106 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "INTERVIEW")
-@IdClass(InterviewId.class)
 public class Interview {
 
-	@Id
-	@Column(name = "numero_interview")
-	private Long numeroInterview;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "numero_interview")
+    private Long numeroInterview;
 
-	@Id
-	@Column(name = "id_projet", insertable = false, updatable = false)
-	private Long idProjet;
+    @ManyToOne
+    @JoinColumn(name = "id_projet")
+    private Projet projet;
 
-	@ManyToOne
-	@JoinColumn(name = "id_projet")
-	private Projet projet;
+    @Column(name = "date_interview")
+    private LocalDate dateInterview;
 
-	@Column(name = "date_interview")
-	private LocalDate dateInterview;
+    @Column(name = "heure_interview")
+    private LocalDateTime heureInterview;
 
-	@Column(name = "sujet")
-	private String sujet;
+    @Column(name = "titre")
+    private String titre;
 
-	@Column(name = "nominterviewer")
-	private String nomInterviewer;
+    @Column(name = "nominterviewer")
+    private String nomInterviewer;
 
-	// Nouveaux champs sérialisés en JSON
-	@Column(name = "participants", length = 4000)
-	private String participants;
+    @Column(name = "objectifs", length = 4000)
+    private String objectifs;
 
-	@Column(name = "besoins", length = 4000)
-	private String besoins;
+    @OneToMany(mappedBy = "interview", cascade = CascadeType.ALL)
+    private List<Question> questions = new ArrayList<>();
 
-	@Column(name = "regles", length = 4000)
-	private String regles;
+    @OneToMany(mappedBy = "interview", cascade = CascadeType.ALL)
+    private List<Notes> notes = new ArrayList<>();
 
-	@Column(name = "donnees", length = 4000)
-	private String donnees;
+    @OneToMany(mappedBy = "interview", cascade = CascadeType.ALL)
+    private List<NotesStructurees> notesStructurees = new ArrayList<>();
 
-	@Column(name = "contraintes", length = 4000)
-	private String contraintes;
+    @ManyToMany
+    @JoinTable(
+        name = "PARTICIPE_INTERVIEW",
+        joinColumns = @JoinColumn(name = "numero_interview"),
+        inverseJoinColumns = @JoinColumn(name = "id_participant")
+    )
+    private List<Participant> participants = new ArrayList<>();
 
-	@Column(name = "solutions", length = 4000)
-	private String solutions;
+    public Interview() {}
 
-	@OneToMany(mappedBy = "interview", cascade = CascadeType.ALL)
-	private List<Question> questions = new ArrayList<>();
+	public Long getNumeroInterview() {
+		return numeroInterview;
+	}
 
-	@ManyToMany
-	@JoinTable(
-			name = "PARTICIPE_INTERVIEW",
-			joinColumns = {
-					@JoinColumn(name = "numero_interview"),
-					@JoinColumn(name = "id_projet")
-			},
-			inverseJoinColumns = @JoinColumn(name = "id_client")
-	)
-	private List<Client> clients = new ArrayList<>();
+	public void setNumeroInterview(Long numeroInterview) {
+		this.numeroInterview = numeroInterview;
+	}
 
-	public Long getNumeroInterview() { return numeroInterview; }
-	public void setNumeroInterview(Long numeroInterview) { this.numeroInterview = numeroInterview; }
+	public Projet getProjet() {
+		return projet;
+	}
 
-	public Long getIdProjet() { return idProjet; }
-	public void setIdProjet(Long idProjet) { this.idProjet = idProjet; }
+	public void setProjet(Projet projet) {
+		this.projet = projet;
+	}
 
-	public Projet getProjet() { return projet; }
-	public void setProjet(Projet projet) { this.projet = projet; }
+	public LocalDate getDateInterview() {
+		return dateInterview;
+	}
 
-	public LocalDate getDateInterview() { return dateInterview; }
-	public void setDateInterview(LocalDate dateInterview) { this.dateInterview = dateInterview; }
+	public void setDateInterview(LocalDate dateInterview) {
+		this.dateInterview = dateInterview;
+	}
 
-	public String getSujet() { return sujet; }
-	public void setSujet(String sujet) { this.sujet = sujet; }
+	public LocalDateTime getHeureInterview() {
+		return heureInterview;
+	}
 
-	public String getNomInterviewer() { return nomInterviewer; }
-	public void setNomInterviewer(String nomInterviewer) { this.nomInterviewer = nomInterviewer; }
+	public void setHeureInterview(LocalDateTime heureInterview) {
+		this.heureInterview = heureInterview;
+	}
 
-	public String getParticipants() { return participants; }
-	public void setParticipants(String participants) { this.participants = participants; }
+	public String getTitre() {
+		return titre;
+	}
 
-	public String getBesoins() { return besoins; }
-	public void setBesoins(String besoins) { this.besoins = besoins; }
+	public void setTitre(String titre) {
+		this.titre = titre;
+	}
 
-	public String getRegles() { return regles; }
-	public void setRegles(String regles) { this.regles = regles; }
+	public String getNomInterviewer() {
+		return nomInterviewer;
+	}
 
-	public String getDonnees() { return donnees; }
-	public void setDonnees(String donnees) { this.donnees = donnees; }
+	public void setNomInterviewer(String nomInterviewer) {
+		this.nomInterviewer = nomInterviewer;
+	}
 
-	public String getContraintes() { return contraintes; }
-	public void setContraintes(String contraintes) { this.contraintes = contraintes; }
+	public String getObjectifs() {
+		return objectifs;
+	}
 
-	public String getSolutions() { return solutions; }
-	public void setSolutions(String solutions) { this.solutions = solutions; }
+	public void setObjectifs(String objectifs) {
+		this.objectifs = objectifs;
+	}
+
+    
 }
