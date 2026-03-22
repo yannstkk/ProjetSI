@@ -1,7 +1,7 @@
-package com.backend.projet.elicitation.entity.repository;
+package com.backend.projet.elicitation.repository;
 
 import com.backend.projet.elicitation.entity.ParticipeInterview;
-import com.backend.projet.elicitation.entity.identifiant.ParticipeInterviewId;
+import com.backend.projet.elicitation.identifiant.ParticipeInterviewId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

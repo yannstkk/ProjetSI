@@ -1,4 +1,4 @@
-package com.backend.projet.elicitation.entity.identifiant;
+package com.backend.projet.elicitation.identifiant;
 
 import java.io.Serializable;
 import java.util.Objects;

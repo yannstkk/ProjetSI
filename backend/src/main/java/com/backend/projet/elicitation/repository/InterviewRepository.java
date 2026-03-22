@@ -1,4 +1,4 @@
-package com.backend.projet.elicitation.entity.repository;
+package com.backend.projet.elicitation.repository;
 
 import java.util.List;
 import java.util.Optional;

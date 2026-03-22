@@ -1,6 +1,6 @@
 package com.backend.projet.elicitation.entity;
 
-import com.backend.projet.elicitation.entity.identifiant.ParticipeInterviewId;
+import com.backend.projet.elicitation.identifiant.ParticipeInterviewId;
 import jakarta.persistence.*;
 
 @Entity

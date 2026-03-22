@@ -1,11 +1,11 @@
-package com.backend.projet.elicitation.entity.service;
+package com.backend.projet.elicitation.service;
 
 import com.backend.projet.elicitation.entity.Interview;
 import com.backend.projet.elicitation.entity.Question;
-import com.backend.projet.elicitation.entity.dto.request.QuestionRequest;
-import com.backend.projet.elicitation.entity.dto.response.QuestionResponse;
-import com.backend.projet.elicitation.entity.repository.InterviewRepository;
-import com.backend.projet.elicitation.entity.repository.QuestionRepository;
+import com.backend.projet.elicitation.dto.request.QuestionRequest;
+import com.backend.projet.elicitation.dto.response.QuestionResponse;
+import com.backend.projet.elicitation.repository.InterviewRepository;
+import com.backend.projet.elicitation.repository.QuestionRepository;
 import com.backend.projet.projet.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 

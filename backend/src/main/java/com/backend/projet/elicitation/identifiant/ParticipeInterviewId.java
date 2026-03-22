@@ -1,4 +1,4 @@
-package com.backend.projet.elicitation.entity.identifiant;
+package com.backend.projet.elicitation.identifiant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

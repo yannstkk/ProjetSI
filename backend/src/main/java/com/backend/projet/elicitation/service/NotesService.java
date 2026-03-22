@@ -1,4 +1,4 @@
-package com.backend.projet.elicitation.entity.service;
+package com.backend.projet.elicitation.service;
 
 import java.util.List;
 
@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 
 import com.backend.projet.elicitation.entity.Interview;
 import com.backend.projet.elicitation.entity.Notes;
-import com.backend.projet.elicitation.entity.dto.request.NotesRequest;
-import com.backend.projet.elicitation.entity.dto.response.NotesResponse;
-import com.backend.projet.elicitation.entity.repository.InterviewRepository;
-import com.backend.projet.elicitation.entity.repository.NotesRepository;
+import com.backend.projet.elicitation.dto.request.NotesRequest;
+import com.backend.projet.elicitation.dto.response.NotesResponse;
+import com.backend.projet.elicitation.repository.InterviewRepository;
+import com.backend.projet.elicitation.repository.NotesRepository;
 import com.backend.projet.projet.exception.ResourceNotFoundException;
 
 @Service

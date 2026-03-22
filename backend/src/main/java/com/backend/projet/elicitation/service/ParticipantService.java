@@ -1,14 +1,14 @@
-package com.backend.projet.elicitation.entity.service;
+package com.backend.projet.elicitation.service;
 
 import com.backend.projet.elicitation.entity.Interview;
 import com.backend.projet.elicitation.entity.Participant;
 import com.backend.projet.elicitation.entity.ParticipeInterview;
-import com.backend.projet.elicitation.entity.dto.request.ParticipantRequest;
-import com.backend.projet.elicitation.entity.dto.response.ParticipantResponse;
-import com.backend.projet.elicitation.entity.identifiant.ParticipeInterviewId;
-import com.backend.projet.elicitation.entity.repository.InterviewRepository;
-import com.backend.projet.elicitation.entity.repository.ParticipantRepository;
-import com.backend.projet.elicitation.entity.repository.ParticipeInterviewRepository;
+import com.backend.projet.elicitation.dto.request.ParticipantRequest;
+import com.backend.projet.elicitation.dto.response.ParticipantResponse;
+import com.backend.projet.elicitation.identifiant.ParticipeInterviewId;
+import com.backend.projet.elicitation.repository.InterviewRepository;
+import com.backend.projet.elicitation.repository.ParticipantRepository;
+import com.backend.projet.elicitation.repository.ParticipeInterviewRepository;
 import com.backend.projet.projet.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 

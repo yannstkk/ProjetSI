@@ -1,4 +1,4 @@
-package com.backend.projet.elicitation.entity.dto.request;
+package com.backend.projet.elicitation.dto.request;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

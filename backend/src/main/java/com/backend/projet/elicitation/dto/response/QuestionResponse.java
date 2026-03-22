@@ -1,4 +1,4 @@
-package com.backend.projet.elicitation.entity.dto.response;
+package com.backend.projet.elicitation.dto.response;
 
 public class QuestionResponse {
 

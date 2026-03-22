@@ -1,4 +1,4 @@
-package com.backend.projet.elicitation.entity.dto.request;
+package com.backend.projet.elicitation.dto.request;
 
 public class QuestionRequest {
 

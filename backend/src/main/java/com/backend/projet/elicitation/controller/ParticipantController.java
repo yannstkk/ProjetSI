@@ -1,8 +1,8 @@
-package com.backend.projet.elicitation.entity.controller;
+package com.backend.projet.elicitation.controller;
 
-import com.backend.projet.elicitation.entity.dto.request.ParticipantRequest;
-import com.backend.projet.elicitation.entity.dto.response.ParticipantResponse;
-import com.backend.projet.elicitation.entity.service.ParticipantService;
+import com.backend.projet.elicitation.dto.request.ParticipantRequest;
+import com.backend.projet.elicitation.dto.response.ParticipantResponse;
+import com.backend.projet.elicitation.service.ParticipantService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

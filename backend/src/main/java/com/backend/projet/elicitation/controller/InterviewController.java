@@ -1,4 +1,4 @@
-package com.backend.projet.elicitation.entity.controller;
+package com.backend.projet.elicitation.controller;
 
 import java.util.List;
 
@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.backend.projet.elicitation.entity.dto.request.InterviewRequest;
-import com.backend.projet.elicitation.entity.dto.response.InterviewResponse;
-import com.backend.projet.elicitation.entity.service.InterviewService;
+import com.backend.projet.elicitation.dto.request.InterviewRequest;
+import com.backend.projet.elicitation.dto.response.InterviewResponse;
+import com.backend.projet.elicitation.service.InterviewService;
 
 @RestController
 @RequestMapping("/api/interviews")
