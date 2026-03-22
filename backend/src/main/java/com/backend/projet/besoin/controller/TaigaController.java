@@ -37,8 +37,8 @@ public class TaigaController {
 
 
 
-    @GetMapping("/projects/{userId}")
-    public ResponseEntity<List<ProjectTaigaResponse>> getProjects(@PathVariable Long userId, @RequestHeader("Authorization") String token){
+    @GetMapping("/projects")
+    public ResponseEntity<List<ProjectTaigaResponse>> getProjects(@RequestParam Long userId, @RequestHeader("Authorization") String token){
         try {
             List<ProjectTaigaResponse> allProjects = this.taigaService.getProjects(userId, token);
             return ResponseEntity.ok(allProjects);
@@ -49,10 +49,10 @@ public class TaigaController {
         }
     }
 
-    @PostMapping("/exporter-us/{projectId}/userstories")
-    ResponseEntity<UserStoryResponse> exportUserStory(@PathVariable Long projectId, @RequestBody UserStoryRequest userStory, @RequestHeader("Authorization") String token){
+    @PostMapping("/exporter-us")
+    ResponseEntity<UserStoryResponse> exportUserStory(@RequestBody UserStoryRequest userStory, @RequestHeader("Authorization") String token){
         try {
-            UserStoryResponse response = this.taigaService.exportUserStory(projectId, userStory, token);
+            UserStoryResponse response = this.taigaService.exportUserStory(userStory.getProject(), userStory, token);
             return ResponseEntity.ok(response);
         } catch (AuthTaigaException e) {
             return ResponseEntity.status(401).build();
