@@ -80,8 +80,8 @@ public class TaigaDao {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", token);
-            HttpEntity<UserStoryRequest> postEntity = new HttpEntity<>(userStory,headers);
             userStory.setProject(projectId);
+            HttpEntity<UserStoryRequest> postEntity = new HttpEntity<>(userStory,headers);
             return this.restTemplate.exchange(url, HttpMethod.POST, postEntity, UserStoryResponse.class).getBody();
         } catch (HttpClientErrorException.Unauthorized e) {
             throw new AuthTaigaException("Identifiants Taiga incorrects.");
