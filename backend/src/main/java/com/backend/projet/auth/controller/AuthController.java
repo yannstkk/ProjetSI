@@ -16,7 +16,6 @@ public class AuthController {
         this.jumpCloudService = jumpCloudService;
     }
 
-    // BUG CORRIGÉ : chemin était /api/interne/auth/login, aligné sur /api/auth/login
     @PostMapping("/api/auth/login")
     public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest data) {
         ApiResponse response = this.jumpCloudService.login(data.getUsername(), data.getPassword());

@@ -1,9 +1,42 @@
 package com.backend.projet.common.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ConfigurationProperties(prefix = "ldap")
 public class LdapConfig {
 
-    public static final String HOST = "ldap.eu.jumpcloud.com";
-    public static final int PORT = 389;
-    public static final String ORG_ID = "69ade7aa293a7e69f85c1df7";
-    public static final String BASE_DN = "ou=Users,o=" + ORG_ID + ",dc=jumpcloud,dc=com";
+    private String host;
+    private int port;
+    private String orgId;
+
+    public String getHost() {
+        return this.host;
+    }
+
+    public int getPort() {
+        return this.port;
+    }
+
+    public String getOrgId() {
+        return this.orgId;
+    }
+
+    public String getBaseDN() {
+        return "ou=Users,o=" + this.getOrgId() + ",dc=jumpcloud,dc=com";
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public void setOrgId(String orgId) {
+        this.orgId = orgId;
+    }
+
 }
