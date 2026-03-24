@@ -1,20 +1,13 @@
-import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Plus, FileText } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/card";
+import { useEffect } from "react";
 
 export default function InterviewsList() {
-    const navigate = useNavigate();
 
     useEffect(() => {
-        if (sessionStorage.getItem("interview_live")) {
-            navigate("/dashboard/phase1/interview");
-            return;
-        }
-        if (sessionStorage.getItem("interview_draft")) {
-            navigate("/dashboard/phase1/interview/new");
-        }
-    }, [navigate]);
+        sessionStorage.setItem("phase1_last", window.location.pathname);
+    }, []);
 
     return (
         <div className="p-6">
@@ -39,6 +32,7 @@ export default function InterviewsList() {
                     </Link>
                 </div>
 
+                {/* Etat vide */}
                 <div className="grid grid-cols-2 gap-6">
                     <Card className="col-span-2 border-2 border-dashed border-gray-300">
                         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
@@ -46,7 +40,7 @@ export default function InterviewsList() {
                                 <FileText className="w-8 h-8 text-gray-400" />
                             </div>
                             <h3 className="font-medium text-gray-900 mb-1">
-                                Aucun entretien
+                                Aucun entretien pour ce projet
                             </h3>
                             <p className="text-sm text-gray-500 mb-4">
                                 Commencez par créer votre premier entretien métier
@@ -61,6 +55,7 @@ export default function InterviewsList() {
                         </CardContent>
                     </Card>
                 </div>
+
             </div>
         </div>
     );

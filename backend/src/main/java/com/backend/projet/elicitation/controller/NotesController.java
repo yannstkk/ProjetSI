@@ -2,26 +2,51 @@ package com.backend.projet.elicitation.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.backend.projet.elicitation.dto.request.NotesRequest;
 import com.backend.projet.elicitation.dto.response.NotesResponse;
 import com.backend.projet.elicitation.service.NotesService;
 
 @RestController
-@RequestMapping("/api/notes") 
+@RequestMapping("/api/notes")
 public class NotesController {
-	private final NotesService notesService;
-	
-	public NotesController(NotesService notesService) {
-		this.notesService = notesService;
-	}
-	
+
+    private final NotesService notesService;
+
+    public NotesController(NotesService notesService) {
+        this.notesService = notesService;
+    }
+
     @GetMapping
     public ResponseEntity<List<NotesResponse>> getAllNotes() {
         return ResponseEntity.ok(notesService.getAllNotes());
     }
 
+    @GetMapping("/interview/{numeroInterview}")
+    public ResponseEntity<List<NotesResponse>> getByInterview(
+            @PathVariable Long numeroInterview) {
+        return ResponseEntity.ok(notesService.getNotesByInterview(numeroInterview));
+    }
+
+    @PostMapping
+    public ResponseEntity<NotesResponse> ajouterNote(@RequestBody NotesRequest request) {
+        NotesResponse response = notesService.ajouterNote(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping("/interview/{numeroInterview}")
+    public ResponseEntity<Void> deleteByInterview(
+            @PathVariable Long numeroInterview) {
+        notesService.deleteByInterview(numeroInterview);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -1,775 +1,388 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import {
-    Plus, AlertTriangle, Mic, Clock,
-    Bookmark, Sparkles, RotateCcw, X
-} from "lucide-react";
+import { Download, Save } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
-import { Input } from "../../components/ui/input";
 import { useInterviewLive } from "../../../hooks/useInterviewLive";
 import { useSuggererQuestions } from "../../../hooks/useSuggererQuestions";
-import { useRef } from "react";
 import { useEnregistrement } from "../../../hooks/useEnregistrement";
 
-// Composant onglet texte simple (Besoins, Règles, Solutions)
-function OngletTexte({ items, onAjouter, onSupprimer, placeholder }) {
-    const [valeur, setValeur] = useState("");
+import { BarreEnregistrement } from "./components/BarreEnregistrement";
+import { PanneauQuestions } from "./components/PanneauQuestions";
+import { NotesStructurees } from "./components/NotesStructurees";
 
-    function handleAjouter() {
-        if (!valeur.trim()) return;
-        onAjouter({ texte: valeur.trim() });
-        setValeur("");
-    }
+import { getProjetCourant } from "../../../services/projetCourant";
+import {
+    buildInterviewPayload,
+    createInterview,
+    updateInterview,
+    interviewExistsInDb,
+    getInterviewId,
+    loadInterviewIntoSession,
+    getInterviewByProjet,
+} from "../../../services/interviewService";
+import {
+    saveNotesFromSession,
+    saveNotesStructureesFromSession,
+    saveQuestionsFromSession,
+    saveParticipantsFromSession,
+    loadNotesIntoSession,
+    loadNotesStructureesIntoSession,
+    loadQuestionsIntoSession,
+    loadParticipantsIntoSession,
+} from "../../../services/notesService";
 
+// ─── Modale générique ─────────────────────────────────────────────────────────
+
+function Modale({ titre, message, onConfirmer, onAnnuler, labelConfirmer = "Confirmer", danger = false }) {
     return (
-        <div className="space-y-3 mt-4">
-            {/* Champ ajout */}
-            <div className="flex gap-2">
-                <Input
-                    placeholder={placeholder}
-                    value={valeur}
-                    onChange={(e) => setValeur(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleAjouter()}
-                />
-                <button
-                    onClick={handleAjouter}
-                    disabled={!valeur.trim()}
-                    className="flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors text-sm flex-shrink-0"
-                >
-                    <Plus className="w-4 h-4" />
-                    Ajouter
-                </button>
-            </div>
-
-            {/* Liste */}
-            {items.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">
-                    Aucun élément
-                </p>
-            )}
-
-            {items.map((item) => (
-                <div
-                    key={item.id}
-                    className="flex items-start justify-between p-3 bg-gray-50 rounded border border-gray-200 group"
-                >
-                    <p className="text-sm text-gray-700 flex-1">{item.texte}</p>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full mx-4">
+                <h3 className="font-semibold text-lg text-gray-900 mb-2">{titre}</h3>
+                <p className="text-sm text-gray-600 mb-6">{message}</p>
+                <div className="flex gap-3 justify-end">
                     <button
-                        onClick={() => onSupprimer(item.id)}
-                        className="ml-2 text-gray-300 hover:text-red-600 transition-colors flex-shrink-0"
+                        onClick={onAnnuler}
+                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                     >
-                        <X className="w-4 h-4" />
+                        Annuler
+                    </button>
+                    <button
+                        onClick={onConfirmer}
+                        className={`px-4 py-2 text-white rounded-lg ${
+                            danger ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"
+                        }`}
+                    >
+                        {labelConfirmer}
                     </button>
                 </div>
-            ))}
+            </div>
         </div>
     );
 }
 
-function OngletDonnees({ items, onAjouter, onSupprimer }) {
-    const [nom, setNom] = useState("");
-    const [type, setType] = useState("texte");
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-    function handleAjouter() {
-        if (!nom.trim()) return;
-        onAjouter({ nom: nom.trim(), type });
-        setNom("");
-        setType("texte");
+function getNotesTexte() {
+    try {
+        const draft = JSON.parse(sessionStorage.getItem("interview_draft") || "{}");
+        return (draft.notesImportees || []).map((n) => n.contenu).join("\n\n");
+    } catch {
+        return "";
     }
-
-    const typeColors = {
-        texte: "bg-blue-100 text-blue-700",
-        nombre: "bg-green-100 text-green-700",
-        date: "bg-purple-100 text-purple-700",
-        booléen: "bg-orange-100 text-orange-700",
-    };
-
-    return (
-        <div className="space-y-3 mt-4">
-            {/* Champ ajout */}
-            <div className="flex gap-2">
-                <Input
-                    placeholder="Nom de la donnée"
-                    value={nom}
-                    onChange={(e) => setNom(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleAjouter()}
-                    className="flex-1"
-                />
-                <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
-                >
-                    <option value="texte">Texte</option>
-                    <option value="nombre">Nombre</option>
-                    <option value="date">Date</option>
-                    <option value="booléen">Booléen</option>
-                </select>
-                <button
-                    onClick={handleAjouter}
-                    disabled={!nom.trim()}
-                    className="flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors text-sm flex-shrink-0"
-                >
-                    <Plus className="w-4 h-4" />
-                    Ajouter
-                </button>
-            </div>
-
-            {/* Liste */}
-            {items.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">
-                    Aucune donnée
-                </p>
-            )}
-
-            {items.map((item) => (
-                <div
-                    key={item.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200"
-                >
-                    <div className="flex items-center gap-2">
-                        <span className={`text-xs px-2 py-0.5 rounded font-medium ${typeColors[item.type]}`}>
-                            {item.type}
-                        </span>
-                        <p className="text-sm text-gray-700">{item.nom}</p>
-                    </div>
-                    <button
-                        onClick={() => onSupprimer(item.id)}
-                        className="ml-2 text-gray-300 hover:text-red-600 transition-colors"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                </div>
-            ))}
-        </div>
-    );
 }
 
-// Composant onglet Contraintes (texte + niveau)
-function OngletContraintes({ items, onAjouter, onSupprimer }) {
-    const [texte, setTexte] = useState("");
-    const [niveau, setNiveau] = useState("important");
-
-    function handleAjouter() {
-        if (!texte.trim()) return;
-        onAjouter({ texte: texte.trim(), niveau });
-        setTexte("");
-        setNiveau("important");
+function getDraftInfo() {
+    try {
+        return JSON.parse(sessionStorage.getItem("interview_draft") || "{}");
+    } catch {
+        return {};
     }
-
-    const niveauColors = {
-        bloquant: "bg-red-100 text-red-700",
-        important: "bg-yellow-100 text-yellow-700",
-        mineur: "bg-green-100 text-green-700",
-    };
-
-    return (
-        <div className="space-y-3 mt-4">
-            {/* Champ ajout */}
-            <div className="flex gap-2">
-                <Input
-                    placeholder="Décrire la contrainte"
-                    value={texte}
-                    onChange={(e) => setTexte(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleAjouter()}
-                    className="flex-1"
-                />
-                <select
-                    value={niveau}
-                    onChange={(e) => setNiveau(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
-                >
-                    <option value="bloquant">Bloquant</option>
-                    <option value="important">Important</option>
-                    <option value="mineur">Mineur</option>
-                </select>
-                <button
-                    onClick={handleAjouter}
-                    disabled={!texte.trim()}
-                    className="flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors text-sm flex-shrink-0"
-                >
-                    <Plus className="w-4 h-4" />
-                    Ajouter
-                </button>
-            </div>
-
-            {/* Liste */}
-            {items.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">
-                    Aucune contrainte
-                </p>
-            )}
-
-            {items.map((item) => (
-                <div
-                    key={item.id}
-                    className="flex items-start justify-between p-3 bg-gray-50 rounded border border-gray-200"
-                >
-                    <div className="flex items-start gap-2 flex-1">
-                        <span className={`text-xs px-2 py-0.5 rounded font-medium flex-shrink-0 mt-0.5 ${niveauColors[item.niveau]}`}>
-                            {item.niveau}
-                        </span>
-                        <p className="text-sm text-gray-700">{item.texte}</p>
-                    </div>
-                    <button
-                        onClick={() => onSupprimer(item.id)}
-                        className="ml-2 text-gray-300 hover:text-red-600 transition-colors flex-shrink-0"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                </div>
-            ))}
-        </div>
-    );
 }
 
-// Composant principal
+// ─── Composant principal ──────────────────────────────────────────────────────
+
 export function Phase1B() {
     const navigate = useNavigate();
-    const { live, ajouterElement, supprimerElement, clearLive } = useInterviewLive();
-    const { questions, loading, error, genererQuestions, resetQuestions } = useSuggererQuestions();
-    const [showConfirm, setShowConfirm] = useState(false);
 
-
-    const [showConfirmNouvelEnreg, setShowConfirmNouvelEnreg] = useState(false);
-
+    const { live, ajouterElement, supprimerElement, clearLive, setLive } = useInterviewLive();
     const {
-        statut,
-        tempsEcoule,
-        marqueurs,
-        audioUrl,
-        audioPauseUrl,
-        limitAtteinte,
-        ecouteEnPause,
-        setEcouteEnPause,
-        demarrer,
-        pause,
-        reprendre,
-        arreter,
-        marquer,
-        supprimerMarqueur,
-        clearEnregistrement,
-    } = useEnregistrement();
+        questions,
+        loading: questionsLoading,
+        error: questionsError,
+        genererQuestions,
+        resetQuestions,
+        setQuestions,
+    } = useSuggererQuestions();
+    const enregistrement = useEnregistrement();
 
-    const audioRef = useRef(null);
-    const audioPauseRef = useRef(null);
+    const [showConfirmRetour, setShowConfirmRetour]           = useState(false);
+    const [showConfirmNouvelEnreg, setShowConfirmNouvelEnreg] = useState(false);
+    const [showConfirmSave, setShowConfirmSave]               = useState(false);
+    const [showConfirmImport, setShowConfirmImport]           = useState(false);
 
-    function formaterTemps(secondes) {
-        const h = Math.floor(secondes / 3600).toString().padStart(2, "0");
-        const m = Math.floor((secondes % 3600) / 60).toString().padStart(2, "0");
-        const s = (secondes % 60).toString().padStart(2, "0");
-        return `${h}:${m}:${s}`;
+    const [saveLoading, setSaveLoading]     = useState(false);
+    const [importLoading, setImportLoading] = useState(false);
+    const [saveSuccess, setSaveSuccess]     = useState(false);
+    const [importSuccess, setImportSuccess] = useState(false);
+    const [saveError, setSaveError]         = useState("");
+
+    const [draft, setDraft] = useState(getDraftInfo());
+    const notesTexte = (draft.notesImportees || []).map((n) => n.contenu).join("\n\n");
+
+    useEffect(() => {
+        sessionStorage.setItem("phase1_last", window.location.pathname);
+    }, []);
+
+    // Rafraîchit le draft affiché quand le sessionStorage change
+    function refreshDraft() {
+        setDraft(getDraftInfo());
     }
 
-    function allerVersMarqueur(temps) {
-        if (audioRef.current) {
-            audioRef.current.currentTime = temps;
-            audioRef.current.play();
-        }
-    }
-
-    const draft = (() => {
-        try {
-            const saved = sessionStorage.getItem("interview_draft");
-            return saved ? JSON.parse(saved) : null;
-        } catch {
-            return null;
-        }
-    })();
-
-    const notesTexte = draft?.notesImportees
-        ?.map((n) => n.contenu)
-        .join("\n\n") || "";
-
-    function handleRetourClick() {
-        setShowConfirm(true);
-    }
+    // ── Retour vers préparation ───────────────────────────────────────────────
 
     function handleConfirmRetour() {
         clearLive();
-        // Nettoyer aussi questions et enregistrement
         sessionStorage.removeItem("interview_questions");
         sessionStorage.removeItem("interview_audio");
         sessionStorage.removeItem("interview_marqueurs");
         sessionStorage.removeItem("interview_statut");
-        setShowConfirm(false);
+        setShowConfirmRetour(false);
         navigate("/dashboard/phase1/interview/new");
     }
 
-    function handleAnnulerRetour() {
-        setShowConfirm(false);
+    // ── Importer depuis la BDD ────────────────────────────────────────────────
+
+    async function handleConfirmImport() {
+        setShowConfirmImport(false);
+        setImportLoading(true);
+        setSaveError("");
+
+        const projet = getProjetCourant();
+        if (!projet) {
+            setSaveError("Aucun projet sélectionné.");
+            setImportLoading(false);
+            return;
+        }
+
+        try {
+            const interview = await getInterviewByProjet(projet.id);
+            if (!interview) {
+                setSaveError("Aucune interview trouvée en base pour ce projet.");
+                setImportLoading(false);
+                return;
+            }
+
+            // Charger tout depuis la BDD dans sessionStorage
+            loadInterviewIntoSession(interview);
+            await loadNotesIntoSession(interview.numeroInterview);
+            await loadParticipantsIntoSession(interview.numeroInterview);
+            const newLive = await loadNotesStructureesIntoSession(interview.numeroInterview);
+            const newQuestions = await loadQuestionsIntoSession(interview.numeroInterview);
+
+            // Forcer le re-render des hooks
+            if (newLive)      setLive(newLive);
+            if (newQuestions) setQuestions(newQuestions);
+            refreshDraft();
+
+            setImportSuccess(true);
+            setTimeout(() => setImportSuccess(false), 3000);
+
+        } catch (err) {
+            setSaveError("Erreur lors de l'import : " + err.message);
+        } finally {
+            setImportLoading(false);
+        }
     }
 
-    const counts = {
-        besoins: live.besoins.length,
-        regles: live.regles.length,
-        donnees: live.donnees.length,
-        contraintes: live.contraintes.length,
-        solutions: live.solutions.length,
-    };
+    // ── Enregistrement en BDD ─────────────────────────────────────────────────
+
+    async function handleConfirmSave() {
+        setShowConfirmSave(false);
+        setSaveLoading(true);
+        setSaveError("");
+        setSaveSuccess(false);
+
+        const projet = getProjetCourant();
+        if (!projet) {
+            setSaveError("Aucun projet sélectionné.");
+            setSaveLoading(false);
+            return;
+        }
+
+        try {
+            const payload  = buildInterviewPayload(projet.id);
+            const existsDb = interviewExistsInDb();
+            let   numeroInterview;
+
+            if (existsDb) {
+                numeroInterview = getInterviewId();
+                await updateInterview(numeroInterview, payload);
+            } else {
+                const created = await createInterview(payload);
+                numeroInterview = created.numeroInterview;
+                sessionStorage.setItem("interview_id",           String(numeroInterview));
+                sessionStorage.setItem("interview_exists_in_db", "true");
+            }
+
+            await saveNotesFromSession(numeroInterview);
+            await saveNotesStructureesFromSession(numeroInterview);
+            await saveQuestionsFromSession(numeroInterview);
+            await saveParticipantsFromSession(numeroInterview);
+
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+
+        } catch (err) {
+            setSaveError("Erreur lors de l'enregistrement : " + err.message);
+        } finally {
+            setSaveLoading(false);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     return (
         <div className="p-6">
             <div className="max-w-7xl mx-auto">
 
-                {/* Modale confirmation retour */}
-                {showConfirm && (
-                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-                        <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full mx-4">
-                            <h3 className="font-semibold text-lg text-gray-900 mb-2">
-                                Confirmer le retour
-                            </h3>
-                            <p className="text-sm text-gray-600 mb-6">
-                                Si vous retournez à la préparation, toutes les données
-                                saisies dans le mode interview live seront{" "}
-                                <strong>perdues définitivement</strong>. Voulez-vous continuer ?
-                            </p>
-                            <div className="flex gap-3 justify-end">
-                                <button
-                                    onClick={handleAnnulerRetour}
-                                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                                >
-                                    Annuler
-                                </button>
-                                <button
-                                    onClick={handleConfirmRetour}
-                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                                >
-                                    Confirmer le retour
-                                </button>
-                            </div>
-                        </div>
+                {/* Modales */}
+                {showConfirmRetour && (
+                    <Modale
+                        titre="Confirmer le retour"
+                        message="Si vous retournez à la préparation, toutes les données du mode live seront perdues définitivement."
+                        onConfirmer={handleConfirmRetour}
+                        onAnnuler={() => setShowConfirmRetour(false)}
+                        labelConfirmer="Confirmer le retour"
+                        danger
+                    />
+                )}
+
+                {showConfirmNouvelEnreg && (
+                    <Modale
+                        titre="Nouvel enregistrement"
+                        message="L'enregistrement actuel sera perdu définitivement."
+                        onConfirmer={() => {
+                            enregistrement.clearEnregistrement();
+                            setShowConfirmNouvelEnreg(false);
+                        }}
+                        onAnnuler={() => setShowConfirmNouvelEnreg(false)}
+                        danger
+                    />
+                )}
+
+                {showConfirmSave && (
+                    <Modale
+                        titre="Enregistrer en base de données"
+                        message={
+                            interviewExistsInDb()
+                                ? "Les données existantes seront mises à jour. Confirmer ?"
+                                : "L'interview et les notes vont être sauvegardées. Confirmer ?"
+                        }
+                        onConfirmer={handleConfirmSave}
+                        onAnnuler={() => setShowConfirmSave(false)}
+                        labelConfirmer="Enregistrer"
+                    />
+                )}
+
+                {showConfirmImport && (
+                    <Modale
+                        titre="Importer depuis la base de données"
+                        message="Les données actuelles en session seront écrasées par les données de la base. Confirmer ?"
+                        onConfirmer={handleConfirmImport}
+                        onAnnuler={() => setShowConfirmImport(false)}
+                        labelConfirmer="Importer"
+                        danger
+                    />
+                )}
+
+                {/* Titre + bouton Importer */}
+                <div className="mb-4 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-semibold text-gray-900">
+                            Mode Interview Live
+                        </h1>
+                        <p className="text-gray-600">Phase 1 — Interview en cours</p>
+                    </div>
+
+                    <button
+                        onClick={() => setShowConfirmImport(true)}
+                        disabled={importLoading}
+                        className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors font-medium"
+                    >
+                        <Download className="w-4 h-4" />
+                        {importLoading ? "Import..." : "Importer depuis la base"}
+                    </button>
+                </div>
+
+                {/* Messages */}
+                {saveSuccess && (
+                    <div className="mb-4 p-3 bg-green-50 border border-green-300 rounded-lg text-green-700 text-sm">
+                        Interview enregistrée avec succès en base de données.
+                    </div>
+                )}
+                {importSuccess && (
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-300 rounded-lg text-blue-700 text-sm">
+                        Données importées depuis la base de données.
+                    </div>
+                )}
+                {saveError && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-lg text-red-700 text-sm">
+                        {saveError}
                     </div>
                 )}
 
-            {/* Modale confirmation nouvel enregistrement */}
-            {showConfirmNouvelEnreg && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-                    <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full mx-4">
-                        <h3 className="font-semibold text-lg text-gray-900 mb-2">
-                            Nouvel enregistrement
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-6">
-                            L'enregistrement actuel sera <strong>perdu définitivement</strong>.
-                            Voulez-vous continuer ?
-                        </p>
-                        <div className="flex gap-3 justify-end">
-                            <button
-                                onClick={() => setShowConfirmNouvelEnreg(false)}
-                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                            >
-                                Annuler
-                            </button>
-                            <button
-                                onClick={() => {
-                                    clearEnregistrement();
-                                    setShowConfirmNouvelEnreg(false);
-                                }}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                            >
-                                Confirmer
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-
-
-                {/* Title */}
-                <div className="mb-6">
-                    <h1 className="text-2xl font-semibold text-gray-900">
-                        Mode Interview Live
-                    </h1>
-                    <p className="text-gray-600">
-                        Phase 1B
-                    </p>
-                </div>
-
                 {/* Infos brouillon */}
-                {draft && (
+                {draft.titre && (
                     <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p className="text-sm font-medium text-blue-900">
-                            {draft.titre || "Entretien sans titre"}
-                        </p>
+                        <p className="text-sm font-medium text-blue-900">{draft.titre}</p>
                         {draft.participants?.filter((p) => p.nom).length > 0 && (
                             <p className="text-xs text-blue-700 mt-1">
                                 Participants :{" "}
                                 {draft.participants
                                     .filter((p) => p.nom)
-                                    .map((p) => p.nom)
+                                    .map((p) => p.role ? `${p.nom} (${p.role})` : p.nom)
                                     .join(", ")}
                             </p>
                         )}
                     </div>
                 )}
 
-
-
-
-            {/* Barre enregistrement */}
-                        <Card className={`mb-4 border-l-4 ${
-                            statut === "recording" ? "border-l-red-600" :
-                            statut === "paused"    ? "border-l-orange-500" :
-                            statut === "stopped"   ? "border-l-gray-400" :
-                            "border-l-blue-600"
-                        }`}>
-                            <CardContent className="p-4 space-y-4">
-
-                                {/* Ligne principale */}
-                                <div className="flex items-center justify-between">
-
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                            statut === "recording" ? "bg-red-100" :
-                                            statut === "paused"    ? "bg-orange-100" :
-                                            statut === "stopped"   ? "bg-gray-100" :
-                                            "bg-blue-100"
-                                        }`}>
-                                            <Mic className={`w-5 h-5 ${
-                                                statut === "recording" ? "text-red-600" :
-                                                statut === "paused"    ? "text-orange-500" :
-                                                statut === "stopped"   ? "text-gray-400" :
-                                                "text-blue-600"
-                                            }`} />
-                                        </div>
-
-                                        <div>
-                                            <div className="font-medium text-sm">
-                                                {statut === "idle"      && "Prêt à enregistrer"}
-                                                {statut === "recording" && "Enregistrement en cours"}
-                                                {statut === "paused"    && "Enregistrement en pause"}
-                                                {statut === "stopped"   && "Enregistrement terminé"}
-                                            </div>
-                                            <div className="text-xs text-gray-600 flex items-center gap-2">
-                                                <Clock className="w-3 h-3" />
-                                                <span className="font-mono">{formaterTemps(tempsEcoule)}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Boutons selon statut */}
-                                    <div className="flex gap-2">
-
-                                        {statut === "idle" && (
-                                            <button
-                                                onClick={demarrer}
-                                                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
-                                            >
-                                                <Mic className="w-4 h-4" />
-                                                Démarrer
-                                            </button>
-                                        )}
-
-                                        {statut === "recording" && (
-                                            <>
-                                                <button
-                                                    onClick={marquer}
-                                                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2 text-sm"
-                                                >
-                                                    <Bookmark className="w-4 h-4" />
-                                                    Marquer
-                                                </button>
-                                                <button
-                                                    onClick={pause}
-                                                    className="px-4 py-2 border border-orange-300 text-orange-600 rounded-lg hover:bg-orange-50 text-sm"
-                                                >
-                                                    Pause
-                                                </button>
-                                                <button
-                                                    onClick={() => arreter(false)}
-                                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
-                                                >
-                                                    Stop
-                                                </button>
-                                            </>
-                                        )}
-
-                                        {statut === "paused" && (
-                                            <>
-                                                <button
-                                                    onClick={marquer}
-                                                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2 text-sm"
-                                                >
-                                                    <Bookmark className="w-4 h-4" />
-                                                    Marquer
-                                                </button>
-                                                <button
-                                                    onClick={() => setEcouteEnPause(!ecouteEnPause)}
-                                                    className="px-4 py-2 border border-blue-300 text-blue-600 rounded-lg hover:bg-blue-50 text-sm"
-                                                >
-                                                    {ecouteEnPause ? "Masquer lecteur" : "Écouter"}
-                                                </button>
-                                                <button
-                                                    onClick={reprendre}
-                                                    className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 text-sm"
-                                                >
-                                                    Reprendre
-                                                </button>
-                                                <button
-                                                    onClick={() => arreter(false)}
-                                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
-                                                >
-                                                    Stop
-                                                </button>
-                                            </>
-                                        )}
-
-                                        {statut === "stopped" && (
-                                            <button
-                                                onClick={() => setShowConfirmNouvelEnreg(true)}
-                                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
-                                            >
-                                                Nouvel enregistrement
-                                            </button>
-                                        )}
-
-                                    </div>
-                                </div>
-
-                                {/* Notification limite atteinte */}
-                                {limitAtteinte && (
-                                    <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-300 rounded-lg text-yellow-800 text-sm">
-                                        <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                                        Limite de 5MB atteinte — l'enregistrement s'est arrêté automatiquement.
-                                    </div>
-                                )}
-
-                                {/* Lecteur pendant pause */}
-                                {statut === "paused" && ecouteEnPause && audioPauseUrl && (
-                                    <div className="space-y-2">
-                                        <p className="text-xs text-gray-500">
-                                            Écoute en pause — cliquez sur Reprendre pour continuer l'enregistrement
-                                        </p>
-                                        <audio
-                                            ref={audioPauseRef}
-                                            src={audioPauseUrl}
-                                            controls
-                                            className="w-full"
-                                        />
-                                        {marqueurs.length > 0 && (
-                                            <div className="flex flex-wrap gap-2">
-                                                {marqueurs.map((m) => (
-                                                    <button
-                                                        key={m.id}
-                                                        onClick={() => {
-                                                            if (audioPauseRef.current) {
-                                                                audioPauseRef.current.currentTime = m.temps;
-                                                                audioPauseRef.current.play();
-                                                            }
-                                                        }}
-                                                        className="flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100"
-                                                    >
-                                                        <Bookmark className="w-3 h-3" />
-                                                        {m.label} — {formaterTemps(m.temps)}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Lecteur final après stop */}
-                                {statut === "stopped" && audioUrl && (
-                                    <div className="space-y-3">
-                                        <audio
-                                            ref={audioRef}
-                                            src={audioUrl}
-                                            controls
-                                            className="w-full"
-                                        />
-                                        {marqueurs.length > 0 && (
-                                            <div className="space-y-1">
-                                                <p className="text-xs font-medium text-gray-600">
-                                                    Marqueurs ({marqueurs.length}) — cliquez pour vous déplacer
-                                                </p>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {marqueurs.map((m) => (
-                                                        <div key={m.id} className="flex items-center gap-1">
-                                                            <button
-                                                                onClick={() => allerVersMarqueur(m.temps)}
-                                                                className="flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700 hover:bg-blue-100"
-                                                            >
-                                                                <Bookmark className="w-3 h-3" />
-                                                                {m.label} — {formaterTemps(m.temps)}
-                                                            </button>
-                                                            <button
-                                                                onClick={() => supprimerMarqueur(m.id)}
-                                                                className="text-gray-300 hover:text-red-500"
-                                                            >
-                                                                <X className="w-3 h-3" />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                            </CardContent>
-                        </Card>
-
-
+                {/* Barre enregistrement audio */}
+                <BarreEnregistrement
+                    statut={enregistrement.statut}
+                    tempsEcoule={enregistrement.tempsEcoule}
+                    marqueurs={enregistrement.marqueurs}
+                    audioUrl={enregistrement.audioUrl}
+                    audioPauseUrl={enregistrement.audioPauseUrl}
+                    limitAtteinte={enregistrement.limitAtteinte}
+                    ecouteEnPause={enregistrement.ecouteEnPause}
+                    setEcouteEnPause={enregistrement.setEcouteEnPause}
+                    onDemarrer={enregistrement.demarrer}
+                    onPause={enregistrement.pause}
+                    onReprendre={enregistrement.reprendre}
+                    onArreter={enregistrement.arreter}
+                    onMarquer={enregistrement.marquer}
+                    onSupprimerMarqueur={enregistrement.supprimerMarqueur}
+                    onNouvelEnregistrement={() => setShowConfirmNouvelEnreg(true)}
+                />
 
                 {/* Layout principal */}
                 <div className="grid grid-cols-12 gap-4">
-
-                    {/* Colonne gauche */}
-                    <div className="col-span-4 space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base flex items-center gap-2">
-                                    <Sparkles className="w-4 h-4 text-purple-600" />
-                                    Questions suggérées
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                <button
-                                    onClick={() => genererQuestions(notesTexte)}
-                                    disabled={loading || !notesTexte}
-                                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-purple-300 transition-colors text-sm"
-                                >
-                                    {loading ? (
-                                        <>
-                                            <span className="animate-spin">⏳</span>
-                                            Génération...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Sparkles className="w-4 h-4" />
-                                            Générer avec l'IA
-                                        </>
-                                    )}
-                                </button>
-
-                                {!notesTexte && (
-                                    <p className="text-xs text-gray-500 text-center">
-                                        Importez des notes dans la préparation pour activer la génération
-                                    </p>
-                                )}
-
-                                {error && (
-                                    <p className="text-xs text-red-600">{error}</p>
-                                )}
-
-                                {questions.length > 0 && (
-                                    <div className="space-y-2">
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-xs font-medium text-gray-700">
-                                                {questions.length} questions générées
-                                            </p>
-                                            <button
-                                                onClick={resetQuestions}
-                                                className="text-xs text-gray-400 hover:text-gray-600"
-                                            >
-                                                <RotateCcw className="w-3 h-3" />
-                                            </button>
-                                        </div>
-                                        {questions.map((q, index) => (
-                                            <div
-                                                key={index}
-                                                className="p-2 bg-purple-50 rounded border border-purple-200"
-                                            >
-                                                <p className="text-xs text-gray-400 mb-1">Q{index + 1}</p>
-                                                <p className="text-sm text-gray-700">{q.question}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
+                    <div className="col-span-4">
+                        <PanneauQuestions
+                            questions={questions}
+                            loading={questionsLoading}
+                            error={questionsError}
+                            notesTexte={notesTexte}
+                            onGenerer={() => genererQuestions(notesTexte)}
+                            onReset={resetQuestions}
+                        />
                     </div>
-
-                    {/* Colonne centrale */}
                     <div className="col-span-8">
-                        <Card className="h-full">
-                            <CardHeader>
-                                <CardTitle>Notes structurées</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <Tabs defaultValue="besoins">
-                                    <TabsList className="grid grid-cols-5 w-full">
-                                        <TabsTrigger value="besoins">
-                                            Besoins {counts.besoins > 0 && `(${counts.besoins})`}
-                                        </TabsTrigger>
-                                        <TabsTrigger value="regles">
-                                            Règles {counts.regles > 0 && `(${counts.regles})`}
-                                        </TabsTrigger>
-                                        <TabsTrigger value="donnees">
-                                            Données {counts.donnees > 0 && `(${counts.donnees})`}
-                                        </TabsTrigger>
-                                        <TabsTrigger value="contraintes">
-                                            Contraintes {counts.contraintes > 0 && `(${counts.contraintes})`}
-                                        </TabsTrigger>
-                                        <TabsTrigger value="solutions">
-                                            Solutions {counts.solutions > 0 && `(${counts.solutions})`}
-                                        </TabsTrigger>
-                                    </TabsList>
-
-                                    <TabsContent value="besoins">
-                                        <OngletTexte
-                                            items={live.besoins}
-                                            onAjouter={(el) => ajouterElement("besoins", el)}
-                                            onSupprimer={(id) => supprimerElement("besoins", id)}
-                                            placeholder="Décrire le besoin..."
-                                        />
-                                    </TabsContent>
-
-                                    <TabsContent value="regles">
-                                        <OngletTexte
-                                            items={live.regles}
-                                            onAjouter={(el) => ajouterElement("regles", el)}
-                                            onSupprimer={(id) => supprimerElement("regles", id)}
-                                            placeholder="Décrire la règle métier..."
-                                        />
-                                    </TabsContent>
-
-                                    <TabsContent value="donnees">
-                                        <OngletDonnees
-                                            items={live.donnees}
-                                            onAjouter={(el) => ajouterElement("donnees", el)}
-                                            onSupprimer={(id) => supprimerElement("donnees", id)}
-                                        />
-                                    </TabsContent>
-
-                                    <TabsContent value="contraintes">
-                                        <OngletContraintes
-                                            items={live.contraintes}
-                                            onAjouter={(el) => ajouterElement("contraintes", el)}
-                                            onSupprimer={(id) => supprimerElement("contraintes", id)}
-                                        />
-                                    </TabsContent>
-
-                                    <TabsContent value="solutions">
-                                        <OngletTexte
-                                            items={live.solutions}
-                                            onAjouter={(el) => ajouterElement("solutions", el)}
-                                            onSupprimer={(id) => supprimerElement("solutions", id)}
-                                            placeholder="Décrire la solution proposée..."
-                                        />
-                                    </TabsContent>
-                                </Tabs>
-                            </CardContent>
-                        </Card>
+                        <NotesStructurees
+                            live={live}
+                            ajouterElement={ajouterElement}
+                            supprimerElement={supprimerElement}
+                        />
                     </div>
-
-
-
                 </div>
 
-                {/* Actions */}
-                <div className="mt-6 flex gap-3">
+                {/* Actions bas de page */}
+                <div className="mt-6 flex items-center justify-between">
                     <button
-                        onClick={handleRetourClick}
+                        onClick={() => setShowConfirmRetour(true)}
                         className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                     >
-                        Retour
+                        Retour à la préparation
                     </button>
-                    <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                        Pause
+
+                    <button
+                        onClick={() => setShowConfirmSave(true)}
+                        disabled={saveLoading}
+                        className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-300 transition-colors font-medium"
+                    >
+                        <Save className="w-4 h-4" />
+                        {saveLoading ? "Enregistrement..." : "Enregistrer"}
                     </button>
                 </div>
 

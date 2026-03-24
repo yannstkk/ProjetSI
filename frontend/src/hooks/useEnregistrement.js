@@ -115,7 +115,6 @@ export function useEnregistrement() {
         }
         arreterChrono();
 
-        // Générer un aperçu audio des chunks actuels pour écoute pendant pause
         if (chunksRef.current.length > 0) {
             const blob = new Blob(chunksRef.current, { type: "audio/webm" });
             audioPauseUrlRef.current = URL.createObjectURL(blob);

@@ -4,7 +4,7 @@ import { suggererQuestions } from "../services/mistralService";
 const STORAGE_KEY = "interview_questions";
 
 export function useSuggererQuestions() {
-    const [questions, setQuestions] = useState(() => {
+    const [questions, setQuestionsState] = useState(() => {
         try {
             const saved = sessionStorage.getItem(STORAGE_KEY);
             return saved ? JSON.parse(saved) : [];
@@ -14,12 +14,15 @@ export function useSuggererQuestions() {
     });
 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [error, setError]     = useState("");
 
-    // Sauvegarde automatique à chaque changement
     useEffect(() => {
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(questions));
     }, [questions]);
+
+    function setQuestions(newQuestions) {
+        setQuestionsState(newQuestions);
+    }
 
     async function genererQuestions(notes) {
         if (!notes || notes.trim() === "") {
@@ -29,10 +32,10 @@ export function useSuggererQuestions() {
 
         setLoading(true);
         setError("");
-        setQuestions([]);
+        setQuestionsState([]);
 
         try {
-            const data = await suggererQuestions(notes);
+            const data    = await suggererQuestions(notes);
             const content = data?.choices?.[0]?.message?.content;
 
             if (!content) {
@@ -40,7 +43,7 @@ export function useSuggererQuestions() {
             }
 
             const parsed = JSON.parse(content);
-            setQuestions(parsed.questions || []);
+            setQuestionsState(parsed.questions || []);
         } catch (err) {
             setError("Erreur lors de la génération : " + err.message);
         } finally {
@@ -50,9 +53,9 @@ export function useSuggererQuestions() {
 
     function resetQuestions() {
         sessionStorage.removeItem(STORAGE_KEY);
-        setQuestions([]);
+        setQuestionsState([]);
         setError("");
     }
 
-    return { questions, loading, error, genererQuestions, resetQuestions };
+    return { questions, setQuestions, loading, error, genererQuestions, resetQuestions };
 }

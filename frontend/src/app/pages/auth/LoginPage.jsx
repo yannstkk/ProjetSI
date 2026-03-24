@@ -40,9 +40,8 @@ export default function LoginPage() {
             if (!response.ok || data.isError) {
                 setError("Identifiants incorrects. Veuillez réessayer.");
             } else {
-                // On marque l'utilisateur comme connecté
-                sessionStorage.setItem("isLoggedIn", "true");
                 sessionStorage.setItem("username", username);
+                sessionStorage.setItem("token", data.content);
                 navigate("/projects");
             }
         } catch (err) {

@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.backend.projet.elicitation.entity.Interview;
 import com.backend.projet.elicitation.entity.Notes;
+import com.backend.projet.elicitation.entity.Participant;
 import com.backend.projet.modelisation.entity.BPMN;
 import com.backend.projet.modelisation.entity.DictionnaireDonnee;
 import com.backend.projet.modelisation.entity.MCD;
@@ -36,12 +37,12 @@ public class Projet {
 
     @Column(name = "date_creation")
     private LocalDate dateCreation;
+    
+    @Column(name = "id_user")
+    private String idUser;
 
-    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
     private List<Interview> interviews = new ArrayList<>();
-
-    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
-    private List<Notes> notes = new ArrayList<>();
 
     @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
     private List<BPMN> bpmns = new ArrayList<>();
@@ -61,7 +62,7 @@ public class Projet {
         joinColumns = @JoinColumn(name = "id_projet"),
         inverseJoinColumns = @JoinColumn(name = "id_client")
     )
-    private List<Client> clients = new ArrayList<>();
+    private List<Participant> participants = new ArrayList<>();
 
     public Projet() {}
     public Projet(String nom) {
@@ -85,6 +86,13 @@ public class Projet {
 	}
 	public void setDateCreation(LocalDate dateCreation) {
 		this.dateCreation = dateCreation;
+	}
+	
+    public String getIdUser() {
+		return idUser;
+	}
+	public void setIdUser(String idUser) {
+		this.idUser = idUser;
 	}
 
 }

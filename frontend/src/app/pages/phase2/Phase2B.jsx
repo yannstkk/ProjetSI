@@ -1,185 +1,175 @@
+import { useState } from "react";
 import { Link } from "react-router";
-import { CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, RefreshCw } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "../../components/ui/select";
+import { authFetch } from "../../../services/authFetch";
+import { buildPlantUMLUrl } from "./components/helpers/plantuml";
+import { loadMFC, saveMFC, clearMFC } from "./components/helpers/mfcStorage";
+
+import { ZoneUpload } from "./components/ZoneUpload";
+import { DiagrammePreview } from "./components/DiagrammePreview";
+import { PanneauResultats } from "./components/PanneauResultats";
+
+// ─── Composant principal ──────────────────────────────────────────────────────
 
 export function Phase2B() {
+    const saved = loadMFC();
+
+    const [plantUmlCode, setPlantUmlCode]   = useState(saved?.code || "");
+    const [diagramUrl, setDiagramUrl]       = useState(saved?.diagramUrl || "");
+    const [flux, setFlux]                   = useState(saved?.flux || []);
+    const [acteurs, setActeurs]             = useState(saved?.acteurs || []);
+    const [fileName, setFileName]           = useState(saved?.fileName || "");
+    const [diagramError, setDiagramError]   = useState(false);
+    const [iaLoading, setIaLoading]         = useState(false);
+    const [iaError, setIaError]             = useState("");
+
+    // ── Traitement fichier ────────────────────────────────────────────────────
+
+    function handleFileProcessed(code, name) {
+        const url = buildPlantUMLUrl(code);
+
+        setPlantUmlCode(code);
+        setFileName(name);
+        setDiagramUrl(url);
+        setDiagramError(false);
+        setFlux([]);
+        setActeurs([]);
+        setIaError("");
+
+        saveMFC({ code, diagramUrl: url, flux: [], acteurs: [], fileName: name });
+    }
+
+    // ── Analyse IA ────────────────────────────────────────────────────────────
+
+    async function lancerAnalyseIA() {
+        if (!plantUmlCode.trim()) return;
+
+        setIaLoading(true);
+        setIaError("");
+
+        try {
+            const response = await authFetch("/api/modelisation/mfc/analyser", {
+                method: "POST",
+                body: plantUmlCode,
+                headers: { "Content-Type": "text/plain" },
+            });
+
+            if (!response.ok) throw new Error(`Erreur serveur : ${response.status}`);
+
+            const data = await response.json();
+            const fluxData = data?.flux || [];
+
+            // Extraire les acteurs uniques depuis les flux
+            const acteursSet = new Set();
+            fluxData.forEach((f) => {
+                if (f.emetteur) acteursSet.add(f.emetteur);
+                if (f.recepteur) acteursSet.add(f.recepteur);
+            });
+            const acteursListe = Array.from(acteursSet).map((nom) => ({ nom }));
+
+            setFlux(fluxData);
+            setActeurs(acteursListe);
+
+            saveMFC({
+                code: plantUmlCode,
+                diagramUrl,
+                flux: fluxData,
+                acteurs: acteursListe,
+                fileName,
+            });
+
+        } catch (err) {
+            setIaError("Erreur lors de l'analyse : " + err.message);
+        } finally {
+            setIaLoading(false);
+        }
+    }
+
+    // ── Reset ─────────────────────────────────────────────────────────────────
+
+    function handleReset() {
+        setPlantUmlCode("");
+        setDiagramUrl("");
+        setFlux([]);
+        setActeurs([]);
+        setFileName("");
+        setIaError("");
+        setDiagramError(false);
+        clearMFC();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+
     return (
         <div className="p-6">
-            <div className="max-w-6xl mx-auto space-y-6">
+            <div className="max-w-7xl mx-auto space-y-6">
 
-                {/* Title */}
-                <div>
-                    <h1 className="text-2xl font-semibold text-gray-900">
-                        Flux MFC
-                    </h1>
-                    <p className="text-gray-600">
-                        Phase 2B — Modèle de Flux de Communication (Lecture seule)
-                    </p>
+                {/* Titre */}
+                <div className="flex items-start justify-between">
+                    <div>
+                        <h1 className="text-2xl font-semibold text-gray-900">Flux MFC</h1>
+                        <p className="text-gray-600">
+                            Phase 2B — Modèle de Flux de Communication
+                        </p>
+                    </div>
+
+                    {plantUmlCode && (
+                        <button
+                            onClick={handleReset}
+                            className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-red-200 transition-colors"
+                        >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            Réinitialiser
+                        </button>
+                    )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                {/* Contenu : zone upload OU layout principal */}
+                {!plantUmlCode ? (
+                    <ZoneUpload onFileProcessed={handleFileProcessed} />
+                ) : (
+                    <div className="grid grid-cols-12 gap-6">
 
-                    {/* Canvas */}
-                    <Card className="col-span-1">
-                        <CardHeader>
-                            <CardTitle>Canvas MFC</CardTitle>
-                        </CardHeader>
+                        {/* Colonne gauche : aperçu + actions */}
+                        <div className="col-span-5">
+                            <DiagrammePreview
+                                fileName={fileName}
+                                diagramUrl={diagramUrl}
+                                diagramError={diagramError}
+                                iaLoading={iaLoading}
+                                iaError={iaError}
+                                onChangerFichier={handleFileProcessed}
+                                onAnalyserIA={lancerAnalyseIA}
+                                onDiagramError={() => setDiagramError(true)}
+                            />
+                        </div>
 
-                        <CardContent>
-                            <div className="bg-gray-50 rounded-lg p-6 min-h-[500px] border-2 border-dashed border-gray-300">
-
-                                <div className="mt-6 text-center text-sm text-gray-500">
-                                    Modèle en lecture seule — Aucun flux défini
-                                </div>
-
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Formulaire */}
-                    <div className="col-span-1 space-y-6">
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Informations flux</CardTitle>
-                            </CardHeader>
-
-                            <CardContent className="space-y-4">
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Nom du flux
-                                    </label>
-                                    <Input placeholder="Nom du flux" disabled />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        De (acteur source)
-                                    </label>
-
-                                    <Select disabled>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Sélectionner..." />
-                                        </SelectTrigger>
-
-                                        <SelectContent>
-                                            <SelectItem value="placeholder">
-                                                Aucun acteur
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Vers (acteur destination)
-                                    </label>
-
-                                    <Select disabled>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Sélectionner..." />
-                                        </SelectTrigger>
-
-                                        <SelectContent>
-                                            <SelectItem value="placeholder">
-                                                Aucun acteur
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Type de flux
-                                    </label>
-
-                                    <Select disabled>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Type..." />
-                                        </SelectTrigger>
-
-                                        <SelectContent>
-                                            <SelectItem value="info">
-                                                Informationnel
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Canal / Support
-                                    </label>
-
-                                    <Select disabled>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Canal..." />
-                                        </SelectTrigger>
-
-                                        <SelectContent>
-                                            <SelectItem value="mail">
-                                                Mail
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                            </CardContent>
-                        </Card>
-
-                        {/* Info */}
-                        <Card className="border-l-4 border-l-blue-600">
-
-                            <CardHeader>
-                                <CardTitle className="text-base">
-                                    À propos de cet écran
-                                </CardTitle>
-                            </CardHeader>
-
-                            <CardContent>
-                                <p className="text-sm text-gray-700">
-                                    Cet écran permet de <strong>visualiser et vérifier</strong> les flux MFC.
-                                    La création de flux se fait en dehors de l'outil.
-                                </p>
-                            </CardContent>
-
-                        </Card>
+                        {/* Colonne droite : résultats IA */}
+                        <div className="col-span-6">
+                            <PanneauResultats acteurs={acteurs} flux={flux} />
+                        </div>
 
                     </div>
-                </div>
+                )}
 
-                {/* Actions */}
-                <div className="flex gap-3">
-
+                {/* Navigation */}
+                <div className="flex gap-3 pt-2">
                     <Link
                         to="/dashboard/phase2/actors"
-                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                     >
-                        ← Retour aux acteurs
+                        <ArrowLeft className="w-4 h-4" />
+                        Retour aux acteurs
                     </Link>
-
-                    <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                        Vérifier cohérence
-                    </button>
 
                     <Link
                         to="/dashboard/phase2/coherence"
-                        className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium ml-auto"
+                        className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium ml-auto"
                     >
-                        <CheckCircle className="w-4 h-4 inline mr-2" />
-                        Valider périmètre
+                        Vérifier la cohérence
+                        <ArrowRight className="w-4 h-4" />
                     </Link>
-
                 </div>
 
             </div>

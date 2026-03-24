@@ -1,92 +1,147 @@
+import { useMemo } from "react";
 import { Link } from "react-router";
-import { AlertTriangle, CheckCircle, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { loadActeurs } from "./components/helpers/acteurIA";
+import { loadMFC } from "./components/helpers/mfcStorage";
+
+import { StatsBarre } from "./components/StatsBarre";
+import { CarteCoherence } from "./components/CarteCoherence";
+import { CarteAlertes } from "./components/CarteAlertes";
+import { MatriceActeursFlux } from "./components/MatriceActeursFlux";
+
+// ─── Logique de cohérence ─────────────────────────────────────────────────────
+
+function calculerCoherence(acteurs2A, mfc2B) {
+    const flux = mfc2B?.flux || [];
+    const acteursMFC = mfc2B?.acteurs || [];
+
+    // Ensembles de noms normalisés
+    const nomsActeurs2A = new Set(acteurs2A.map((a) => a.nom.toLowerCase()));
+    const nomsActeursMFC = new Set(acteursMFC.map((a) => a.nom.toLowerCase()));
+
+    // Acteurs cohérents : déclarés en 2A ET présents dans les flux
+    const coherents = acteurs2A.filter((a) =>
+        nomsActeursMFC.has(a.nom.toLowerCase())
+    );
+
+    // Alertes
+    const alertes = [];
+
+    // Orphelins : déclarés en 2A mais absents des flux
+    acteurs2A
+        .filter((a) => !nomsActeursMFC.has(a.nom.toLowerCase()))
+        .forEach((a) =>
+            alertes.push({ nom: a.nom, type: "orphelin" })
+        );
+
+    // Fantômes : dans les flux MFC mais non déclarés en 2A
+    acteursMFC
+        .filter((a) => !nomsActeurs2A.has(a.nom.toLowerCase()))
+        .forEach((a) =>
+            alertes.push({ nom: a.nom, type: "fantome" })
+        );
+
+    // Sans rôle : déclarés en 2A sans rôle défini
+    acteurs2A
+        .filter((a) => !a.role?.trim())
+        .forEach((a) =>
+            alertes.push({ nom: a.nom, type: "sansRole" })
+        );
+
+    return { coherents, alertes, flux };
+}
+
+// ─── Composant principal ──────────────────────────────────────────────────────
 
 export function Phase2C() {
+    const acteurs2A = useMemo(() => loadActeurs(), []);
+    const mfc2B     = useMemo(() => loadMFC(), []);
+
+    const { coherents, alertes, flux } = useMemo(
+        () => calculerCoherence(acteurs2A, mfc2B),
+        [acteurs2A, mfc2B]
+    );
+
+    const peutValider = alertes.filter(
+        (a) => a.type === "orphelin" || a.type === "fantome"
+    ).length === 0;
+
     return (
         <div className="p-6">
-            <div className="max-w-5xl mx-auto space-y-6">
+            <div className="max-w-6xl mx-auto space-y-6">
 
-                {/* Title */}
+                {/* Titre */}
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900">
                         Résultat contrôle cohérence
                     </h1>
                     <p className="text-gray-600">
-                        Phase 2C — Vérification du périmètre
+                        Phase 2C — Vérification du périmètre Acteurs ↔ Flux MFC
                     </p>
                 </div>
 
-                {/* Alertes cohérence */}
-                <Card className="border-l-4 border-l-yellow-500">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <AlertTriangle className="w-5 h-5 text-yellow-600" />
-                            Alertes cohérence (0)
-                        </CardTitle>
-                    </CardHeader>
+                {/* Stats rapides */}
+                <StatsBarre
+                    nbActeurs={acteurs2A.length}
+                    nbFlux={flux.length}
+                    nbAlertes={alertes.length}
+                    nbCoherents={coherents.length}
+                />
 
-                    <CardContent>
-                        <p className="text-sm text-gray-500">
-                            Aucune incohérence détectée
-                        </p>
-                    </CardContent>
-                </Card>
+                {/* Deux colonnes : cohérents + alertes */}
+                <div className="grid grid-cols-2 gap-4">
+                    <CarteCoherence acteurs={coherents} />
+                    <CarteAlertes alertes={alertes} />
+                </div>
 
-                {/* Résumé MFC */}
-                <Card className="border-l-4 border-l-green-600">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <CheckCircle className="w-5 h-5 text-green-600" />
-                            Synthèse MFC
-                        </CardTitle>
-                    </CardHeader>
+                {/* Matrice */}
+                <MatriceActeursFlux acteurs={acteurs2A} flux={flux} />
 
-                    <CardContent>
-                        <div className="grid grid-cols-3 gap-4">
-
-                            <div className="text-center p-4 bg-gray-50 rounded">
-                                <div className="text-2xl font-semibold text-gray-900">0</div>
-                                <div className="text-sm text-gray-600">Acteurs</div>
-                            </div>
-
-                            <div className="text-center p-4 bg-gray-50 rounded">
-                                <div className="text-2xl font-semibold text-gray-900">0</div>
-                                <div className="text-sm text-gray-600">Flux</div>
-                            </div>
-
-                            <div className="text-center p-4 bg-gray-50 rounded">
-                                <div className="text-2xl font-semibold text-gray-900">0</div>
-                                <div className="text-sm text-gray-600">Connexions</div>
-                            </div>
-
+                {/* Bandeau validation */}
+                {!peutValider && (
+                    <div className="flex items-center gap-3 p-4 bg-orange-50 border border-orange-200 rounded-xl text-sm text-orange-800">
+                        <span className="font-medium">
+                            ⚠ Résolvez les alertes orphelins et fantômes avant de valider la Phase 2.
+                        </span>
+                        <div className="ml-auto flex gap-2">
+                            <Link
+                                to="/dashboard/phase2/actors"
+                                className="px-3 py-1.5 bg-white border border-orange-300 rounded-lg hover:bg-orange-50 text-orange-700 font-medium"
+                            >
+                                Corriger acteurs
+                            </Link>
+                            <Link
+                                to="/dashboard/phase2/flows"
+                                className="px-3 py-1.5 bg-white border border-orange-300 rounded-lg hover:bg-orange-50 text-orange-700 font-medium"
+                            >
+                                Corriger flux
+                            </Link>
                         </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                )}
 
-                {/* Actions */}
+                {/* Navigation */}
                 <div className="flex gap-3">
-
                     <Link
                         to="/dashboard/phase2/flows"
-                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                     >
-                        ← Retour aux flux
+                        <ArrowLeft className="w-4 h-4" />
+                        Retour aux flux
                     </Link>
-
-                    <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                        Aller corriger
-                    </button>
 
                     <Link
                         to="/dashboard/phase3/classification"
-                        className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium ml-auto"
+                        className={`flex items-center gap-2 px-6 py-2 rounded-lg transition-colors font-medium ml-auto ${
+                            peutValider
+                                ? "bg-green-600 text-white hover:bg-green-700"
+                                : "bg-gray-200 text-gray-400 cursor-not-allowed pointer-events-none"
+                        }`}
                     >
                         Valider Phase 2
                         <ArrowRight className="w-4 h-4" />
                     </Link>
-
                 </div>
 
             </div>

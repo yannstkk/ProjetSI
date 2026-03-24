@@ -1,10 +1,8 @@
-const BASE_URL = "http://localhost:8080";
+import { authFetch } from "./authFetch";
 
 export async function suggererQuestions(notes) {
-    const response = await fetch(`${BASE_URL}/api/mistral/suggerer-questions`, {
+    const response = await authFetch("/api/mistral/suggerer-questions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ notes }),
     });
 

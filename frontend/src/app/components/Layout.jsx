@@ -2,12 +2,18 @@ import { Outlet, Navigate } from "react-router-dom";
 import { Sidebar } from "./layout/Sidebar";
 import { Header } from "./layout/Header";
 import { UserProfile } from "./layout/UserProfile";
+import { getProjetCourant } from "../../services/projetCourant";
 
 export function Layout() {
-    const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+    const token = sessionStorage.getItem("token");
+    const projet = getProjetCourant();
 
-    if (!isLoggedIn) {
+    if (!token) {
         return <Navigate to="/login" replace />;
+    }
+
+    if (!projet) {
+        return <Navigate to="/projects" replace />;
     }
 
     return (

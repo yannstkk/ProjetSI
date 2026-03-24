@@ -2,22 +2,24 @@ package com.backend.projet.projet.dto.request;
 
 public class ProjetRequest {
 
-	private String nom;
-	private String idUtilisateur;
+    private String nom;
+    private String idUser;
 
-	public String getNom() {
-		return nom;
-	}
+    public ProjetRequest() {}
 
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
-
-	public String getUser() {
-		return idUtilisateur;
-	}
-
-	public void setUser(String idUser) {
-		this.idUtilisateur = idUser;
-	}
+    public String getNom() { 
+    	return nom; 
+    }
+    
+    public void setNom(String nom) { 
+    	this.nom = nom; 
+    }
+    
+    public String getIdUser() { 
+    	return idUser; 
+    }
+    
+    public void setIdUser(String idUser) { 
+    	this.idUser = idUser; 
+    }
 }
