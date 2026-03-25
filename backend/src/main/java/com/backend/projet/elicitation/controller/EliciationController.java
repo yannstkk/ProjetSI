@@ -1,5 +1,6 @@
 package com.backend.projet.elicitation.controller;
 
+import com.backend.projet.elicitation.dto.request.NotesRequest;
 import com.backend.projet.elicitation.dto.response.AnalysisResponse;
 import com.backend.projet.elicitation.service.ElicitationService;
 import com.backend.projet.mistral.service.MistralService;
@@ -19,7 +20,8 @@ public class EliciationController {
     }
 
     @PostMapping("/analyser")
-    public ResponseEntity<AnalysisResponse> analyser(@RequestBody String notesBrutes){
+    public ResponseEntity<AnalysisResponse> analyser(@RequestBody NotesRequest request){
+        String notesBrutes = request.getContenu();
         try{
             AnalysisResponse resultat = elicitation.analyserNotes(notesBrutes);
             return  ResponseEntity.ok(resultat);
