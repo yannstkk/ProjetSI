@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.backend.projet.elicitation.entity.UserStory;
 import com.backend.projet.elicitation.entity.Interview;
 import com.backend.projet.elicitation.entity.Participant;
 import com.backend.projet.modelisation.entity.BPMN;
@@ -58,6 +59,9 @@ public class Projet {
     
 	@OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
     private List<Acteur> acteurs = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
+	private List<UserStory> userStories = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(

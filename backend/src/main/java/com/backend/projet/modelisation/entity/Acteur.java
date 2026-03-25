@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.backend.projet.projet.entity.Projet;
+import com.backend.projet.elicitation.entity.UserStory;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -48,6 +50,9 @@ public class Acteur {
 
     @OneToMany(mappedBy = "acteurSortie")
     private List<Flux> fluxSortie = new ArrayList<>();
+    
+	@OneToMany(mappedBy = "acteur", cascade = CascadeType.ALL)
+	private List<UserStory> userStories = new ArrayList<>();
     
 	@ManyToOne
 	@JoinColumn(name = "id_projet")
