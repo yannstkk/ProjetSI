@@ -1,15 +1,12 @@
 package com.backend.projet.besoin.dto.request;
 
-public class UserStoryRequest {
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class UserStoryRequest {
 
     private Long project;
     private String subject;
-
-    public UserStoryRequest(String subject, Long project){
-        this.subject = subject;
-        this.project = project;
-    }
 
     public String getSubject() {
         return this.subject;
@@ -26,5 +23,4 @@ public class UserStoryRequest {
     public void setProject(Long project) {
         this.project = project;
     }
-
 }

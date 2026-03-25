@@ -1,6 +1,11 @@
 package com.backend.projet.auth;
 
 public class AuthentificationException extends Exception {
+
+    public AuthentificationException() {
+        super();
+    }
+
     /**
      * Creates a new InvalidLoginException.
      * @param message description of the error
@@ -8,5 +13,4 @@ public class AuthentificationException extends Exception {
     public AuthentificationException(String message) {
         super(message);
     }
-
 }

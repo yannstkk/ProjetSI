@@ -3,12 +3,12 @@ package com.backend.projet.elicitation.dto.response;
 public class NotesResponse {
 
     private Long numeroNotes;
-    private Long idProjet;
+    private Long numeroInterview;
     private String contenu;
 
-    public NotesResponse(Long numeroNotes, Long idProjet, String contenu) {
+    public NotesResponse(Long numeroNotes, Long numeroInterview, String contenu) {
         this.numeroNotes = numeroNotes;
-        this.idProjet = idProjet;
+        this.numeroInterview = numeroInterview;
         this.contenu = contenu;
     }
 
@@ -16,8 +16,8 @@ public class NotesResponse {
     	return numeroNotes; 
     }
     
-    public Long getIdProjet() { 
-    	return idProjet; 
+    public Long getNumeroInterview() { 
+    	return numeroInterview; 
     }
     
     public String getContenu() { 

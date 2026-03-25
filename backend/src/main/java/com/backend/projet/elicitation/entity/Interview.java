@@ -1,110 +1,87 @@
 package com.backend.projet.elicitation.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.backend.projet.elicitation.entity.identifiant.InterviewId;
-
-import com.backend.projet.projet.entity.Client;
 import com.backend.projet.projet.entity.Projet;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "INTERVIEW")
-@IdClass(InterviewId.class)
 public class Interview {
 
-    @Id
-    @Column(name = "numero_interview")
-    private Long numeroInterview;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "numero_interview")
+	private Long numeroInterview;
 
-    @Id
-    @Column(name = "id_projet", insertable=false, updatable=false)
-    private Long idProjet;
+	@ManyToOne
+	@JoinColumn(name = "id_projet")
+	private Projet projet;
 
-    @ManyToOne
-    @JoinColumn(name = "id_projet")
-    private Projet projet;
+	@Column(name = "date_interview")
+	private LocalDate dateInterview;
 
-    @Column(name = "date_interview")
-    private LocalDate dateInterview;
+	@Column(name = "heure_interview")
+	private LocalDateTime heureInterview;
 
-    @Column(name = "sujet")
-    private String sujet;
+	@Column(name = "titre")
+	private String titre;
 
-    @Column(name = "nominterviewer")
-    private String nomInterviewer;
+	@Column(name = "nominterviewer")
+	private String nomInterviewer;
 
-    @OneToMany(mappedBy = "interview", cascade = CascadeType.ALL)
-    private List<Question> questions = new ArrayList<>();
+	@Column(name = "objectifs", length = 4000)
+	private String objectifs;
 
-    @ManyToMany
-    @JoinTable(
-        name = "PARTICIPE_INTERVIEW",
-        joinColumns = {
-            @JoinColumn(name = "numero_interview"),
-            @JoinColumn(name = "id_projet")
-        },
-        inverseJoinColumns = @JoinColumn(name = "id_client")
-    )
-    private List<Client> clients = new ArrayList<>();
+	@OneToMany(mappedBy = "interview", cascade = CascadeType.ALL)
+	private List<Question> questions = new ArrayList<>();
 
-	public Long getNumeroInterview() {
-		return numeroInterview;
-	}
+	@OneToMany(mappedBy = "interview", cascade = CascadeType.ALL)
+	private List<Notes> notes = new ArrayList<>();
 
-	public void setNumeroInterview(Long numeroInterview) {
-		this.numeroInterview = numeroInterview;
-	}
+	@OneToMany(mappedBy = "interview", cascade = CascadeType.ALL)
+	private List<NotesStructurees> notesStructurees = new ArrayList<>();
 
-	public Long getIdProjet() {
-		return idProjet;
-	}
+	@OneToMany(mappedBy = "interview", cascade = CascadeType.ALL)
+	private List<ParticipeInterview> participeInterviews = new ArrayList<>();
 
-	public void setIdProjet(Long idProjet) {
-		this.idProjet = idProjet;
-	}
+	public Interview() {}
 
-	public Projet getProjet() {
-		return projet;
-	}
+	public Long getNumeroInterview() { return numeroInterview; }
+	public void setNumeroInterview(Long numeroInterview) { this.numeroInterview = numeroInterview; }
 
-	public void setProjet(Projet projet) {
-		this.projet = projet;
-	}
+	public Projet getProjet() { return projet; }
+	public void setProjet(Projet projet) { this.projet = projet; }
 
-	public LocalDate getDateInterview() {
-		return dateInterview;
-	}
+	public LocalDate getDateInterview() { return dateInterview; }
+	public void setDateInterview(LocalDate dateInterview) { this.dateInterview = dateInterview; }
 
-	public void setDateInterview(LocalDate dateInterview) {
-		this.dateInterview = dateInterview;
-	}
+	public LocalDateTime getHeureInterview() { return heureInterview; }
+	public void setHeureInterview(LocalDateTime heureInterview) { this.heureInterview = heureInterview; }
 
-	public String getSujet() {
-		return sujet;
-	}
+	public String getTitre() { return titre; }
+	public void setTitre(String titre) { this.titre = titre; }
 
-	public void setSujet(String sujet) {
-		this.sujet = sujet;
-	}
+	public String getNomInterviewer() { return nomInterviewer; }
+	public void setNomInterviewer(String nomInterviewer) { this.nomInterviewer = nomInterviewer; }
 
-	public String getNomInterviewer() {
-		return nomInterviewer;
-	}
+	public String getObjectifs() { return objectifs; }
+	public void setObjectifs(String objectifs) { this.objectifs = objectifs; }
 
-	public void setNomInterviewer(String nomInterviewer) {
-		this.nomInterviewer = nomInterviewer;
+	public List<ParticipeInterview> getParticipeInterviews() { return participeInterviews; }
+	public void setParticipeInterviews(List<ParticipeInterview> participeInterviews) {
+		this.participeInterviews = participeInterviews;
 	}
 }
