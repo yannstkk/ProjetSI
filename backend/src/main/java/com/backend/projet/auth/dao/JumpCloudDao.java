@@ -1,30 +1,33 @@
 package com.backend.projet.auth.dao;
+import com.backend.projet.auth.AuthentificationException;
 import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
 import org.springframework.stereotype.Repository;
-import com.backend.projet.common.config.LdapConfig;
+import com.backend.projet.config.LdapConfig;
 
 import java.io.IOException;
 
 @Repository
 public class JumpCloudDao {
 
-    public boolean checkLogin(String username, String password) {
+    private final LdapConfig ldapConfig;
 
-        String user = "uid=" + username + ",ou=Users,o=" + LdapConfig.ORG_ID + ",dc=jumpcloud,dc=com";
+    public JumpCloudDao(LdapConfig ldapConfig){
+        this.ldapConfig = ldapConfig;
+    }
 
+    public void checkLogin(String username, String password) throws AuthentificationException {
 
-        try (LdapConnection ldapConn = new LdapNetworkConnection(LdapConfig.HOST, LdapConfig.PORT)) {
+        String user = "uid=" + username + "," + this.ldapConfig.getBaseDN();
+
+        try (LdapConnection ldapConn = new LdapNetworkConnection(this.ldapConfig.getHost(), this.ldapConfig.getPort())) {
             ldapConn.bind(user, password);
-            return true;
         }
         catch (IOException e) {
-            System.err.println("Erreur de connexion LDAP : " + e.getMessage());
-            return false;
+            throw new AuthentificationException("Erreur de connexion LDAP : " + e.getMessage());
         } catch (LdapException e) {
-            System.err.println("Mauvais identifiants.");
-            return false;
+            throw new AuthentificationException("Mauvais identifiants.");
         }
     }
 }

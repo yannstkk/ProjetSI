@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.backend.projet.elicitation.entity.Interview;
-import com.backend.projet.elicitation.entity.Notes;
 import com.backend.projet.elicitation.entity.Participant;
 import com.backend.projet.modelisation.entity.BPMN;
 import com.backend.projet.modelisation.entity.DictionnaireDonnee;
 import com.backend.projet.modelisation.entity.MCD;
+import com.backend.projet.modelisation.entity.Acteur;
 import com.backend.projet.modelisation.entity.MFC;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -41,12 +41,6 @@ public class Projet {
     @Column(name = "id_user")
     private String idUser;
 
-    public String getIdUser() {
-		return idUser;
-	}
-	public void setIdUser(String idUser) {
-		this.idUser = idUser;
-	}
 	@OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
     private List<Interview> interviews = new ArrayList<>();
 
@@ -61,6 +55,9 @@ public class Projet {
 
     @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
     private List<DictionnaireDonnee> dictionnaires = new ArrayList<>();
+    
+	@OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
+    private List<Acteur> acteurs = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
@@ -92,6 +89,13 @@ public class Projet {
 	}
 	public void setDateCreation(LocalDate dateCreation) {
 		this.dateCreation = dateCreation;
+	}
+	
+    public String getIdUser() {
+		return idUser;
+	}
+	public void setIdUser(String idUser) {
+		this.idUser = idUser;
 	}
 
 }

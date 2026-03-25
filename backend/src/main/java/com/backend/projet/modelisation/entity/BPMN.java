@@ -38,7 +38,7 @@ public class BPMN {
 
     @ManyToMany
     @JoinTable(
-        name = "ACTEUR_RENCENSE",
+        name = "PRESENCE_BPMN",
         joinColumns = @JoinColumn(name = "id_bpmn"),
         inverseJoinColumns = @JoinColumn(name = "id_acteur")
     )

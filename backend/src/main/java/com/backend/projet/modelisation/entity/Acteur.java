@@ -3,12 +3,16 @@ package com.backend.projet.modelisation.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.backend.projet.projet.entity.Projet;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -26,6 +30,12 @@ public class Acteur {
 
     @Column(name = "type")
     private String type;
+    
+    @Column(name = "source", length = 30)
+    private String source;
+
+    @Column(name = "role", length = 100)
+    private String role;
 
     @ManyToMany(mappedBy = "acteurs")
     private List<BPMN> bpmns = new ArrayList<>();
@@ -38,8 +48,20 @@ public class Acteur {
 
     @OneToMany(mappedBy = "acteurSortie")
     private List<Flux> fluxSortie = new ArrayList<>();
+    
+	@ManyToOne
+	@JoinColumn(name = "id_projet")
+	private Projet projet;
 
-    public Acteur() {}
+    public Projet getProjet() {
+		return projet;
+	}
+
+	public void setProjet(Projet projet) {
+		this.projet = projet;
+	}
+
+	public Acteur() {}
 
 	public Long getIdActeur() {
 		return idActeur;
@@ -64,6 +86,22 @@ public class Acteur {
 	public void setType(String type) {
 		this.type = type;
 	}
+	
+    public String getSource() { 
+    	return source; 
+    }
+    
+    public void setSource(String source) { 
+    	this.source = source; 
+    }
+    
+    public String getRole() { 
+    	return role; 
+    }
+    
+    public void setRole(String role) { 
+    	this.role = role; 
+    }
 
     
 }
