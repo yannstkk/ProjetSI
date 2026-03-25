@@ -1,17 +1,21 @@
 package com.backend.projet.besoin.dao;
 
 
+import com.backend.projet.besoin.dto.request.CreateProjectTaigaRequest;
+import com.backend.projet.besoin.dto.request.UserStoryRequest;
+import com.backend.projet.besoin.dto.response.CreateProjectTaigaResponse;
+import com.backend.projet.besoin.dto.request.TaigaAuthRequest;
+import com.backend.projet.besoin.dto.response.TaigaAuthResponse;
+import com.backend.projet.besoin.dto.response.UserStoryResponse;
 import com.backend.projet.config.TaigaConfig;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
-import tools.jackson.databind.JsonNode;
 
-import java.util.HashMap;
-import java.util.Map;
-
+@Repository
 public class TaigaDao {
 
     private RestTemplate restTemplate;
@@ -22,24 +26,30 @@ public class TaigaDao {
         this.taigaConfig = taigaConfig;
     }
 
-    public JsonNode AuthentificationTaiga(){
+    public TaigaAuthResponse authentificationTaiga(){
         String url = this.taigaConfig.getUrl() + "/auth";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        Map<String, String> body = new HashMap<>();
-        body.put("username", this.taigaConfig.getUsername());
-        body.put("password", this.taigaConfig.getPassword());
-        body.put("type", "normal");
-        HttpEntity<Map<String,String>> postEntity = new HttpEntity<>(body, headers);
-        return this.restTemplate.postForObject(url, postEntity, JsonNode.class);
+        TaigaAuthRequest authRequest = new TaigaAuthRequest(this.taigaConfig.getUsername(), this.taigaConfig.getPassword());
+        HttpEntity<TaigaAuthRequest> postEntity = new HttpEntity<>(authRequest, headers);
+        return this.restTemplate.exchange(url,HttpMethod.POST, postEntity, TaigaAuthResponse.class).getBody();
     }
 
-    public JsonNode getUs(int idProject, String token){
-        String url = this.taigaConfig.getUrl() + "/userstories?project=" + idProject;
+    public CreateProjectTaigaResponse createProject(CreateProjectTaigaRequest createProject, String token){
+        String url = this.taigaConfig.getUrl() + "/projects";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer " + token);
-        HttpEntity<Void> getEntity = new HttpEntity<>(headers);
-        return this.restTemplate.exchange(url, HttpMethod.GET, getEntity, JsonNode.class).getBody();
+        HttpEntity<CreateProjectTaigaRequest> postEntity = new HttpEntity<>(createProject,headers);
+        return this.restTemplate.exchange(url, HttpMethod.POST, postEntity, CreateProjectTaigaResponse.class).getBody();
+    }
+
+    public UserStoryResponse createUserStory(UserStoryRequest userStory, String token){
+        String url = this.taigaConfig.getUrl() + "/userstories";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + token);
+        HttpEntity<UserStoryRequest> postEntity = new HttpEntity<>(userStory,headers);
+        return this.restTemplate.exchange(url, HttpMethod.POST, postEntity, UserStoryResponse.class).getBody();
     }
 }

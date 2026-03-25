@@ -35,6 +35,7 @@ public class ProjetController {
         return ResponseEntity.ok(projetService.getProjetsByUser(idUtilisateur));
     }
 
+    // ← nouveau
     @GetMapping("/{id}")
     public ResponseEntity<ProjetResponse> getProjetById(@PathVariable Long id) {
         try {

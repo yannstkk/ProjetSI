@@ -2,24 +2,22 @@ package com.backend.projet.elicitation.entity;
 
 import com.backend.projet.elicitation.entity.identifiant.QuestionReponseId;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinColumns;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "QUESTION")
+@Table(name = "REPONSE")
 @IdClass(QuestionReponseId.class)
-public class Question {
+public class Reponse {
 
     @Id
-    @Column(name = "numero_question")
+    @Column(name = "numero_question", insertable=false, updatable=false)
     private Long numeroQuestion;
     
     @Id
@@ -30,18 +28,24 @@ public class Question {
     @Column(name = "id_projet", insertable=false, updatable=false)
     private Long idProjet;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumns({
+        @JoinColumn(name = "numero_question",  referencedColumnName = "numero_question"),
         @JoinColumn(name = "numero_interview", referencedColumnName = "numero_interview"),
         @JoinColumn(name = "id_projet",        referencedColumnName = "id_projet")
     })
-    private Interview interview;
+    private Question question;
 
-    @Column(name = "libelle")
-    private String libelle;
+    @Column(name = "contenu")
+    private Long contenu;
 
-    @OneToOne(mappedBy = "question", cascade = CascadeType.ALL)
-    private Reponse reponse;
+	public Long getNumeroQuestion() {
+		return numeroQuestion;
+	}
+
+	public void setNumeroQuestion(Long numeroQuestion) {
+		this.numeroQuestion = numeroQuestion;
+	}
 
 	public Long getNumeroInterview() {
 		return numeroInterview;
@@ -59,37 +63,23 @@ public class Question {
 		this.idProjet = idProjet;
 	}
 
-	public Long getNumeroQuestion() {
-		return numeroQuestion;
+	public Question getQuestion() {
+		return question;
 	}
 
-	public void setNumeroQuestion(Long numeroQuestion) {
-		this.numeroQuestion = numeroQuestion;
+	public void setQuestion(Question question) {
+		this.question = question;
 	}
 
-	public Interview getInterview() {
-		return interview;
+	public Long getContenu() {
+		return contenu;
 	}
 
-	public void setInterview(Interview interview) {
-		this.interview = interview;
+	public void setContenu(Long contenu) {
+		this.contenu = contenu;
 	}
-
-	public String getLibelle() {
-		return libelle;
-	}
-
-	public void setLibelle(String libelle) {
-		this.libelle = libelle;
-	}
-
-	public Reponse getReponse() {
-		return reponse;
-	}
-
-	public void setReponse(Reponse reponse) {
-		this.reponse = reponse;
-	}
+    
+    
 
     
 }
