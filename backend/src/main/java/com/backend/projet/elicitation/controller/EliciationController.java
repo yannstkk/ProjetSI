@@ -30,4 +30,5 @@ public class EliciationController {
         }
     }
 
+    // Pour l'instant, rien n'est sauvegardé en base ...
 }
