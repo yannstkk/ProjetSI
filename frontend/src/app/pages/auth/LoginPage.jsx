@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import logo from "../../assets/logo.png";
+import logo from "../../../assets/logo.png";
 
 export default function LoginPage() {
 
@@ -16,6 +17,8 @@ export default function LoginPage() {
     const uppercaseValid = /[A-Z]/.test(password);
     const specialValid = /[!@#$%^&*]/.test(password);
     const passwordValid = lengthValid && uppercaseValid && specialValid;
+
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -35,10 +38,11 @@ export default function LoginPage() {
             const data = await response.json();
 
             if (!response.ok || data.isError) {
-                alert("Identifiants incorrects. Veuillez réessayer.");
+                setError("Identifiants incorrects. Veuillez réessayer.");
             } else {
-                alert("Connexion réussie !");
-
+                sessionStorage.setItem("username", username);
+                sessionStorage.setItem("token", data.content);
+                navigate("/projects");
             }
         } catch (err) {
             setError("Impossible de contacter le serveur. Vérifiez votre connexion.");
