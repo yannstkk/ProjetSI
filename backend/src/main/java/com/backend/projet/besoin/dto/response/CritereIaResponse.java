@@ -1,31 +1,34 @@
 package com.backend.projet.besoin.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CritereIaResponse {
-    private List<String> criteres;
-    private String metadata;
 
-    public CritereIaResponse(List<String> criteres) {
+    private List<CritereDto> criteres;
+    private Object metadata;
+
+    public CritereIaResponse() {}
+
+    public CritereIaResponse(List<CritereDto> criteres, Object metadata) {
+        this.criteres = criteres;
+        this.metadata = metadata;
+    }
+
+    public List<CritereDto> getCriteres() {
+        return criteres;
+    }
+
+    public void setCriteres(List<CritereDto> criteres) {
         this.criteres = criteres;
     }
 
-    public void setMetadata(String md){
-        this.metadata = md;
+    public Object getMetadata() {
+        return metadata;
     }
 
-    public String getMetadata(){return this.metadata;}
-
-    public void addCritere(String critere){
-        this.criteres.add(critere);
-    }
-
-    public List<String> getCriteres(){
-        return this.criteres;
-    }
-
-    public void deleteCritere(String critere){
-        this.criteres.remove(critere);
+    public void setMetadata(Object metadata) {
+        this.metadata = metadata;
     }
 }
