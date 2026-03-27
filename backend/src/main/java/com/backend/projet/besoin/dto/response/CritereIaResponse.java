@@ -12,7 +12,7 @@ public class CritereIaResponse {
     }
 
     public void setMetadata(String md){
-        this.metadata = metadata;
+        this.metadata = md;
     }
 
     public String getMetadata(){return this.metadata;}

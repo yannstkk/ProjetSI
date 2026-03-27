@@ -16,10 +16,10 @@ public class MistralController {
     private final MistralService mistralService;
     private final CritereIaService critereIaService;
 
-    public MistralController(MistralService mistralService) {
+    public MistralController(MistralService mistralService, CritereIaService critereIaService) {
 
         this.mistralService = mistralService;
-        this.critereIaService = new CritereIaService(this.mistralService);
+        this.critereIaService = critereIaService;
     }
 
     @PostMapping("/suggerer-questions")
