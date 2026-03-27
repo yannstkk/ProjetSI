@@ -43,8 +43,8 @@ const phases = [
         name: "User Stories",
         icon: FileText,
         screens: [
+            { path: "/dashboard/phase4/form",    label: "Formulaire" },  // ← en premier
             { path: "/dashboard/phase4/backlog", label: "Backlog" },
-            { path: "/dashboard/phase4/form", label: "Formulaire" },
             { path: "/dashboard/phase4/control", label: "Cohérence" },
         ],
     },
@@ -82,7 +82,6 @@ const phases = [
 export function Sidebar() {
     const location = useLocation();
 
-    // Décision intelligente pour le lien Interviews
     const interviewPath = interviewExistsInDb()
         ? "/dashboard/phase1/interview"
         : "/dashboard/phase1/interviews";

@@ -1,11 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Search, CheckCircle, ArrowRight, Wifi, WifiOff, Plus, Download } from "lucide-react";
+import { Search, ArrowRight, Plus, Wifi, WifiOff, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 
 import {
     loadBacklog, saveBacklog, deleteUS,
-    importerDepuisPhase3,
 } from "./components/usStorage";
 import { useTaiga } from "../../../hooks/useTaiga";
 import { ModaleTaiga }    from "./components/ModaleTaiga";
@@ -14,12 +13,11 @@ import { LigneUS }        from "./components/LigneUS";
 import { AlertesQualite } from "./components/AlertesQualite";
 
 export function Phase4A() {
-    const [backlog, setBacklog]               = useState(loadBacklog);
-    const [recherche, setRecherche]           = useState("");
+    const [backlog, setBacklog]             = useState(loadBacklog);
+    const [recherche, setRecherche]         = useState("");
     const [filtrePriorite, setFiltrePriorite] = useState("tous");
-    const [filtreStatut, setFiltreStatut]     = useState("tous");
-    const [filtreOuvert, setFiltreOuvert]     = useState(false);
-    const [confirmDelete, setConfirmDelete]   = useState(null);
+    const [filtreOuvert, setFiltreOuvert]   = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(null);
 
     const taiga = useTaiga({ onBacklogChange: setBacklog });
 
@@ -50,18 +48,17 @@ export function Phase4A() {
             || us.acteur?.toLowerCase().includes(q)
             || us.veux?.toLowerCase().includes(q);
         const matchP = filtrePriorite === "tous" || us.priorite === filtrePriorite;
-        const matchS = filtreStatut   === "tous" || us.statut   === filtreStatut;
-        return matchQ && matchP && matchS;
-    }), [backlog, recherche, filtrePriorite, filtreStatut]);
+        return matchQ && matchP;
+    }), [backlog, recherche, filtrePriorite]);
 
     // ── Alertes qualité ───────────────────────────────────────────────────────
 
     const alertes = useMemo(() => {
         const liste = [];
         backlog.forEach((us) => {
-            if (!us.acteur)                       liste.push({ id: us.id, message: `${us.id} : acteur manquant` });
-            if (!us.veux)                         liste.push({ id: us.id, message: `${us.id} : champ "Je veux" vide` });
-            if (!us.criteres?.length)             liste.push({ id: us.id, message: `${us.id} : aucun critère d'acceptation` });
+            if (!us.acteur) liste.push({ id: us.id, message: `${us.id} : acteur manquant` });
+            if (!us.veux)   liste.push({ id: us.id, message: `${us.id} : champ "Je veux" vide` });
+            if (!us.criteres?.length) liste.push({ id: us.id, message: `${us.id} : aucun critère d'acceptation` });
         });
         return liste;
     }, [backlog]);
@@ -76,33 +73,27 @@ export function Phase4A() {
 
             {/* Modale confirmation suppression */}
             {confirmDelete && (
-                <div style={{
-                    position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
-                    zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                    <div style={{
-                        background: "var(--color-background-primary)",
-                        borderRadius: "var(--border-radius-lg)",
-                        border: "1px solid var(--color-border-tertiary)",
-                        padding: 24, maxWidth: 380, width: "100%", margin: "0 16px",
-                    }}>
-                        <h3 style={{ margin: "0 0 8px", fontSize: 16, fontWeight: 500, color: "var(--color-text-primary)" }}>
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+                    <div className="bg-white rounded-xl border border-gray-200 p-6 max-w-sm w-full mx-4 shadow-lg">
+                        <h3 className="font-semibold text-gray-900 mb-2">
                             Supprimer cette US ?
                         </h3>
-                        <p style={{ margin: "0 0 20px", fontSize: 13, color: "var(--color-text-secondary)" }}>
-                            Cette action est irréversible. L'US <strong>{confirmDelete}</strong> sera définitivement supprimée.
+                        <p className="text-sm text-gray-600 mb-5">
+                            L'US <strong>{confirmDelete}</strong> sera définitivement supprimée.
                         </p>
-                        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                            <button onClick={() => setConfirmDelete(null)} style={{
-                                padding: "8px 16px", border: "1px solid var(--color-border-secondary)",
-                                borderRadius: "var(--border-radius-md)", background: "none",
-                                cursor: "pointer", fontSize: 13, color: "var(--color-text-primary)",
-                            }}>Annuler</button>
-                            <button onClick={() => handleDelete(confirmDelete)} style={{
-                                padding: "8px 16px", background: "#A32D2D", color: "white",
-                                border: "none", borderRadius: "var(--border-radius-md)",
-                                cursor: "pointer", fontSize: 13, fontWeight: 500,
-                            }}>Supprimer</button>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setConfirmDelete(null)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                onClick={() => handleDelete(confirmDelete)}
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors font-medium"
+                            >
+                                Supprimer
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -115,34 +106,64 @@ export function Phase4A() {
                     <div className="flex items-start justify-between">
                         <div>
                             <h1 className="text-2xl font-semibold text-gray-900">Backlog US</h1>
-                            <p className="text-gray-600">Phase 4A — Gestion des User Stories</p>
+                            <p className="text-gray-600">Phase 4 — Gestion des User Stories</p>
                         </div>
                         <button
                             onClick={taiga.ouvrirConnexion}
-                            style={{
-                                display: "flex", alignItems: "center", gap: 8,
-                                padding: "8px 14px",
-                                background: taiga.session ? "#0D9F6E" : "var(--color-background-secondary)",
-                                color: taiga.session ? "white" : "var(--color-text-secondary)",
-                                border: taiga.session ? "none" : "1px solid var(--color-border-secondary)",
-                                borderRadius: "var(--border-radius-md)",
-                                cursor: "pointer", fontSize: 13, fontWeight: 500,
-                            }}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                taiga.session
+                                    ? "bg-green-600 text-white hover:bg-green-700"
+                                    : "border border-gray-300 text-gray-600 hover:bg-gray-50"
+                            }`}
                         >
                             {taiga.session
-                                ? <><Wifi size={15} /> Connecté à Taiga ({nbExportees} exportée{nbExportees > 1 ? "s" : ""})</>
-                                : <><WifiOff size={15} /> Se connecter à Taiga</>
+                                ? <><Wifi className="w-4 h-4" /> Connecté à Taiga {nbExportees > 0 && `(${nbExportees} exportée${nbExportees > 1 ? "s" : ""})`}</>
+                                : <><WifiOff className="w-4 h-4" /> Se connecter à Taiga</>
                             }
                         </button>
                     </div>
 
-                    {/* Barre d'outils */}
-                    <BarreOutils
-                        recherche={recherche}           setRecherche={setRecherche}
-                        filtrePriorite={filtrePriorite} setFiltrePriorite={setFiltrePriorite}
-                        filtreStatut={filtreStatut}     setFiltreStatut={setFiltreStatut}
-                        filtreOuvert={filtreOuvert}     setFiltreOuvert={(v) => { v && v.stopPropagation?.(); setFiltreOuvert(!filtreOuvert); }}
-                    />
+                    {/* Barre d'outils simplifiée — sans filtre statut */}
+                    <Card>
+                        <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                                <div className="relative flex-1">
+                                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        placeholder="Rechercher par ID, acteur, besoin..."
+                                        value={recherche}
+                                        onChange={(e) => setRecherche(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500"
+                                    />
+                                </div>
+
+                                {/* Filtre priorité uniquement */}
+                                <div className="flex gap-2">
+                                    {["tous", "haute", "moyenne", "basse"].map((p) => (
+                                        <button
+                                            key={p}
+                                            onClick={() => setFiltrePriorite(p)}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                                                filtrePriorite === p
+                                                    ? "bg-gray-900 text-white border-gray-900"
+                                                    : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                                            }`}
+                                        >
+                                            {p === "tous" ? "Toutes" : p.charAt(0).toUpperCase() + p.slice(1)}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <Link
+                                    to="/dashboard/phase4/form"
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium ml-auto"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Nouvelle US
+                                </Link>
+                            </div>
+                        </CardContent>
+                    </Card>
 
                     {/* Tableau */}
                     <Card>
@@ -152,10 +173,10 @@ export function Phase4A() {
                                     User Stories ({backlogFiltre.length}
                                     {backlog.length !== backlogFiltre.length ? `/${backlog.length}` : ""})
                                 </span>
-                                {(filtrePriorite !== "tous" || filtreStatut !== "tous" || recherche) && (
+                                {(filtrePriorite !== "tous" || recherche) && (
                                     <button
-                                        onClick={() => { setRecherche(""); setFiltrePriorite("tous"); setFiltreStatut("tous"); }}
-                                        style={{ fontSize: 12, color: "var(--color-text-tertiary)", background: "none", border: "none", cursor: "pointer" }}
+                                        onClick={() => { setRecherche(""); setFiltrePriorite("tous"); }}
+                                        className="text-xs text-gray-400 hover:text-gray-600"
                                     >
                                         Réinitialiser filtres
                                     </button>
@@ -167,17 +188,14 @@ export function Phase4A() {
                             {backlogFiltre.length === 0 ? (
                                 <EtatVide backlogVide={backlog.length === 0} />
                             ) : (
-                                <div style={{ overflowX: "auto" }}>
-                                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm border-collapse">
                                         <thead>
-                                            <tr style={{ borderBottom: "1px solid var(--color-border-tertiary)" }}>
-                                                {["ID", "User Story", "Priorité", "Statut", "Critères", "Taiga", "Actions"].map((h) => (
-                                                    <th key={h} style={{
-                                                        padding: "10px 16px", textAlign: "left",
-                                                        fontWeight: 500, fontSize: 12,
-                                                        color: "var(--color-text-tertiary)",
-                                                        whiteSpace: "nowrap",
-                                                    }}>{h}</th>
+                                            <tr className="border-b border-gray-100">
+                                                {["ID", "User Story", "Priorité", "Critères", "Actions"].map((h) => (
+                                                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 whitespace-nowrap">
+                                                        {h}
+                                                    </th>
                                                 ))}
                                             </tr>
                                         </thead>
@@ -222,35 +240,26 @@ export function Phase4A() {
 
 function EtatVide({ backlogVide }) {
     return (
-        <div style={{
-            display: "flex", flexDirection: "column", alignItems: "center",
-            padding: "48px 24px", textAlign: "center",
-        }}>
-            <div style={{
-                width: 56, height: 56, borderRadius: "50%",
-                background: "var(--color-background-secondary)",
-                display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16,
-            }}>
-                <Search size={24} style={{ color: "var(--color-text-tertiary)" }} />
+        <div className="flex flex-col items-center py-12 text-center">
+            <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <Search className="w-6 h-6 text-gray-400" />
             </div>
-            <div style={{ fontSize: 15, fontWeight: 500, color: "var(--color-text-primary)", marginBottom: 6 }}>
+            <p className="font-medium text-gray-900 mb-1">
                 {backlogVide ? "Aucune User Story" : "Aucun résultat"}
-            </div>
-            <div style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 20, maxWidth: 320 }}>
+            </p>
+            <p className="text-sm text-gray-500 mb-5 max-w-xs">
                 {backlogVide
-                    ? "Créez votre première US en cliquant sur le bouton \"Nouvelle US\"."
-                    : "Aucune US ne correspond à vos critères de filtre ou de recherche."
+                    ? "Créez votre première US via le formulaire."
+                    : "Aucune US ne correspond à votre recherche."
                 }
-            </div>
+            </p>
             {backlogVide && (
-                <Link to="/dashboard/phase4/form" style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    padding: "8px 14px",
-                    background: "#185FA5", color: "white",
-                    borderRadius: "var(--border-radius-md)",
-                    textDecoration: "none", fontSize: 13, fontWeight: 500,
-                }}>
-                    <Plus size={14} /> Nouvelle US
+                <Link
+                    to="/dashboard/phase4/form"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                >
+                    <Plus className="w-4 h-4" />
+                    Nouvelle US
                 </Link>
             )}
         </div>

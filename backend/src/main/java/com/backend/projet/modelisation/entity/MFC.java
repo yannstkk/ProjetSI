@@ -15,6 +15,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import org.slf4j.Marker;
 
 @Entity
 public class MFC {
@@ -33,9 +34,9 @@ public class MFC {
 
     @ManyToMany
     @JoinTable(
-        name = "PRESENCE_MFC",
-        joinColumns = @JoinColumn(name = "id_mfc"),
-        inverseJoinColumns = @JoinColumn(name = "id_acteur")
+            name = "PRESENCE_MFC",
+            joinColumns = @JoinColumn(name = "id_mfc"),
+            inverseJoinColumns = @JoinColumn(name = "id_acteur")
     )
     private List<Acteur> acteurs = new ArrayList<>();
 
@@ -44,4 +45,27 @@ public class MFC {
 
     public MFC() {}
 
+    public void setNom(String nom){
+        this.nom = nom;
+    }
+
+    public void setProjet(Projet projet) {
+        this.projet = projet;
+    }
+
+    public List<Flux> getFlux() {
+        return this.flux;
+    }
+
+    public String getNom() {
+        return this.nom;
+    }
+
+    public Long getId() {
+        return this.idMfc;
+    }
+
+    public List<Acteur> getActeurs() {
+        return this.acteurs;
+    }
 }

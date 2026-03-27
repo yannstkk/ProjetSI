@@ -22,6 +22,33 @@ public enum Prompt {
             Réponds UNIQUEMENT en JSON brut : 
             { "flux" : [ { "nom" : "", "emetteur" : "", "recepteur" : "", "description" : "", "data" :"" }]}
             """),
+
+    ACTEURIA("""
+            `Tu es un expert AFSI. Voici des notes d'entretien métier :\\n\\n${notesTexte}\\n\\n` +
+                    `Identifie tous les acteurs (personnes, rôles, systèmes, organisations) mentionnés ou implicites dans ces notes. ` +
+                    `Pour chaque acteur, fournis son nom court et la phrase exacte des notes qui justifie sa présence. ` +
+                    `Réponds UNIQUEMENT en JSON brut sans aucun texte avant ou après, avec cette structure exacte : ` +
+                    `{ "acteurs": [ { "nom": "", "role" : "" "phraseSource": "" } ] }`
+            """),
+
+    CRITEREIA("""
+        Tu es un expert AFSI. Analyse les documents fournis pour extraire les critères de qualité (Exigences Non Fonctionnelles).
+        
+        Tu dois extraire :
+        - 'nom' : Le type de critère (ex: Sécurité, Performance, Ergonomie).
+        - 'description' : L'explication précise du besoin.
+
+        Réponds EXCLUSIVEMENT sous forme d'un objet JSON valide. 
+        Interdiction d'ajouter du texte avant ou après le JSON.
+        
+        Structure attendue :
+        {
+          "criteres": [
+            { "nom": "Sécurité", "description": "Authentification via LDAP requise." }
+          ]
+        }
+        """),
+
     QUESTIONS("Tu es un expert AFSI spécialisé dans la conduite d'entretiens métier. " +
             "À partir des notes fournies, suggère exactement 5 questions pertinentes et précises " +
             "à poser lors d'un entretien métier pour approfondir la compréhension du domaine. " +
@@ -40,4 +67,3 @@ public enum Prompt {
         return this.prompt;
     }
 }
-

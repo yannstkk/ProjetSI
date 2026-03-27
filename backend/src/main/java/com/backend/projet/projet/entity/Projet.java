@@ -4,12 +4,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.backend.projet.elicitation.entity.UserStory;
 import com.backend.projet.elicitation.entity.Interview;
-import com.backend.projet.elicitation.entity.Notes;
 import com.backend.projet.elicitation.entity.Participant;
 import com.backend.projet.modelisation.entity.BPMN;
 import com.backend.projet.modelisation.entity.DictionnaireDonnee;
 import com.backend.projet.modelisation.entity.MCD;
+import com.backend.projet.modelisation.entity.Acteur;
 import com.backend.projet.modelisation.entity.MFC;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -37,11 +38,11 @@ public class Projet {
 
     @Column(name = "date_creation")
     private LocalDate dateCreation;
-    
+
     @Column(name = "id_user")
     private String idUser;
 
-	@OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
     private List<Interview> interviews = new ArrayList<>();
 
     @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
@@ -56,11 +57,17 @@ public class Projet {
     @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
     private List<DictionnaireDonnee> dictionnaires = new ArrayList<>();
 
+    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
+    private List<Acteur> acteurs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
+    private List<UserStory> userStories = new ArrayList<>();
+
     @ManyToMany
     @JoinTable(
-        name = "COMMANDE_PROJET",
-        joinColumns = @JoinColumn(name = "id_projet"),
-        inverseJoinColumns = @JoinColumn(name = "id_client")
+            name = "COMMANDE_PROJET",
+            joinColumns = @JoinColumn(name = "id_projet"),
+            inverseJoinColumns = @JoinColumn(name = "id_client")
     )
     private List<Participant> participants = new ArrayList<>();
 
@@ -69,30 +76,30 @@ public class Projet {
         this.nom = nom;
         this.dateCreation = LocalDate.now();
     }
-	public Long getIdProjet() {
-		return idProjet;
-	}
-	public void setIdProjet(Long idProjet) {
-		this.idProjet = idProjet;
-	}
-	public String getNom() {
-		return nom;
-	}
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
-	public LocalDate getDateCreation() {
-		return dateCreation;
-	}
-	public void setDateCreation(LocalDate dateCreation) {
-		this.dateCreation = dateCreation;
-	}
-	
+    public Long getIdProjet() {
+        return idProjet;
+    }
+    public void setIdProjet(Long idProjet) {
+        this.idProjet = idProjet;
+    }
+    public String getNom() {
+        return nom;
+    }
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+    public LocalDate getDateCreation() {
+        return dateCreation;
+    }
+    public void setDateCreation(LocalDate dateCreation) {
+        this.dateCreation = dateCreation;
+    }
+
     public String getIdUser() {
-		return idUser;
-	}
-	public void setIdUser(String idUser) {
-		this.idUser = idUser;
-	}
+        return idUser;
+    }
+    public void setIdUser(String idUser) {
+        this.idUser = idUser;
+    }
 
 }
