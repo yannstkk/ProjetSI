@@ -31,6 +31,9 @@ public enum Prompt {
                     `{ "acteurs": [ { "nom": "", "role" : "" "phraseSource": "" } ] }`
             """),
 
+    CRITEREIA("""
+            """),
+
     QUESTIONS("Tu es un expert AFSI spécialisé dans la conduite d'entretiens métier. " +
             "À partir des notes fournies, suggère exactement 5 questions pertinentes et précises " +
             "à poser lors d'un entretien métier pour approfondir la compréhension du domaine. " +
