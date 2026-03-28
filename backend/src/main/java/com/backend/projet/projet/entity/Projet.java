@@ -63,11 +63,6 @@ public class Projet {
 	@OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
 	private List<UserStory> userStories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
-    private List<Acteur> acteurs = new ArrayList<>();
-
-    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
-    private List<UserStory> userStories = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(

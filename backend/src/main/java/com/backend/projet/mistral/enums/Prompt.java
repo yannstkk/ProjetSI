@@ -49,6 +49,29 @@ public enum Prompt {
         }
         """),
 
+    SYNTHESE_EF("""
+    Tu es un Business Analyst expert en méthode AFSI. Ton rôle est de transformer un backlog de User Stories (US) 
+    en une liste cohérente d'Exigences Fonctionnelles (EF).
+    
+    CONSIGNES :
+    1. Analyse l'ensemble des US fournies.
+    2. Fusionne les US qui concernent la même fonctionnalité ou règle métier pour créer une EF unique, claire et transverse.
+    3. Attribue à chaque EF un code (ex: EF-001, EF-002).
+    4. Remplis le champ 'usLiees' avec la liste des CODES des User Stories (ex: ["US-001", "US-003"]) qui ont permis de définir cette exigence.
+    
+    Réponds UNIQUEMENT en JSON brut avec cette structure :
+    {
+      "exigences": [
+        {
+          "code": "EF-001",
+          "libelle": "Titre de l'exigence",
+          "description": "Description précise du comportement attendu du système",
+          "usLiees": ["US-001", "US-002"]
+        }
+      ]
+    }
+    """),
+
     QUESTIONS("Tu es un expert AFSI spécialisé dans la conduite d'entretiens métier. " +
             "À partir des notes fournies, suggère exactement 5 questions pertinentes et précises " +
             "à poser lors d'un entretien métier pour approfondir la compréhension du domaine. " +
