@@ -3,7 +3,7 @@ package com.backend.projet.modelisation.service;
 
 import com.backend.projet.mistral.enums.Prompt;
 import com.backend.projet.mistral.service.MistralService;
-import com.backend.projet.modelisation.dto.FluxResponse;
+import com.backend.projet.modelisation.dto.response.FluxResponse;
 import com.backend.projet.modelisation.dto.request.MFCRequest;
 import com.backend.projet.modelisation.dto.response.MFCResponse;
 import com.backend.projet.modelisation.entity.Acteur;

@@ -1,0 +1,45 @@
+package com.backend.projet.elicitation.controller;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.backend.projet.elicitation.dto.request.UserStoryRequest;
+import com.backend.projet.elicitation.dto.response.UserStoryResponse;
+import com.backend.projet.elicitation.service.UserStoryService;
+
+@RestController
+@RequestMapping("/api/userstories")
+public class UserStoryController {
+
+    private final UserStoryService userStoryService;
+
+    public UserStoryController(UserStoryService userStoryService) {
+        this.userStoryService = userStoryService;
+    }
+
+    @GetMapping("/projet/{idProjet}")
+    public ResponseEntity<List<UserStoryResponse>> getByProjet(@PathVariable Long idProjet) {
+        return ResponseEntity.ok(userStoryService.getByProjet(idProjet));
+    }
+
+    @PostMapping
+    public ResponseEntity<UserStoryResponse> add(@RequestBody UserStoryRequest request) {
+        UserStoryResponse response = userStoryService.add(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping("/{idUs}")
+    public ResponseEntity<Void> delete(@PathVariable Long idUs) {
+        userStoryService.delete(idUs);
+        return ResponseEntity.noContent().build();   // 204 No Content
+    }
+}

@@ -1,7 +1,5 @@
 package com.backend.projet.modelisation.dto.response;
 
-import com.backend.projet.modelisation.dto.FluxResponse;
-
 public class MFCResponse {
     // est ce qu'il faudrait un id de MFC ? --> je pense que oui
     private Long idMfc;

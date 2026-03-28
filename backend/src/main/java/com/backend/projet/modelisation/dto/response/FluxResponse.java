@@ -1,4 +1,4 @@
-package com.backend.projet.modelisation.dto;
+package com.backend.projet.modelisation.dto.response;
 
 import java.util.List;
 

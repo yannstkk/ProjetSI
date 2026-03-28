@@ -4,12 +4,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.backend.projet.elicitation.entity.UserStory;
 import com.backend.projet.elicitation.entity.Interview;
-import com.backend.projet.elicitation.entity.Notes;
 import com.backend.projet.elicitation.entity.Participant;
 import com.backend.projet.modelisation.entity.BPMN;
 import com.backend.projet.modelisation.entity.DictionnaireDonnee;
 import com.backend.projet.modelisation.entity.MCD;
+import com.backend.projet.modelisation.entity.Acteur;
 import com.backend.projet.modelisation.entity.MFC;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -55,6 +56,12 @@ public class Projet {
 
     @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
     private List<DictionnaireDonnee> dictionnaires = new ArrayList<>();
+    
+	@OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
+    private List<Acteur> acteurs = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
+	private List<UserStory> userStories = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
