@@ -20,6 +20,8 @@ import { loadUSFromDb } from "../../services/usService";
 import { saveBacklog } from "./phase4/components/usStorage";
 import { saveMFC, clearMFC } from "./phase2/components/helpers/mfcStorage";
 import { saveBpmn, clearBpmn } from "./phase6/helpers/bpmnStorage";
+import { buildPlantUMLUrl } from "./phase2/components/helpers/plantuml";
+
 
 // ─── Helpers chargement BDD ───────────────────────────────────────────────────
 
@@ -44,10 +46,29 @@ async function loadMFCIntoSession(idProjet) {
     if (!res.ok) return;
     const liste = await res.json();
     if (!liste.length) return;
-    const mfc = liste[liste.length - 1];
-    const fluxLocal    = (mfc.flux    || []).map((f) => ({ nom: f.nom || "", emetteur: f.emetteur || "", recepteur: f.recepteur || "", description: f.description || "", data: f.data || "" }));
+
+    const mfc = liste[liste.length - 1]; // le plus récent
+
+    const code      = mfc.contenuPlantuml || "";
+    const diagramUrl = code ? buildPlantUMLUrl(code) : "";
+
+    const fluxLocal    = (mfc.flux    || []).map((f) => ({
+        nom:         f.nom         || "",
+        emetteur:    f.emetteur    || "",
+        recepteur:   f.recepteur   || "",
+        description: f.description || "",
+        data:        f.data        || "",
+    }));
     const acteursLocal = (mfc.acteurs || []).map((a) => ({ nom: a.nom || "" }));
-    saveMFC({ code: "", diagramUrl: "", fileName: mfc.nom || "MFC importé depuis BDD", flux: fluxLocal, acteurs: acteursLocal, mfcDbId: mfc.id || null });
+
+    saveMFC({
+        code,
+        diagramUrl,
+        fileName:  mfc.nom || "MFC importé depuis BDD",
+        flux:      fluxLocal,
+        acteurs:   acteursLocal,
+        mfcDbId:   mfc.id || null,
+    });
 }
 
 async function loadBpmnIntoSession(idProjet) {

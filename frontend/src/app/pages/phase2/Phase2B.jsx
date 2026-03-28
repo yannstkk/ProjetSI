@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router";
-import { ArrowLeft, ArrowRight, RefreshCw, Database, Loader2, CheckCircle } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+    ArrowLeft, ArrowRight, RefreshCw,
+    Database, Loader2, CheckCircle, Upload
+} from "lucide-react";
 
-import { authFetch } from "../../../services/authFetch";
+import { authFetch }        from "../../../services/authFetch";
 import { getProjetCourant } from "../../../services/projetCourant";
 import { buildPlantUMLUrl } from "./components/helpers/plantuml";
 import { loadMFC, saveMFC, clearMFC } from "./components/helpers/mfcStorage";
@@ -15,19 +18,25 @@ export function Phase2B() {
     const saved = loadMFC();
 
     const [plantUmlCode, setPlantUmlCode] = useState(saved?.code       || "");
-    const [diagramUrl, setDiagramUrl]     = useState(saved?.diagramUrl || "");
-    const [flux, setFlux]                 = useState(saved?.flux       || []);
-    const [acteurs, setActeurs]           = useState(saved?.acteurs    || []);
-    const [fileName, setFileName]         = useState(saved?.fileName   || "");
-    const [mfcDbId, setMfcDbId]           = useState(saved?.mfcDbId   || null);
+    const [diagramUrl,   setDiagramUrl]   = useState(saved?.diagramUrl || "");
+    const [flux,         setFlux]         = useState(saved?.flux        || []);
+    const [acteurs,      setActeurs]      = useState(saved?.acteurs     || []);
+    const [fileName,     setFileName]     = useState(saved?.fileName    || "");
+    const [mfcDbId,      setMfcDbId]      = useState(saved?.mfcDbId    || null);
 
     const [diagramError, setDiagramError] = useState(false);
-    const [iaLoading, setIaLoading]       = useState(false);
-    const [iaError, setIaError]           = useState("");
+    const [iaLoading,    setIaLoading]    = useState(false);
+    const [iaError,      setIaError]      = useState("");
 
-    const [dbLoading, setDbLoading]       = useState(false);
-    const [dbError, setDbError]           = useState("");
-    const [dbSuccess, setDbSuccess]       = useState(false);
+    const [dbLoading,    setDbLoading]    = useState(false);
+    const [dbError,      setDbError]      = useState("");
+    const [dbSuccess,    setDbSuccess]    = useState(false);
+
+    // Affichage du bloc d'import (toggle)
+    const [showUpload,   setShowUpload]   = useState(false);
+
+    const hasData    = flux.length > 0 || acteurs.length > 0;
+    const hasDiagram = !!plantUmlCode;
 
     // ── Traitement fichier ────────────────────────────────────────────────────
 
@@ -40,9 +49,8 @@ export function Phase2B() {
         setFlux([]);
         setActeurs([]);
         setIaError("");
-        setMfcDbId(null);
-        setDbSuccess(false);
-        saveMFC({ code, diagramUrl: url, flux: [], acteurs: [], fileName: name, mfcDbId: null });
+        setShowUpload(false);
+        saveMFC({ code, diagramUrl: url, flux: [], acteurs: [], fileName: name, mfcDbId });
     }
 
     // ── Analyse IA ────────────────────────────────────────────────────────────
@@ -70,10 +78,8 @@ export function Phase2B() {
 
             setFlux(fluxData);
             setActeurs(acteursListe);
-            setMfcDbId(null); // nouvelle analyse → pas encore sauvegardé
-            setDbSuccess(false);
 
-            saveMFC({ code: plantUmlCode, diagramUrl, flux: fluxData, acteurs: acteursListe, fileName, mfcDbId: null });
+            saveMFC({ code: plantUmlCode, diagramUrl, flux: fluxData, acteurs: acteursListe, fileName, mfcDbId });
         } catch (err) {
             setIaError("Erreur lors de l'analyse : " + err.message);
         } finally {
@@ -88,12 +94,8 @@ export function Phase2B() {
             setDbError("Analysez d'abord le diagramme avec l'IA avant de sauvegarder.");
             return;
         }
-
         const projet = getProjetCourant();
-        if (!projet?.id) {
-            setDbError("Aucun projet sélectionné.");
-            return;
-        }
+        if (!projet?.id) { setDbError("Aucun projet sélectionné."); return; }
 
         setDbLoading(true);
         setDbError("");
@@ -108,24 +110,16 @@ export function Phase2B() {
                     nom:             fileName || "MFC sans nom",
                 }),
             });
-
             if (!res.ok) {
                 const text = await res.text();
                 throw new Error(`Erreur serveur ${res.status} : ${text}`);
             }
-
             const data = await res.json();
             const newDbId = data.idMfc || data.id || null;
 
             setMfcDbId(newDbId);
             setDbSuccess(true);
-
-            // Persister le dbId dans le sessionStorage
-            saveMFC({
-                code: plantUmlCode, diagramUrl, flux, acteurs, fileName,
-                mfcDbId: newDbId,
-            });
-
+            saveMFC({ code: plantUmlCode, diagramUrl, flux, acteurs, fileName, mfcDbId: newDbId });
             setTimeout(() => setDbSuccess(false), 3000);
         } catch (err) {
             setDbError("Erreur lors de la sauvegarde : " + err.message);
@@ -137,16 +131,9 @@ export function Phase2B() {
     // ── Reset ─────────────────────────────────────────────────────────────────
 
     function handleReset() {
-        setPlantUmlCode("");
-        setDiagramUrl("");
-        setFlux([]);
-        setActeurs([]);
-        setFileName("");
-        setMfcDbId(null);
-        setIaError("");
-        setDbError("");
-        setDbSuccess(false);
-        setDiagramError(false);
+        setPlantUmlCode(""); setDiagramUrl(""); setFlux([]); setActeurs([]);
+        setFileName(""); setMfcDbId(null); setIaError(""); setDbError("");
+        setDbSuccess(false); setDiagramError(false); setShowUpload(false);
         clearMFC();
     }
 
@@ -160,23 +147,17 @@ export function Phase2B() {
                 <div className="flex items-start justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900">Flux MFC</h1>
-                        <p className="text-gray-600">
-                            Phase 2B — Modèle de Flux de Communication
-                        </p>
+                        <p className="text-gray-600">Phase 2B — Modèle de Flux de Communication</p>
                     </div>
-
-                    {plantUmlCode && (
-                        <button
-                            onClick={handleReset}
-                            className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-red-200 transition-colors"
-                        >
-                            <RefreshCw className="w-3.5 h-3.5" />
-                            Réinitialiser
+                    {(hasDiagram || hasData) && (
+                        <button onClick={handleReset}
+                            className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-red-200 transition-colors">
+                            <RefreshCw className="w-3.5 h-3.5" /> Réinitialiser
                         </button>
                     )}
                 </div>
 
-                {/* Messages BDD */}
+                {/* Feedbacks BDD */}
                 {dbSuccess && (
                     <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm">
                         <CheckCircle className="w-4 h-4 flex-shrink-0" />
@@ -189,21 +170,49 @@ export function Phase2B() {
                     </div>
                 )}
 
-                {/* Bandeau "déjà sauvegardé" */}
-                {mfcDbId && !dbSuccess && (
-                    <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
-                        <Database className="w-4 h-4 flex-shrink-0" />
-                        Ce MFC est sauvegardé en base (ID : {mfcDbId}). Vous pouvez le resauvegarder après modification.
+                {/* ── CAS 1 : rien du tout → zone upload principale ── */}
+                {!hasDiagram && !hasData && (
+                    <ZoneUpload onFileProcessed={handleFileProcessed} />
+                )}
+
+                {/* ── CAS 2 : données BDD sans diagramme ── */}
+                {!hasDiagram && hasData && (
+                    <div className="space-y-4">
+
+                        {/* Bandeau info + bouton importer */}
+                        <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                            <Database className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-blue-900">
+                                    MFC chargé depuis la base de données
+                                    {mfcDbId ? ` (ID : ${mfcDbId})` : ""}
+                                </p>
+                                <p className="text-xs text-blue-600 mt-0.5">
+                                    Le fichier PlantUML n'est pas conservé en base. Importez-le pour visualiser le diagramme et resauvegarder.
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowUpload((v) => !v)}
+                                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors"
+                            >
+                                <Upload className="w-3.5 h-3.5" />
+                                {showUpload ? "Masquer" : "Importer le fichier .puml"}
+                            </button>
+                        </div>
+
+                        {/* Zone upload repliable */}
+                        {showUpload && (
+                            <ZoneUpload onFileProcessed={handleFileProcessed} compact />
+                        )}
+
+                        {/* Résultats directement visibles */}
+                        <PanneauResultats acteurs={acteurs} flux={flux} />
                     </div>
                 )}
 
-                {/* Contenu principal */}
-                {!plantUmlCode ? (
-                    <ZoneUpload onFileProcessed={handleFileProcessed} />
-                ) : (
+                {/* ── CAS 3 : diagramme présent ── */}
+                {hasDiagram && (
                     <div className="grid grid-cols-12 gap-6">
-
-                        {/* Colonne gauche */}
                         <div className="col-span-5 space-y-4">
                             <DiagrammePreview
                                 fileName={fileName}
@@ -228,44 +237,29 @@ export function Phase2B() {
                                             : "bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-emerald-300"
                                 }`}
                             >
-                                {dbLoading ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        Sauvegarde en cours...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Database className="w-4 h-4" />
-                                        {mfcDbId ? "Resauvegarder en BDD" : "Sauvegarder en BDD"}
-                                    </>
-                                )}
+                                {dbLoading
+                                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Sauvegarde...</>
+                                    : <><Database className="w-4 h-4" />
+                                      {mfcDbId ? "Resauvegarder en BDD" : "Sauvegarder en BDD"}</>
+                                }
                             </button>
                         </div>
 
-                        {/* Colonne droite */}
                         <div className="col-span-7">
                             <PanneauResultats acteurs={acteurs} flux={flux} />
                         </div>
-
                     </div>
                 )}
 
                 {/* Navigation */}
                 <div className="flex gap-3 pt-2">
-                    <Link
-                        to="/dashboard/phase2/actors"
-                        className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        Retour aux acteurs
+                    <Link to="/dashboard/phase2/actors"
+                        className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm">
+                        <ArrowLeft className="w-4 h-4" /> Retour aux acteurs
                     </Link>
-
-                    <Link
-                        to="/dashboard/phase2/coherence"
-                        className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium ml-auto"
-                    >
-                        Vérifier la cohérence
-                        <ArrowRight className="w-4 h-4" />
+                    <Link to="/dashboard/phase2/coherence"
+                        className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium ml-auto">
+                        Vérifier la cohérence <ArrowRight className="w-4 h-4" />
                     </Link>
                 </div>
 

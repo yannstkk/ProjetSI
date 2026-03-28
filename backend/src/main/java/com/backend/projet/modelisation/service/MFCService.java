@@ -11,17 +11,19 @@ import com.backend.projet.modelisation.dto.response.MFCResponse;
 import com.backend.projet.modelisation.entity.Acteur;
 import com.backend.projet.modelisation.entity.Flux;
 import com.backend.projet.modelisation.entity.MFC;
+import com.backend.projet.modelisation.repository.ActeurRepository;
 import com.backend.projet.modelisation.repository.MFCRepository;
 import com.backend.projet.projet.entity.Projet;
 import com.backend.projet.projet.exception.ResourceNotFoundException;
 import com.backend.projet.projet.repository.ProjetRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,22 +32,27 @@ public class MFCService {
     private final MistralService   mistralService;
     private final ProjetRepository projetRepository;
     private final MFCRepository    mfcRepository;
+    private final ActeurRepository acteurRepository; // ← ajouté
 
     public MFCService(MistralService mistralService,
                       ProjetRepository projetRepository,
-                      MFCRepository mfcRepository) {
+                      MFCRepository mfcRepository,
+                      ActeurRepository acteurRepository) {
         this.mistralService   = mistralService;
         this.projetRepository = projetRepository;
         this.mfcRepository    = mfcRepository;
+        this.acteurRepository = acteurRepository;
     }
 
-
+    // ─────────────────────────────────────────────────────────────────────────
 
     public FluxResponse analyserPlantUML(String content) {
         return mistralService.executerAnalyse(content, Prompt.MFC.getPrompt(), FluxResponse.class);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
 
+    @Transactional
     public MFCResponse importerEtSauvegarder(@NonNull MFCRequest request) {
         FluxResponse fluxAnalyse = analyserPlantUML(request.getPlantUmlContent());
 
@@ -56,7 +63,10 @@ public class MFCService {
         MFC mfc = new MFC();
         mfc.setNom(request.getNom());
         mfc.setProjet(projet);
+        mfc.setContenuPlantuml(request.getPlantUmlContent());
 
+
+        // Cache nom → Acteur persisté (avec id_acteur garanti)
         Map<String, Acteur> acteursCache = new HashMap<>();
 
         if (fluxAnalyse.flux != null) {
@@ -66,8 +76,9 @@ public class MFCService {
                 f.setDescription(element.description);
                 f.setData(element.data);
 
-                Acteur emetteur  = getOrCreateActeur(element.emetteur,  acteursCache, projet);
-                Acteur recepteur = getOrCreateActeur(element.recepteur, acteursCache, projet);
+                // ← acteurs sauvegardés en base AVANT l'INSERT dans PRESENCE_MFC
+                Acteur emetteur  = getOrCreateActeurPersiste(element.emetteur,  acteursCache, projet);
+                Acteur recepteur = getOrCreateActeurPersiste(element.recepteur, acteursCache, projet);
 
                 f.setActeurSortie(emetteur);
                 f.setActeurEntree(recepteur);
@@ -89,26 +100,59 @@ public class MFCService {
         );
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Charge tous les MFC d'un projet avec leurs flux et acteurs persistés.
-     * Retourne la liste au format MFCDetailResponse.
-     */
     public List<MFCDetailResponse> getMFCByProjet(Long idProjet) {
         List<MFC> mfcList = mfcRepository.findByProjetIdProjet(idProjet);
-
         return mfcList.stream()
                 .map(this::toDetailResponse)
                 .collect(Collectors.toList());
     }
 
-
+    // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Convertit un MFC persisté en MFCDetailResponse avec ses flux et acteurs.
+     * Cherche l'acteur dans le cache local, puis en base (nom + projet).
+     * S'il n'existe pas → crée ET persiste via acteurRepository.save()
+     * → l'acteur a un id_acteur avant l'INSERT dans PRESENCE_MFC.
      */
+    private Acteur getOrCreateActeurPersiste(String nom,
+                                             Map<String, Acteur> cache,
+                                             Projet projet) {
+        String key = (nom == null || nom.isBlank()) ? "Inconnu" : nom.trim();
+
+        // 1. Cache local
+        if (cache.containsKey(key)) {
+            return cache.get(key);
+        }
+
+        // 2. Déjà en base pour ce projet
+        Optional<Acteur> existant = acteurRepository
+                .findByProjetIdProjet(projet.getIdProjet())
+                .stream()
+                .filter(a -> key.equalsIgnoreCase(a.getNom()))
+                .findFirst();
+
+        if (existant.isPresent()) {
+            cache.put(key, existant.get());
+            return existant.get();
+        }
+
+        // 3. Créer + sauvegarder → id_acteur généré par Oracle avant l'association
+        Acteur nouvel = new Acteur();
+        nouvel.setNom(key);
+        nouvel.setProjet(projet);
+        nouvel.setType("internal");
+        nouvel.setSource("mfc");
+        Acteur persiste = acteurRepository.save(nouvel);
+
+        cache.put(key, persiste);
+        return persiste;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+
     private MFCDetailResponse toDetailResponse(MFC mfc) {
-        // Flux
         List<FluxDto> fluxDtos = mfc.getFlux().stream()
                 .map(f -> new FluxDto(
                         f.getIdFlux(),
@@ -120,12 +164,10 @@ public class MFCService {
                 ))
                 .collect(Collectors.toList());
 
-        // Acteurs
         List<ActeurResponse> acteurDtos = mfc.getActeurs().stream()
                 .map(a -> new ActeurResponse(
                         a.getIdActeur(),
-                        mfc.getActeurs().isEmpty() ? null
-                                : (a.getProjet() != null ? a.getProjet().getIdProjet() : null),
+                        a.getProjet() != null ? a.getProjet().getIdProjet() : null,
                         a.getNom(),
                         a.getType(),
                         a.getSource(),
@@ -133,30 +175,16 @@ public class MFCService {
                 ))
                 .collect(Collectors.toList());
 
+        // idProjet depuis le MFC directement (plus fiable que passer par les acteurs)
+        Long idProjet = mfc.getProjet() != null ? mfc.getProjet().getIdProjet() : null;
+
         return new MFCDetailResponse(
                 mfc.getId(),
                 mfc.getNom(),
-                mfc.getActeurs().isEmpty() ? null
-                        : (mfc.getActeurs().get(0).getProjet() != null
-                        ? mfc.getActeurs().get(0).getProjet().getIdProjet()
-                        : null),
+                idProjet,
+                mfc.getContenuPlantuml(),
                 fluxDtos,
                 acteurDtos
         );
-    }
-
-    /**
-     * Récupère un acteur existant dans le cache ou en crée un nouveau.
-     * Le projet est maintenant correctement assigné à l'acteur.
-     */
-    private Acteur getOrCreateActeur(String nom, Map<String, Acteur> acteurs, Projet projet) {
-        return acteurs.computeIfAbsent(nom, n -> {
-            Acteur a = new Acteur();
-            a.setNom(n);
-            a.setProjet(projet);     // ← fix : le projet est maintenant assigné
-            a.setType("internal");   // type par défaut
-            a.setSource("mfc");      // source = diagramme MFC
-            return a;
-        });
     }
 }
