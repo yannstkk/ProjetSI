@@ -17,20 +17,28 @@ function loadActeursPhase2() {
     } catch { return []; }
 }
 
-function loadFluxPhase2() {
-    try {
-        const raw = sessionStorage.getItem("phase2_mfc");
-        if (!raw) return [];
-        return JSON.parse(raw).flux || [];
-    } catch { return []; }
-}
-
 function genId(backlog) {
     const nums = backlog
         .map((us) => parseInt(us.id?.replace("US-", ""), 10))
         .filter((n) => !isNaN(n));
     const next = nums.length > 0 ? Math.max(...nums) + 1 : 1;
     return `US-${String(next).padStart(3, "0")}`;
+}
+
+/**
+ * Convertit un CritereDto (objet { nom, description }) en string lisible.
+ * Si c'est déjà une string, la retourne telle quelle.
+ */
+function critereToString(critere) {
+    if (!critere) return "";
+    if (typeof critere === "string") return critere;
+    // CritereDto : { nom, description }
+    if (critere.nom && critere.description) {
+        return `${critere.nom} : ${critere.description}`;
+    }
+    if (critere.description) return critere.description;
+    if (critere.nom) return critere.nom;
+    return "";
 }
 
 const PRIORITE_OPTIONS = [
@@ -47,9 +55,7 @@ export function Phase4B() {
     const editId = searchParams.get("id");
 
     const acteurs2 = loadActeursPhase2();
-    const flux2    = loadFluxPhase2();
 
-    // ── État formulaire ───────────────────────────────────────────────────────
     const [form, setForm] = useState(() => {
         if (editId) {
             const backlog = loadBacklog();
@@ -60,8 +66,7 @@ export function Phase4B() {
                 veux:        existing.veux     || "",
                 afin:        existing.afin     || "",
                 priorite:    existing.priorite || "moyenne",
-                criteres:    existing.criteres || [],
-                flux:        existing.flux     || [],
+                criteres:    (existing.criteres || []).map(critereToString),
             };
         }
         return {
@@ -71,7 +76,6 @@ export function Phase4B() {
             afin:        "",
             priorite:    "moyenne",
             criteres:    [],
-            flux:        [],
         };
     });
 
@@ -84,8 +88,6 @@ export function Phase4B() {
         setToast(msg);
         setTimeout(() => setToast(""), 2500);
     }
-
-    // ── Handlers ──────────────────────────────────────────────────────────────
 
     function updateField(field, value) {
         setForm((p) => ({ ...p, [field]: value }));
@@ -110,19 +112,6 @@ export function Phase4B() {
         }));
     }
 
-    function toggleFlux(fluxNom) {
-        setForm((p) => {
-            const already = p.flux.includes(fluxNom);
-            return {
-                ...p,
-                flux: already
-                    ? p.flux.filter((f) => f !== fluxNom)
-                    : [...p.flux, fluxNom],
-            };
-        });
-    }
-
-    // Résout l'acteur final (saisie libre ou select)
     function getActeurFinal() {
         if (form.acteur === "__autre__") return form.acteurLibre.trim();
         return form.acteur.trim();
@@ -149,10 +138,17 @@ export function Phase4B() {
             });
             if (!res.ok) throw new Error(`Erreur serveur : ${res.status}`);
             const data = await res.json();
-            const nouveaux = (data.criteres || []).filter(Boolean);
+
+            // data.criteres est une List<CritereDto> : [{ nom, description }, ...]
+            // On convertit chaque objet en string lisible
+            const nouveaux = (data.criteres || [])
+                .map(critereToString)
+                .filter(Boolean);
+
             if (nouveaux.length === 0) throw new Error("Aucun critère généré.");
+
             setForm((p) => ({ ...p, criteres: [...p.criteres, ...nouveaux] }));
-            showToast(`${nouveaux.length} critères générés ✓`);
+            showToast(`${nouveaux.length} critère${nouveaux.length > 1 ? "s" : ""} généré${nouveaux.length > 1 ? "s" : ""} ✓`);
         } catch (e) {
             setIaError(e.message || "Erreur lors de la génération.");
         } finally {
@@ -173,10 +169,11 @@ export function Phase4B() {
             priorite: form.priorite,
             statut:   existing?.statut || "brouillon",
             criteres: form.criteres.filter((c) => c.trim()),
-            flux:     form.flux,
+            flux:     existing?.flux || [],
             source:   existing?.source || "manuel",
             taigaId:  existing?.taigaId,
             taigaRef: existing?.taigaRef,
+            dbId:     existing?.dbId,
         };
     }
 
@@ -202,7 +199,7 @@ export function Phase4B() {
         if (andNew) {
             setForm({
                 acteur: "", acteurLibre: "", veux: "", afin: "",
-                priorite: "moyenne", criteres: [], flux: [],
+                priorite: "moyenne", criteres: [],
             });
             setError("");
             navigate("/dashboard/phase4/form", { replace: true });
@@ -223,9 +220,7 @@ export function Phase4B() {
                         <h1 className="text-2xl font-semibold text-gray-900">
                             {editId ? `Modifier ${editId}` : "Nouvelle User Story"}
                         </h1>
-                        <p className="text-gray-600">
-                            Phase 4 — Formulaire User Story
-                        </p>
+                        <p className="text-gray-600">Phase 4 — Formulaire User Story</p>
                     </div>
                     <div className="flex gap-2">
                         {!editId && (
@@ -274,7 +269,6 @@ export function Phase4B() {
                                             value={form.acteur}
                                             onChange={(e) => {
                                                 updateField("acteur", e.target.value);
-                                                // Reset saisie libre si on change de sélection
                                                 if (e.target.value !== "__autre__") {
                                                     updateField("acteurLibre", "");
                                                 }
@@ -288,7 +282,6 @@ export function Phase4B() {
                                         </select>
                                         <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
                                     </div>
-                                    {/* Champ saisie libre — affiché uniquement si "Autre" est sélectionné */}
                                     {form.acteur === "__autre__" && (
                                         <Input
                                             placeholder="Saisir l'acteur manuellement..."
@@ -360,15 +353,13 @@ export function Phase4B() {
                 {/* Section 2 — Critères d'acceptation */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
-                            <span className="flex items-center gap-2">
-                                Critères d'acceptation
-                                {form.criteres.filter(c => c.trim()).length > 0 && (
-                                    <Badge className="bg-gray-100 text-gray-700 border-0">
-                                        {form.criteres.filter(c => c.trim()).length}
-                                    </Badge>
-                                )}
-                            </span>
+                        <CardTitle className="flex items-center gap-2">
+                            Critères d'acceptation
+                            {form.criteres.filter(c => c.trim()).length > 0 && (
+                                <Badge className="bg-gray-100 text-gray-700 border-0">
+                                    {form.criteres.filter(c => c.trim()).length}
+                                </Badge>
+                            )}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -423,58 +414,6 @@ export function Phase4B() {
                             </button>
                         </div>
 
-                    </CardContent>
-                </Card>
-
-                {/* Section 3 — Flux MFC */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
-                            <span>Flux MFC concernés</span>
-                            {flux2.length > 0 && (
-                                <Badge variant="secondary" className="text-xs">
-                                    Depuis Phase 2
-                                </Badge>
-                            )}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {flux2.length === 0 ? (
-                            <p className="text-sm text-gray-500">
-                                Aucun flux détecté — importez un diagramme MFC en Phase 2.
-                            </p>
-                        ) : (
-                            <div className="grid grid-cols-2 gap-2">
-                                {flux2.map((f, i) => {
-                                    const selected = form.flux.includes(f.nom);
-                                    return (
-                                        <button
-                                            key={i}
-                                            onClick={() => toggleFlux(f.nom)}
-                                            className={`flex items-start gap-3 p-3 rounded-lg border text-left transition-colors ${
-                                                selected
-                                                    ? "bg-blue-50 border-blue-300"
-                                                    : "bg-gray-50 border-gray-200 hover:border-gray-300"
-                                            }`}
-                                        >
-                                            <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
-                                                selected ? "bg-blue-600 border-blue-600" : "border-gray-300"
-                                            }`}>
-                                                {selected && <Check className="w-2.5 h-2.5 text-white" />}
-                                            </div>
-                                            <div>
-                                                <div className="text-sm font-medium text-gray-900">{f.nom}</div>
-                                                {(f.emetteur || f.recepteur) && (
-                                                    <div className="text-xs text-gray-500 mt-0.5">
-                                                        {f.emetteur} → {f.recepteur}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        )}
                     </CardContent>
                 </Card>
 

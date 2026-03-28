@@ -1,25 +1,19 @@
 package com.backend.projet.modelisation.controller;
 
 import com.backend.projet.modelisation.dto.response.FluxResponse;
+import com.backend.projet.modelisation.dto.response.MFCDetailResponse;
 import com.backend.projet.modelisation.dto.request.MFCRequest;
 import com.backend.projet.modelisation.dto.response.MFCResponse;
 import com.backend.projet.modelisation.service.MFCService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-/**
- * Contrôleur REST pour la gestion des Modèles de Flux Conceptuels (MFC).
- * <p>
- * Fournit des points d'accès pour l'analyse de diagrammes PlantUML via l'IA
- * et l'importation de ces données dans le système de persistance.
- * </p>
- */
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/modelisation/mfc")
 public class MFCController {
+
     private final MFCService mfcService;
 
     public MFCController(MFCService mfcService) {
@@ -28,12 +22,7 @@ public class MFCController {
 
     /**
      * Analyse un contenu PlantUML pour en extraire les flux sans persistance.
-     * <p>
-     * Cet endpoint est utile pour obtenir un aperçu (preview) du résultat de l'analyse
-     * avant de décider de l'enregistrer officiellement.
-     * </p>
-     * * @param plantUmlContent Le texte brut du diagramme PlantUML à analyser.
-     * @return {@link ResponseEntity} contenant un {@link FluxResponse} avec les flux détectés.
+     * Utile pour un aperçu avant sauvegarde.
      */
     @PostMapping("/analyser")
     public ResponseEntity<FluxResponse> analyser(@RequestBody String plantUmlContent) {
@@ -46,27 +35,35 @@ public class MFCController {
     }
 
     /**
-     * Analyse, transforme et enregistre un MFC en base de données pour un projet spécifique.
-     * <p>
-     * Cette méthode valide la présence du contenu PlantUML, utilise l'IA pour le mapper
-     * en objets métier (Acteurs, Flux), puis sauvegarde l'ensemble des entités.
-     * </p>
-     * * @param request Objet {@link MFCRequest} contenant le PlantUML, l'ID du projet et le nom souhaité pour le MFC.
-     * @return {@link ResponseEntity} contenant le {@link MFCResponse} (incluant l'ID généré) ou une erreur 400/500.
+     * Analyse, transforme et enregistre un MFC en base de données.
      */
     @PostMapping("/analyser-importer")
-    public ResponseEntity<?> analyserEtImporter(@RequestBody MFCRequest request){
+    public ResponseEntity<?> analyserEtImporter(@RequestBody MFCRequest request) {
         String plantUmlContent = request.getPlantUmlContent();
-        if(plantUmlContent==null || plantUmlContent.trim().isEmpty()){
-            return ResponseEntity.badRequest().body(""" 
-                    { "erreur" : "Le champ plantUmlContent est requis et ne peut pas être vide"}""");
+        if (plantUmlContent == null || plantUmlContent.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                    "{ \"erreur\" : \"Le champ plantUmlContent est requis et ne peut pas être vide\"}"
+            );
         }
-        try{
+        try {
             MFCResponse mfcr = mfcService.importerEtSauvegarder(request);
             return ResponseEntity.ok(mfcr);
         } catch (Exception e) {
-            return  ResponseEntity.internalServerError().build();
+            return ResponseEntity.internalServerError().build();
         }
     }
 
+    /**
+     * Charge tous les MFC d'un projet avec leurs flux et acteurs persistés.
+     * Utilisé au chargement de la Phase 2B pour restaurer l'état depuis la BDD.
+     */
+    @GetMapping("/projet/{idProjet}")
+    public ResponseEntity<List<MFCDetailResponse>> getByProjet(@PathVariable Long idProjet) {
+        try {
+            List<MFCDetailResponse> liste = mfcService.getMFCByProjet(idProjet);
+            return ResponseEntity.ok(liste);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }
