@@ -1,7 +1,5 @@
 package com.backend.projet.auth.dao;
-
 import com.backend.projet.auth.AuthentificationException;
-
 import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.ldap.client.api.LdapConnection;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
