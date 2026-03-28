@@ -1,4 +1,4 @@
-package com.backend.projet;
+package com.backend.projet.projet;
 
 import com.backend.projet.projet.dto.request.ProjetRequest;
 import com.backend.projet.projet.dto.response.ProjetResponse;
