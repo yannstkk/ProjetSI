@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { Plus, AlertTriangle, CheckCircle, Info, Sparkles } from "lucide-react";
+import { Plus, AlertTriangle, CheckCircle, Info, Sparkles, Database, Loader2 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { authFetch } from "../../../services/authFetch";
+import { getProjetCourant } from "../../../services/projetCourant";
 
 import { ActeurModal } from "./components/ActeurModal";
 import { ActeurTable } from "./components/ActeurTable";
@@ -14,20 +16,21 @@ import {
     appelDetectionActeurs,
 } from "./components/helpers/acteurIA";
 
-// ─── Constante ────────────────────────────────────────────────────────────────
-
 const EMPTY_FORM = { nom: "", role: "", type: "internal" };
 
-// ─── Composant principal ──────────────────────────────────────────────────────
-
 export function Phase2A() {
-    const [acteurs, setActeurs] = useState(loadActeurs);
+    const [acteurs, setActeurs]     = useState(loadActeurs);
     const [iaLoading, setIaLoading] = useState(false);
-    const [iaError, setIaError] = useState("");
-    const [iaRan, setIaRan] = useState(false);
-    const [modal, setModal] = useState(null);
+    const [iaError, setIaError]     = useState("");
+    const [iaRan, setIaRan]         = useState(false);
+    const [modal, setModal]         = useState(null);
 
-    // Sauvegarde automatique
+    // États sauvegarde BDD
+    const [dbLoading, setDbLoading]   = useState(false);
+    const [dbError, setDbError]       = useState("");
+    const [dbSuccess, setDbSuccess]   = useState(false);
+
+    // Sauvegarde automatique sessionStorage
     useEffect(() => {
         saveActeurs(acteurs);
     }, [acteurs]);
@@ -36,44 +39,111 @@ export function Phase2A() {
 
     async function lancerDetectionIA() {
         const notes = getNotesTexte();
-
         if (!notes.trim()) {
-            setIaError("Aucune note trouvée. Importez des notes dans la Phase 1 d'abord.");
+            setIaError(
+                "Aucune note trouvée. Importez un fichier .txt ou saisissez des notes " +
+                "structurées (besoins, règles, données...) dans la Phase 1 d'abord."
+            );
             return;
         }
-
         setIaLoading(true);
         setIaError("");
-
         try {
             const acteursDetectes = await appelDetectionActeurs(notes);
-
             if (acteursDetectes.length === 0) {
                 setIaError("L'IA n'a détecté aucun acteur dans les notes.");
                 setIaRan(true);
                 return;
             }
-
             const nomsExistants = new Set(acteurs.map((a) => a.nom.toLowerCase()));
-
             const nouveaux = acteursDetectes
                 .filter((a) => !nomsExistants.has(a.nom.toLowerCase()))
                 .map((a) => ({
-                    id: Date.now() + Math.random(),
-                    nom: a.nom,
-                    // Le rôle est pré-rempli si l'IA l'a identifié, sinon chaîne vide
-                    role: a.role || "",
-                    type: "internal",
-                    source: "ia",
+                    id:          Date.now() + Math.random(),
+                    nom:         a.nom,
+                    role:        a.role || "",
+                    type:        "internal",
+                    source:      "ia",
                     phraseSource: a.phraseSource || "",
                 }));
-
             setActeurs((prev) => [...prev, ...nouveaux]);
             setIaRan(true);
         } catch (err) {
             setIaError("Erreur lors de l'analyse : " + err.message);
         } finally {
             setIaLoading(false);
+        }
+    }
+
+    // ── Sauvegarde BDD ────────────────────────────────────────────────────────
+
+    async function sauvegarderEnBdd() {
+        if (acteurs.length === 0) {
+            setDbError("Aucun acteur à sauvegarder.");
+            return;
+        }
+
+        const projet = getProjetCourant();
+        if (!projet?.id) {
+            setDbError("Aucun projet sélectionné.");
+            return;
+        }
+
+        setDbLoading(true);
+        setDbError("");
+        setDbSuccess(false);
+
+        try {
+            // 1. Récupérer les acteurs déjà en BDD pour ce projet
+            const resExistants = await authFetch(`/api/acteur/projet/${projet.id}`);
+            const existants = resExistants.ok ? await resExistants.json() : [];
+            const nomsExistants = new Set(
+                existants.map((a) => a.nom?.toLowerCase())
+            );
+
+            // 2. Créer uniquement les acteurs absents de la BDD
+            const aCreer = acteurs.filter(
+                (a) => a.nom?.trim() && !nomsExistants.has(a.nom.toLowerCase())
+            );
+
+            await Promise.all(
+                aCreer.map((a) =>
+                    authFetch("/api/acteur", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            idProjet: projet.id,
+                            nom:      a.nom.trim(),
+                            type:     a.type   || "internal",
+                            source:   a.source || "manuel",
+                            role:     a.role   || "",
+                        }),
+                    })
+                )
+            );
+
+            // 3. Mettre à jour le sessionStorage avec les acteurs BDD (inclut les ids)
+            const resMAJ = await authFetch(`/api/acteur/projet/${projet.id}`);
+            if (resMAJ.ok) {
+                const acteursDb = await resMAJ.json();
+                const acteursLocaux = acteursDb.map((a) => ({
+                    id:           a.idActeur,
+                    nom:          a.nom    || "",
+                    role:         a.role   || "",
+                    type:         a.type   || "internal",
+                    source:       a.source || "bdd",
+                    phraseSource: "",
+                }));
+                setActeurs(acteursLocaux);
+                saveActeurs(acteursLocaux);
+            }
+
+            setDbSuccess(true);
+            setTimeout(() => setDbSuccess(false), 3000);
+
+        } catch (err) {
+            setDbError("Erreur lors de la sauvegarde : " + err.message);
+        } finally {
+            setDbLoading(false);
         }
     }
 
@@ -98,9 +168,8 @@ export function Phase2A() {
         setModal(null);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-
     const acteursSansRole = acteurs.filter((a) => !a.role.trim());
+    const nbEnBdd = acteurs.filter((a) => a.source === "bdd").length;
 
     return (
         <>
@@ -135,17 +204,13 @@ export function Phase2A() {
                         <CardContent>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div className="p-3 bg-blue-50 rounded border border-blue-300">
-                                    <div className="font-medium text-blue-900 mb-1">
-                                        Acteur INTERNE
-                                    </div>
+                                    <div className="font-medium text-blue-900 mb-1">Acteur INTERNE</div>
                                     <div className="text-blue-700">
                                         Fait partie de l'organisation et interagit directement avec le système
                                     </div>
                                 </div>
                                 <div className="p-3 bg-gray-50 rounded border border-gray-300">
-                                    <div className="font-medium text-gray-900 mb-1">
-                                        Acteur EXTERNE
-                                    </div>
+                                    <div className="font-medium text-gray-900 mb-1">Acteur EXTERNE</div>
                                     <div className="text-gray-700">
                                         Extérieur à l'organisation, interagit avec le système
                                     </div>
@@ -156,6 +221,8 @@ export function Phase2A() {
 
                     {/* Barre d'actions */}
                     <div className="flex items-center gap-3">
+
+                        {/* Détecter avec IA */}
                         <button
                             onClick={lancerDetectionIA}
                             disabled={iaLoading}
@@ -163,7 +230,7 @@ export function Phase2A() {
                         >
                             {iaLoading ? (
                                 <>
-                                    <span className="animate-spin">⏳</span>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
                                     Détection en cours...
                                 </>
                             ) : (
@@ -181,6 +248,26 @@ export function Phase2A() {
                             </span>
                         )}
 
+                        {/* Sauvegarder en BDD */}
+                        <button
+                            onClick={sauvegarderEnBdd}
+                            disabled={dbLoading || acteurs.length === 0}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-emerald-300 transition-colors font-medium"
+                        >
+                            {dbLoading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Sauvegarde...
+                                </>
+                            ) : (
+                                <>
+                                    <Database className="w-4 h-4" />
+                                    Sauvegarder en BDD
+                                </>
+                            )}
+                        </button>
+
+                        {/* Ajouter manuellement */}
                         <button
                             onClick={() => setModal(EMPTY_FORM)}
                             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium ml-auto"
@@ -188,7 +275,32 @@ export function Phase2A() {
                             <Plus className="w-4 h-4" />
                             Ajouter manuellement
                         </button>
+
                     </div>
+
+                    {/* Messages BDD */}
+                    {dbSuccess && (
+                        <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm">
+                            <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                            Acteurs sauvegardés en base de données avec succès.
+                        </div>
+                    )}
+                    {dbError && (
+                        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                            {dbError}
+                        </div>
+                    )}
+
+                    {/* Bandeau info BDD */}
+                    {nbEnBdd > 0 && !dbSuccess && (
+                        <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
+                            <Database className="w-4 h-4 flex-shrink-0" />
+                            <span>
+                                <strong>{nbEnBdd}</strong> acteur{nbEnBdd > 1 ? "s" : ""} chargé{nbEnBdd > 1 ? "s" : ""} depuis la base de données.
+                            </span>
+                        </div>
+                    )}
 
                     {/* Erreur IA */}
                     {iaError && (
@@ -198,7 +310,7 @@ export function Phase2A() {
                         </div>
                     )}
 
-                    {/* Info : rôles pré-remplis par l'IA */}
+                    {/* Info rôles IA */}
                     {iaRan && !iaLoading && acteurs.some((a) => a.source === "ia" && a.role) && (
                         <div className="flex items-center gap-2 p-3 bg-purple-50 border border-purple-200 rounded-lg text-purple-800 text-sm">
                             <Sparkles className="w-4 h-4 flex-shrink-0" />

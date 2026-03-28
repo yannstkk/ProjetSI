@@ -33,8 +33,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/login").permitAll()
-                                .requestMatchers("/api/modelisation/**").permitAll()
-                             .anyRequest().permitAll())
+                                .requestMatchers("/api/taiga/**").permitAll()
+                                    .anyRequest().authenticated())
                 .addFilterBefore(new JwtFilter(this.jwtutil), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

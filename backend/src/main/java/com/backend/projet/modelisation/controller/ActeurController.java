@@ -22,17 +22,17 @@ import com.backend.projet.modelisation.service.ActeurService;
 @RequestMapping("/api/acteur")
 public class ActeurController {
 
-	private final ActeurService acteurService;
-	
+    private final ActeurService acteurService;
+
     public ActeurController(ActeurService acteurService) {
         this.acteurService = acteurService;
     }
-    
+
     @GetMapping("/projet/{idProjet}")
     public ResponseEntity<List<ActeurResponse>> getByProjet(@PathVariable Long idProjet) {
         return ResponseEntity.ok(acteurService.getByProjet(idProjet));
     }
-    
+
     @PostMapping
     public ResponseEntity<ActeurResponse> create(@RequestBody ActeurRequest request) {
         try {

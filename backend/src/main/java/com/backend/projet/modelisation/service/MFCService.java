@@ -1,76 +1,72 @@
 package com.backend.projet.modelisation.service;
 
-
 import com.backend.projet.mistral.enums.Prompt;
 import com.backend.projet.mistral.service.MistralService;
+import com.backend.projet.modelisation.dto.response.ActeurResponse;
+import com.backend.projet.modelisation.dto.response.FluxDto;
 import com.backend.projet.modelisation.dto.response.FluxResponse;
 import com.backend.projet.modelisation.dto.request.MFCRequest;
+import com.backend.projet.modelisation.dto.response.MFCDetailResponse;
 import com.backend.projet.modelisation.dto.response.MFCResponse;
 import com.backend.projet.modelisation.entity.Acteur;
 import com.backend.projet.modelisation.entity.Flux;
 import com.backend.projet.modelisation.entity.MFC;
+import com.backend.projet.modelisation.repository.ActeurRepository;
 import com.backend.projet.modelisation.repository.MFCRepository;
 import com.backend.projet.projet.entity.Projet;
 import com.backend.projet.projet.exception.ResourceNotFoundException;
 import com.backend.projet.projet.repository.ProjetRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-/**
- * Service gérant la modélisation des Modèles de Flux Conceptuels (MFC).
- * Ce service permet d'analyser du contenu PlantUML via une IA (Mistral)
- * et de persister les résultats (MFC, Flux, Acteurs) en base de données.
- */
 @Service
 public class MFCService {
-    private final MistralService mistralService;
+
+    private final MistralService   mistralService;
     private final ProjetRepository projetRepository;
-    private final MFCRepository mfcRepository;
+    private final MFCRepository    mfcRepository;
+    private final ActeurRepository acteurRepository; // ← ajouté
 
-    public MFCService(MistralService mistralService,ProjetRepository projetRepository, MFCRepository mfcRepository ) {
-        this.mistralService = mistralService;
+    public MFCService(MistralService mistralService,
+                      ProjetRepository projetRepository,
+                      MFCRepository mfcRepository,
+                      ActeurRepository acteurRepository) {
+        this.mistralService   = mistralService;
         this.projetRepository = projetRepository;
-        this.mfcRepository = mfcRepository;
+        this.mfcRepository    = mfcRepository;
+        this.acteurRepository = acteurRepository;
     }
 
-    /**
-     * Envoie le contenu PlantUML au service d'IA pour extraction des flux.
-     *
-     * @param content Chaîne de caractères représentant le diagramme PlantUML.
-     * @return Un objet {@link FluxResponse} contenant la liste des flux détectés.
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+
     public FluxResponse analyserPlantUML(String content) {
-        return mistralService.executerAnalyse(content, Prompt.MFC.getPrompt(),FluxResponse.class );
+        return mistralService.executerAnalyse(content, Prompt.MFC.getPrompt(), FluxResponse.class);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Analyse un contenu PlantUML, crée les entités correspondantes et les sauvegarde en base de données.
-     * <p>
-     * Cette méthode effectue les étapes suivantes :
-     * 1. Analyse du contenu via l'IA.
-     * 2. Vérification de l'existence du projet rattaché.
-     * 3. Création du MFC et mapping des flux et acteurs.
-     * 4. Persistance en cascade.
-     * </p>
-     *
-     * @param request Objet contenant le contenu PlantUML, l'ID du projet et le nom du MFC.
-     * @return {@link MFCResponse} représentant l'état sauvegardé et l'analyse effectuée.
-     * @throws ResourceNotFoundException si l'ID du projet fourni n'existe pas.
-     */
+    @Transactional
     public MFCResponse importerEtSauvegarder(@NonNull MFCRequest request) {
         FluxResponse fluxAnalyse = analyserPlantUML(request.getPlantUmlContent());
 
         Projet projet = projetRepository.findById(request.getProjetId())
-                .orElseThrow(() -> new ResourceNotFoundException("Projet non trouvé avec l'ID : " + request.getProjetId()));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Projet non trouvé avec l'ID : " + request.getProjetId()));
 
         MFC mfc = new MFC();
         mfc.setNom(request.getNom());
         mfc.setProjet(projet);
+        mfc.setContenuPlantuml(request.getPlantUmlContent());
 
+
+        // Cache nom → Acteur persisté (avec id_acteur garanti)
         Map<String, Acteur> acteursCache = new HashMap<>();
 
         if (fluxAnalyse.flux != null) {
@@ -80,16 +76,16 @@ public class MFCService {
                 f.setDescription(element.description);
                 f.setData(element.data);
 
-                Acteur emetteur = getOrCreateActeur(element.emetteur, acteursCache);
-                Acteur recepteur = getOrCreateActeur(element.recepteur, acteursCache);
+                // ← acteurs sauvegardés en base AVANT l'INSERT dans PRESENCE_MFC
+                Acteur emetteur  = getOrCreateActeurPersiste(element.emetteur,  acteursCache, projet);
+                Acteur recepteur = getOrCreateActeurPersiste(element.recepteur, acteursCache, projet);
 
                 f.setActeurSortie(emetteur);
                 f.setActeurEntree(recepteur);
-
                 f.setMfc(mfc);
                 mfc.getFlux().add(f);
 
-                if (!mfc.getActeurs().contains(emetteur)) mfc.getActeurs().add(emetteur);
+                if (!mfc.getActeurs().contains(emetteur))  mfc.getActeurs().add(emetteur);
                 if (!mfc.getActeurs().contains(recepteur)) mfc.getActeurs().add(recepteur);
             }
         }
@@ -104,19 +100,91 @@ public class MFCService {
         );
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public List<MFCDetailResponse> getMFCByProjet(Long idProjet) {
+        List<MFC> mfcList = mfcRepository.findByProjetIdProjet(idProjet);
+        return mfcList.stream()
+                .map(this::toDetailResponse)
+                .collect(Collectors.toList());
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Récupère un acteur existant dans la map locale ou en crée un nouveau si absent.
-     *
-     * @param nom Nom de l'acteur à rechercher/créer.
-     * @param acteurs Map servant de cache temporaire durant le processus d'import.
-     * @return L'instance de l'{@link Acteur} correspondante.
+     * Cherche l'acteur dans le cache local, puis en base (nom + projet).
+     * S'il n'existe pas → crée ET persiste via acteurRepository.save()
+     * → l'acteur a un id_acteur avant l'INSERT dans PRESENCE_MFC.
      */
-    private Acteur getOrCreateActeur(String nom, Map<String, Acteur> acteurs){
-        return acteurs.computeIfAbsent(nom, n->{
-            Acteur a = new Acteur();
-            a.setNom(n);
-            return a;
-        });
+    private Acteur getOrCreateActeurPersiste(String nom,
+                                             Map<String, Acteur> cache,
+                                             Projet projet) {
+        String key = (nom == null || nom.isBlank()) ? "Inconnu" : nom.trim();
+
+        // 1. Cache local
+        if (cache.containsKey(key)) {
+            return cache.get(key);
+        }
+
+        // 2. Déjà en base pour ce projet
+        Optional<Acteur> existant = acteurRepository
+                .findByProjetIdProjet(projet.getIdProjet())
+                .stream()
+                .filter(a -> key.equalsIgnoreCase(a.getNom()))
+                .findFirst();
+
+        if (existant.isPresent()) {
+            cache.put(key, existant.get());
+            return existant.get();
+        }
+
+        // 3. Créer + sauvegarder → id_acteur généré par Oracle avant l'association
+        Acteur nouvel = new Acteur();
+        nouvel.setNom(key);
+        nouvel.setProjet(projet);
+        nouvel.setType("internal");
+        nouvel.setSource("mfc");
+        Acteur persiste = acteurRepository.save(nouvel);
+
+        cache.put(key, persiste);
+        return persiste;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private MFCDetailResponse toDetailResponse(MFC mfc) {
+        List<FluxDto> fluxDtos = mfc.getFlux().stream()
+                .map(f -> new FluxDto(
+                        f.getIdFlux(),
+                        f.getNom(),
+                        f.getDescription(),
+                        f.getData(),
+                        f.getActeurSortie() != null ? f.getActeurSortie().getNom() : "",
+                        f.getActeurEntree() != null ? f.getActeurEntree().getNom() : ""
+                ))
+                .collect(Collectors.toList());
+
+        List<ActeurResponse> acteurDtos = mfc.getActeurs().stream()
+                .map(a -> new ActeurResponse(
+                        a.getIdActeur(),
+                        a.getProjet() != null ? a.getProjet().getIdProjet() : null,
+                        a.getNom(),
+                        a.getType(),
+                        a.getSource(),
+                        a.getRole()
+                ))
+                .collect(Collectors.toList());
+
+        // idProjet depuis le MFC directement (plus fiable que passer par les acteurs)
+        Long idProjet = mfc.getProjet() != null ? mfc.getProjet().getIdProjet() : null;
+
+        return new MFCDetailResponse(
+                mfc.getId(),
+                mfc.getNom(),
+                idProjet,
+                mfc.getContenuPlantuml(),
+                fluxDtos,
+                acteurDtos
+        );
     }
 }

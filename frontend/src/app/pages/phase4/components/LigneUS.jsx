@@ -1,143 +1,175 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Edit, Trash2, ExternalLink, CheckCircle } from "lucide-react";
-import { PRIORITE_CONFIG, STATUT_CONFIG } from "./BarreOutils";
+import { Edit, Trash2, ExternalLink, CheckCircle, Database, Loader2, RefreshCw } from "lucide-react";
 
-export function LigneUS({ us, isLast, taigaConnecte, onExporter, onSupprimer }) {
-    const tdStyle = {
-        padding: "12px 16px",
-        borderBottom: isLast ? "none" : "1px solid var(--color-border-tertiary)",
-        verticalAlign: "middle",
-    };
+const PRIORITE_CONFIG = {
+    haute:   { label: "Haute",   className: "bg-red-100 text-red-700" },
+    moyenne: { label: "Moyenne", className: "bg-yellow-100 text-yellow-700" },
+    basse:   { label: "Basse",   className: "bg-green-100 text-green-700" },
+};
 
+export function LigneUS({ us, isLast, taigaConnecte, onExporter, onSupprimer, onStockerBdd }) {
+    const [dbLoading, setDbLoading] = useState(false);
+    const [dbError, setDbError]     = useState("");
+
+    const tdClass = `px-4 py-3 ${isLast ? "" : "border-b border-gray-100"} align-middle`;
     const prioriteCfg = PRIORITE_CONFIG[us.priorite] || PRIORITE_CONFIG.moyenne;
-    const statutCfg   = STATUT_CONFIG[us.statut]     || STATUT_CONFIG.brouillon;
+
+    async function handleStockerBdd() {
+        setDbLoading(true);
+        setDbError("");
+        try {
+            await onStockerBdd(us);
+        } catch (err) {
+            setDbError(err.message);
+        } finally {
+            setDbLoading(false);
+        }
+    }
+
+    // Détermine le rendu du bouton BDD selon l'état de l'US
+    function renderBddButton() {
+        if (dbLoading) {
+            return (
+                <button
+                    disabled
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed"
+                >
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Stockage...
+                </button>
+            );
+        }
+
+        if (us.dbId) {
+            // US déjà en BDD → bouton "Mettre à jour"
+            return (
+                <button
+                    onClick={handleStockerBdd}
+                    title="Mettre à jour en base de données"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 transition-colors"
+                >
+                    <RefreshCw className="w-3 h-3" />
+                    Sync BDD
+                </button>
+            );
+        }
+
+        // US pas encore en BDD → bouton "Stocker"
+        return (
+            <button
+                onClick={handleStockerBdd}
+                title="Enregistrer en base de données"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium bg-gray-50 border-gray-200 text-gray-600 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 transition-colors"
+            >
+                <Database className="w-3 h-3" />
+                Stocker BDD
+            </button>
+        );
+    }
 
     return (
-        <tr
-            onMouseEnter={(e) => e.currentTarget.style.background = "var(--color-background-secondary)"}
-            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-            style={{ transition: "background 0.1s" }}
-        >
-            {/* ID */}
-            <td style={tdStyle}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 500, color: "var(--color-text-primary)" }}>
-                        {us.id}
+        <>
+            <tr className="hover:bg-gray-50 transition-colors">
+
+                {/* ID */}
+                <td className={tdClass}>
+                    <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-xs font-medium text-gray-700">
+                            {us.id}
+                        </span>
+                        {us.dbId && (
+                            <span
+                                title={`ID BDD : ${us.dbId}`}
+                                className="inline-flex items-center gap-0.5 text-xs text-emerald-600"
+                            >
+                                <Database className="w-2.5 h-2.5" />
+                            </span>
+                        )}
+                    </div>
+                </td>
+
+                {/* User Story */}
+                <td className={`${tdClass} max-w-xs`}>
+                    <div className="text-sm font-medium text-gray-900">
+                        En tant que <span className="text-blue-600">{us.acteur || "—"}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-0.5 truncate max-w-xs">
+                        {us.veux
+                            ? `je veux ${us.veux}`
+                            : <em>non renseigné</em>
+                        }
+                    </div>
+                </td>
+
+                {/* Priorité */}
+                <td className={tdClass}>
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${prioriteCfg.className}`}>
+                        {prioriteCfg.label}
                     </span>
-                    {us.source === "phase3" && (
-                        <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>Phase 3</span>
+                </td>
+
+                {/* Critères */}
+                <td className={tdClass}>
+                    <span className={`text-xs ${us.criteres?.length > 0 ? "text-green-600 font-medium" : "text-gray-400"}`}>
+                        {us.criteres?.length > 0
+                            ? `${us.criteres.length} critère${us.criteres.length > 1 ? "s" : ""}`
+                            : "Aucun"
+                        }
+                    </span>
+                </td>
+
+                {/* Actions */}
+                <td className={tdClass}>
+                    <div className="flex items-center gap-2 flex-wrap">
+
+                        {/* Stocker / Sync BDD */}
+                        {renderBddButton()}
+
+                        {/* Exporter vers Taiga */}
+                        <button
+                            onClick={onExporter}
+                            title={taigaConnecte ? "Exporter vers Taiga" : "Connectez-vous d'abord à Taiga"}
+                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                                us.taigaId
+                                    ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                                    : taigaConnecte
+                                        ? "bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300"
+                                        : "bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed"
+                            }`}
+                        >
+                            {us.taigaId
+                                ? <><CheckCircle className="w-3 h-3" /> {us.taigaRef || "Exportée"}</>
+                                : <><ExternalLink className="w-3 h-3" /> Taiga</>
+                            }
+                        </button>
+
+                        {/* Éditer */}
+                        <Link
+                            to={`/dashboard/phase4/form?id=${us.id}`}
+                            className="flex items-center p-1.5 border border-gray-200 rounded-lg text-gray-400 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                        >
+                            <Edit className="w-3.5 h-3.5" />
+                        </Link>
+
+                        {/* Supprimer */}
+                        <button
+                            onClick={onSupprimer}
+                            className="flex items-center p-1.5 border border-gray-200 rounded-lg text-gray-400 hover:text-red-600 hover:border-red-300 transition-colors"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+
+                    </div>
+
+                    {/* Message d'erreur BDD inline */}
+                    {dbError && (
+                        <p className="text-xs text-red-600 mt-1 max-w-[260px]">
+                            {dbError}
+                        </p>
                     )}
-                </div>
-            </td>
-
-            {/* User Story */}
-            <td style={{ ...tdStyle, maxWidth: 320 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, color: "var(--color-text-primary)", marginBottom: 2 }}>
-                    En tant que <span style={{ color: "#185FA5" }}>{us.acteur || "—"}</span>
-                </div>
-                <div style={{
-                    fontSize: 12, color: "var(--color-text-secondary)",
-                    overflow: "hidden", textOverflow: "ellipsis",
-                    whiteSpace: "nowrap", maxWidth: 280,
-                }}>
-                    Je veux {us.veux || <em style={{ color: "var(--color-text-tertiary)" }}>non renseigné</em>}
-                </div>
-            </td>
-
-            {/* Priorité */}
-            <td style={tdStyle}>
-                <span style={{ ...prioriteCfg.style, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 500, whiteSpace: "nowrap" }}>
-                    {prioriteCfg.label}
-                </span>
-            </td>
-
-            {/* Statut */}
-            <td style={tdStyle}>
-                <span style={{ ...statutCfg.style, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 500, whiteSpace: "nowrap" }}>
-                    {statutCfg.label}
-                </span>
-            </td>
-
-            {/* Critères */}
-            <td style={tdStyle}>
-                <span style={{ fontSize: 12, color: us.criteres?.length > 0 ? "var(--color-text-success)" : "var(--color-text-tertiary)" }}>
-                    {us.criteres?.length > 0
-                        ? `${us.criteres.length} critère${us.criteres.length > 1 ? "s" : ""}`
-                        : "Aucun"
-                    }
-                </span>
-            </td>
-
-            {/* Taiga */}
-            <td style={tdStyle}>
-                {us.taigaId ? (
-                    <span style={{ fontSize: 11, color: "#0D9F6E", fontWeight: 500, display: "flex", alignItems: "center", gap: 4 }}>
-                        <CheckCircle size={12} />
-                        #{us.taigaRef || us.taigaId}
-                    </span>
-                ) : (
-                    <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>—</span>
-                )}
-            </td>
-
-            {/* Actions */}
-            <td style={tdStyle}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-
-                    {/* Exporter */}
-                    <button
-                        onClick={onExporter}
-                        title={taigaConnecte ? "Exporter vers Taiga" : "Connectez-vous d'abord à Taiga"}
-                        style={{
-                            display: "flex", alignItems: "center", gap: 4,
-                            padding: "5px 10px",
-                            background: us.taigaId ? "#E1F5EE" : (taigaConnecte ? "#E1F5EE" : "var(--color-background-secondary)"),
-                            color: us.taigaId ? "#085041" : (taigaConnecte ? "#0F6E56" : "var(--color-text-tertiary)"),
-                            border: `1px solid ${us.taigaId ? "#5DCAA5" : (taigaConnecte ? "#9FE1CB" : "var(--color-border-tertiary)")}`,
-                            borderRadius: "var(--border-radius-md)",
-                            cursor: "pointer", fontSize: 12, fontWeight: 500,
-                            transition: "all 0.15s",
-                        }}
-                    >
-                        <ExternalLink size={12} />
-                        {us.taigaId ? "Ré-exporter" : "Exporter"}
-                    </button>
-
-                    {/* Éditer */}
-                    <Link
-                        to={`/dashboard/phase4/form?id=${us.id}`}
-                        style={{
-                            display: "flex", alignItems: "center",
-                            padding: "5px 8px",
-                            border: "1px solid var(--color-border-tertiary)",
-                            borderRadius: "var(--border-radius-md)",
-                            color: "var(--color-text-secondary)",
-                            textDecoration: "none", transition: "all 0.15s",
-                        }}
-                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#185FA5"; e.currentTarget.style.color = "#185FA5"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--color-border-tertiary)"; e.currentTarget.style.color = "var(--color-text-secondary)"; }}
-                    >
-                        <Edit size={13} />
-                    </Link>
-
-                    {/* Supprimer */}
-                    <button
-                        onClick={onSupprimer}
-                        style={{
-                            display: "flex", alignItems: "center",
-                            padding: "5px 8px",
-                            border: "1px solid var(--color-border-tertiary)",
-                            borderRadius: "var(--border-radius-md)",
-                            background: "none", color: "var(--color-text-tertiary)",
-                            cursor: "pointer", transition: "all 0.15s",
-                        }}
-                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#A32D2D"; e.currentTarget.style.color = "#A32D2D"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--color-border-tertiary)"; e.currentTarget.style.color = "var(--color-text-tertiary)"; }}
-                    >
-                        <Trash2 size={13} />
-                    </button>
-                </div>
-            </td>
-        </tr>
+                </td>
+            </tr>
+        </>
     );
 }

@@ -12,10 +12,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import org.slf4j.Marker;
 
 @Entity
 public class MFC {
@@ -28,15 +28,19 @@ public class MFC {
     @Column(name = "nom")
     private String nom;
 
+    @Lob
+    @Column(name = "contenu_plantuml")
+    private String contenuPlantuml;
+
     @ManyToOne
     @JoinColumn(name = "id_projet")
     private Projet projet;
 
     @ManyToMany
     @JoinTable(
-        name = "PRESENCE_MFC",
-        joinColumns = @JoinColumn(name = "id_mfc"),
-        inverseJoinColumns = @JoinColumn(name = "id_acteur")
+            name = "PRESENCE_MFC",
+            joinColumns = @JoinColumn(name = "id_mfc"),
+            inverseJoinColumns = @JoinColumn(name = "id_acteur")
     )
     private List<Acteur> acteurs = new ArrayList<>();
 
@@ -45,27 +49,14 @@ public class MFC {
 
     public MFC() {}
 
-    public void setNom(String nom){
-        this.nom = nom;
-    }
+    public Long getId()                  { return this.idMfc; }
+    public String getNom()               { return this.nom; }
+    public Projet getProjet()            { return this.projet; }
+    public String getContenuPlantuml()   { return this.contenuPlantuml; }
+    public List<Flux> getFlux()          { return this.flux; }
+    public List<Acteur> getActeurs()     { return this.acteurs; }
 
-    public void setProjet(Projet projet) {
-        this.projet = projet;
-    }
-
-    public List<Flux> getFlux() {
-        return this.flux;
-    }
-
-    public String getNom() {
-        return this.nom;
-    }
-
-    public Long getId() {
-        return this.idMfc;
-    }
-
-    public List<Acteur> getActeurs() {
-        return this.acteurs;
-    }
+    public void setNom(String nom)                      { this.nom = nom; }
+    public void setProjet(Projet projet)                { this.projet = projet; }
+    public void setContenuPlantuml(String c)            { this.contenuPlantuml = c; }
 }

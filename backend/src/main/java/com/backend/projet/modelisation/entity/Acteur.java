@@ -22,43 +22,43 @@ import jakarta.persistence.Table;
 @Table(name = "ACTEUR")
 public class Acteur {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_acteur")
-    private Long idActeur;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id_acteur")
+	private Long idActeur;
 
-    @Column(name = "nom")
-    private String nom;
+	@Column(name = "nom")
+	private String nom;
 
-    @Column(name = "type")
-    private String type;
-    
-    @Column(name = "source", length = 30)
-    private String source;
+	@Column(name = "type")
+	private String type;
 
-    @Column(name = "role", length = 100)
-    private String role;
+	@Column(name = "source", length = 30)
+	private String source;
 
-    @ManyToMany(mappedBy = "acteurs")
-    private List<BPMN> bpmns = new ArrayList<>();
+	@Column(name = "role", length = 100)
+	private String role;
 
-    @ManyToMany(mappedBy = "acteurs")
-    private List<MFC> mfcs = new ArrayList<>();
+	@ManyToMany(mappedBy = "acteurs")
+	private List<BPMN> bpmns = new ArrayList<>();
 
-    @OneToMany(mappedBy = "acteurEntree")
-    private List<Flux> fluxEntree = new ArrayList<>();
+	@ManyToMany(mappedBy = "acteurs")
+	private List<MFC> mfcs = new ArrayList<>();
 
-    @OneToMany(mappedBy = "acteurSortie")
-    private List<Flux> fluxSortie = new ArrayList<>();
-    
+	@OneToMany(mappedBy = "acteurEntree")
+	private List<Flux> fluxEntree = new ArrayList<>();
+
+	@OneToMany(mappedBy = "acteurSortie")
+	private List<Flux> fluxSortie = new ArrayList<>();
+
 	@OneToMany(mappedBy = "acteur", cascade = CascadeType.ALL)
 	private List<UserStory> userStories = new ArrayList<>();
-    
+
 	@ManyToOne
 	@JoinColumn(name = "id_projet")
 	private Projet projet;
 
-    public Projet getProjet() {
+	public Projet getProjet() {
 		return projet;
 	}
 
@@ -91,22 +91,22 @@ public class Acteur {
 	public void setType(String type) {
 		this.type = type;
 	}
-	
-    public String getSource() { 
-    	return source; 
-    }
-    
-    public void setSource(String source) { 
-    	this.source = source; 
-    }
-    
-    public String getRole() { 
-    	return role; 
-    }
-    
-    public void setRole(String role) { 
-    	this.role = role; 
-    }
 
-    
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
+
 }
