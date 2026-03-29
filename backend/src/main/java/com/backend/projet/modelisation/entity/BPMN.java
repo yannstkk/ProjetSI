@@ -38,9 +38,9 @@ public class BPMN {
 
     @ManyToMany
     @JoinTable(
-        name = "PRESENCE_BPMN",
-        joinColumns = @JoinColumn(name = "id_bpmn"),
-        inverseJoinColumns = @JoinColumn(name = "id_acteur")
+            name = "PRESENCE_BPMN",
+            joinColumns = @JoinColumn(name = "id_bpmn"),
+            inverseJoinColumns = @JoinColumn(name = "id_acteur")
     )
     private List<Acteur> acteurs = new ArrayList<>();
 
@@ -49,37 +49,37 @@ public class BPMN {
 
     public BPMN() {}
 
-	public Long getIdBpmn() {
-		return idBpmn;
-	}
+    public Long getIdBpmn() {
+        return idBpmn;
+    }
 
-	public void setIdBpmn(Long idBpmn) {
-		this.idBpmn = idBpmn;
-	}
+    public void setIdBpmn(Long idBpmn) {
+        this.idBpmn = idBpmn;
+    }
 
-	public String getTitre() {
-		return titre;
-	}
+    public String getTitre() {
+        return titre;
+    }
 
-	public void setTitre(String titre) {
-		this.titre = titre;
-	}
+    public void setTitre(String titre) {
+        this.titre = titre;
+    }
 
-	public String getContenu() {
-		return contenu;
-	}
+    public String getContenu() {
+        return contenu;
+    }
 
-	public void setContenu(String contenu) {
-		this.contenu = contenu;
-	}
+    public void setContenu(String contenu) {
+        this.contenu = contenu;
+    }
 
-	public Projet getProjet() {
-		return projet;
-	}
+    public Projet getProjet() {
+        return projet;
+    }
 
-	public void setProjet(Projet projet) {
-		this.projet = projet;
-	}
+    public void setProjet(Projet projet) {
+        this.projet = projet;
+    }
 
-    
+
 }

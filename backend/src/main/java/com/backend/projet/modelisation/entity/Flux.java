@@ -31,7 +31,7 @@ public class Flux {
     @Column(name = "type")
     private String type;
 
-	@Column(name = "data")
+	@Column(name = "donnees")
 	private String data;
 
     @ManyToOne

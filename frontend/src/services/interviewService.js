@@ -44,16 +44,31 @@ export async function updateInterview(numeroInterview, data) {
 /**
  * Construit l'objet à envoyer au backend depuis le sessionStorage.
  * Ne garde que les champs reconnus par InterviewRequest.java.
+ * La durée est stockée dans objectifs sous forme de préfixe lisible
+ * car InterviewRequest n'a pas de champ dédié pour la durée.
  */
 export function buildInterviewPayload(idProjet) {
     try {
         const draft = JSON.parse(sessionStorage.getItem("interview_draft") || "{}");
         const dateHeure = draft.dateHeure || "";
 
+        // On inclut la durée dans les objectifs si elle est renseignée,
+        // pour ne pas la perdre côté BDD.
+        let objectifs = draft.objectifs || "";
+        if (draft.duree && draft.duree.trim()) {
+            const dureeTag = `[Durée estimée : ${draft.duree.trim()}]`;
+            // Évite de dupliquer le tag si déjà présent
+            if (!objectifs.includes("[Durée estimée :")) {
+                objectifs = objectifs
+                    ? `${dureeTag}\n${objectifs}`
+                    : dureeTag;
+            }
+        }
+
         return {
             idProjet,
             titre:          draft.titre     || "",
-            objectifs:      draft.objectifs || "",
+            objectifs,
             dateInterview:  dateHeure ? dateHeure.split("T")[0]  : null,
             heureInterview: dateHeure || null,
             nomInterviewer: draft.participants
@@ -72,15 +87,35 @@ export function buildInterviewPayload(idProjet) {
 /**
  * Charge une interview BDD dans sessionStorage.
  * Reconstruit interview_draft depuis les champs de InterviewResponse.java.
+ * IMPORTANT : préserve les champs purement frontend (duree) déjà présents
+ * en sessionStorage pour ne pas les écraser lors d'un rechargement.
  */
 export function loadInterviewIntoSession(interview) {
+    // Lire le draft existant pour préserver les champs non persistés (ex: duree)
+    let existingDraft = {};
+    try {
+        const raw = sessionStorage.getItem("interview_draft");
+        if (raw) existingDraft = JSON.parse(raw);
+    } catch {
+        // ignore
+    }
+
+    // Extraire la durée depuis les objectifs si elle y a été encodée
+    let objectifs = interview.objectifs || "";
+    let duree = existingDraft.duree || "";
+    const dureeMatch = objectifs.match(/^\[Durée estimée : (.+?)\]\n?/);
+    if (dureeMatch) {
+        duree = dureeMatch[1];
+        objectifs = objectifs.replace(dureeMatch[0], "").trim();
+    }
+
     const draft = {
         titre:          interview.titre          || "",
-        objectifs:      interview.objectifs      || "",
+        objectifs,
         dateHeure:      interview.heureInterview || "",
-        duree:          "",
-        participants:   [],
-        notesImportees: [],
+        duree,                                          // ← préservé ou extrait
+        participants:   existingDraft.participants || [],
+        notesImportees: existingDraft.notesImportees || [],
     };
 
     sessionStorage.setItem("interview_draft",         JSON.stringify(draft));

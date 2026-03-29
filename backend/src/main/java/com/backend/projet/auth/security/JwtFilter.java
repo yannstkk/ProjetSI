@@ -1,5 +1,6 @@
 package com.backend.projet.auth.security;
 
+import com.backend.projet.config.JwtConfig;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,7 +15,8 @@ import java.util.ArrayList;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-	
+
+
     private JwtUtil jwtUtil;
 
     public JwtFilter(JwtUtil jwtUtil){

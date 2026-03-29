@@ -1,11 +1,42 @@
 import { useState } from "react";
-import { authFetch } from "../services/authFetch";
 import {
     loadTaigaSession,
     saveTaigaSession,
     clearTaigaSession,
     updateUS,
 } from "../app/pages/phase4/components/usStorage";
+
+const BASE_URL = "http://localhost:8080";
+
+/**
+ * Fetch dédié aux appels Taiga via notre backend.
+ * Remplace le header Authorization par le token Taiga
+ * (le backend lit @RequestHeader("Authorization") pour le token Taiga).
+ * Le JWT applicatif n'est PAS envoyé sur ces routes Taiga car le backend
+ * les laisse passer via SecurityConfig (.permitAll() ou filtre JWT ignoré).
+ *
+ * Si le backend exige aussi le JWT applicatif, il faudra adapter SecurityConfig
+ * pour lire le token Taiga dans un header dédié (ex: X-Taiga-Token).
+ */
+async function taigaFetch(path, taigaToken, options = {}) {
+    const headers = {
+        "Content-Type": "application/json",
+        ...options.headers,
+    };
+
+    // On passe le token Taiga dans Authorization comme attendu par le backend
+    if (taigaToken) {
+        headers["Authorization"] = `Bearer ${taigaToken}`;
+    }
+
+    const response = await fetch(`${BASE_URL}${path}`, {
+        ...options,
+        credentials: "include",
+        headers,
+    });
+
+    return response;
+}
 
 export const TAIGA_STEP = {
     CLOSED:  "closed",
@@ -15,18 +46,44 @@ export const TAIGA_STEP = {
 };
 
 export function useTaiga({ onBacklogChange }) {
-    const [step, setStep]                     = useState(TAIGA_STEP.CLOSED);
-    const [session, setSession]               = useState(loadTaigaSession);
-    const [projets, setProjets]               = useState([]);
-    const [projetChoisi, setProjetChoisi]     = useState(null);
-    const [usAExporter, setUsAExporter]       = useState(null);
-    const [loading, setLoading]               = useState(false);
-    const [error, setError]                   = useState("");
+    const [step, setStep]                 = useState(TAIGA_STEP.CLOSED);
+    const [session, setSession]           = useState(loadTaigaSession);
+    const [projets, setProjets]           = useState([]);
+    const [projetChoisi, setProjetChoisi] = useState(() => {
+        // Restaurer le projet choisi depuis sessionStorage
+        try {
+            const raw = sessionStorage.getItem("taiga_projet_choisi");
+            return raw ? JSON.parse(raw) : null;
+        } catch {
+            return null;
+        }
+    });
+    const [usAExporter, setUsAExporter]   = useState(null);
+    const [loading, setLoading]           = useState(false);
+    const [error, setError]               = useState("");
+
+    // ── Helpers persistance ───────────────────────────────────────────────────
+
+    function persistSession(s) {
+        saveTaigaSession(s);
+        setSession(s);
+    }
+
+    function persistProjetChoisi(p) {
+        if (p) {
+            sessionStorage.setItem("taiga_projet_choisi", JSON.stringify(p));
+        } else {
+            sessionStorage.removeItem("taiga_projet_choisi");
+        }
+        setProjetChoisi(p);
+    }
+
+    // ── Ouverture modale ──────────────────────────────────────────────────────
 
     function ouvrirConnexion() {
         setError("");
         if (session) {
-            chargerProjets(session.token);
+            chargerProjets(session.token, session.userId);
         } else {
             setStep(TAIGA_STEP.LOGIN);
         }
@@ -36,7 +93,12 @@ export function useTaiga({ onBacklogChange }) {
         setUsAExporter(us);
         setError("");
         if (session) {
-            chargerProjets(session.token);
+            // Si on a déjà un projet choisi on va directement à l'export
+            if (projetChoisi) {
+                setStep(TAIGA_STEP.EXPORT);
+            } else {
+                chargerProjets(session.token, session.userId);
+            }
         } else {
             setStep(TAIGA_STEP.LOGIN);
         }
@@ -46,113 +108,172 @@ export function useTaiga({ onBacklogChange }) {
         setStep(TAIGA_STEP.CLOSED);
         setUsAExporter(null);
         setError("");
-        setProjetChoisi(null);
     }
+
+    // ── Login Taiga ───────────────────────────────────────────────────────────
 
     async function login(username, password) {
         setLoading(true);
         setError("");
         try {
-            const res  = await authFetch("/api/taiga/login", {
+            // POST /api/taiga/login — pas de token encore, on utilise fetch direct
+            const res = await fetch(`${BASE_URL}/api/taiga/login`, {
                 method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password }),
             });
-            const text = await res.text();
+
             if (!res.ok) {
+                const text = await res.text();
                 let msg;
-                try { msg = JSON.parse(text).error; } catch { msg = text; }
-                throw new Error(msg || `Erreur ${res.status}`);
+                try { msg = JSON.parse(text)?.error || text; } catch { msg = text || `Erreur ${res.status}`; }
+                throw new Error(msg);
             }
-            const data             = JSON.parse(text);
-            const nouvelleSession  = { token: data.token, userId: data.userId, username: data.username };
-            saveTaigaSession(nouvelleSession);
-            setSession(nouvelleSession);
-            await chargerProjets(data.token);
+
+            const data = await res.json();
+            // TaigaAuthResponse : { userId, username, token }
+            const nouvelleSession = {
+                token:    data.token,
+                userId:   data.userId,
+                username: data.username,
+            };
+            persistSession(nouvelleSession);
+            await chargerProjets(data.token, data.userId);
         } catch (e) {
-            setError(e.message);
+            setError(e.message || "Erreur de connexion");
         } finally {
             setLoading(false);
         }
     }
 
-    async function chargerProjets(token) {
+    // ── Charger les projets ───────────────────────────────────────────────────
+
+    async function chargerProjets(token, userId) {
         setLoading(true);
         setError("");
         try {
-            const res  = await authFetch("/api/taiga/projets", {
-                headers: { "X-Taiga-Token": token },
-            });
-            const text = await res.text();
+            // GET /api/taiga/projects?userId=... avec token Taiga dans Authorization
+            // Le backend : @RequestParam Long userId, @RequestHeader("Authorization") String token
+            const res = await taigaFetch(
+                `/api/taiga/projects?userId=${userId}`,
+                token
+            );
+
             if (!res.ok) {
+                const text = await res.text();
                 let msg;
-                try { msg = JSON.parse(text).error; } catch { msg = text; }
-                throw new Error(msg || `Erreur ${res.status}`);
+                try { msg = JSON.parse(text)?.error || text; } catch { msg = text || `Erreur ${res.status}`; }
+                // Token invalide → on remet en login
+                if (res.status === 401) {
+                    clearTaigaSession();
+                    setSession(null);
+                    persistProjetChoisi(null);
+                    setStep(TAIGA_STEP.LOGIN);
+                    throw new Error("Session expirée, veuillez vous reconnecter.");
+                }
+                throw new Error(msg);
             }
-            setProjets(JSON.parse(text));
+
+            const data = await res.json();
+            // ProjectTaigaResponse[] : [{ id, nom, slug }]
+            setProjets(data);
             setStep(TAIGA_STEP.PROJETS);
         } catch (e) {
-            setError(e.message);
-            clearTaigaSession();
-            setSession(null);
-            setStep(TAIGA_STEP.LOGIN);
+            setError(e.message || "Erreur lors du chargement des projets");
+            if (!e.message?.includes("Session expirée")) {
+                setStep(TAIGA_STEP.PROJETS);
+            }
         } finally {
             setLoading(false);
         }
     }
 
+    // ── Choisir un projet ─────────────────────────────────────────────────────
+
     function choisirProjet(projet) {
-        setProjetChoisi(projet);
+        persistProjetChoisi(projet);
         setStep(TAIGA_STEP.EXPORT);
     }
+
+    // ── Exporter une US ───────────────────────────────────────────────────────
 
     async function exporterUS(us) {
         if (!projetChoisi || !session) return;
         setLoading(true);
         setError("");
         try {
-            const res  = await authFetch("/api/taiga/exporter-us", {
-                method: "POST",
-                headers: { "X-Taiga-Token": session.token },
-                body: JSON.stringify({
-                    projetId: projetChoisi.id,
-                    us: {
-                        acteur:   us.acteur,
-                        veux:     us.veux,
-                        afin:     us.afin,
-                        criteres: us.criteres,
-                        priorite: us.priorite,
-                    },
-                }),
-            });
-            const text = await res.text();
+            // Construire le subject depuis les champs de l'US
+            // UserStoryRequest attend : { project: Long, subject: String }
+            const parts = [];
+            if (us.acteur) parts.push(`En tant que ${us.acteur}`);
+            if (us.veux)   parts.push(`je veux ${us.veux}`);
+            if (us.afin)   parts.push(`afin de ${us.afin}`);
+            const subject = parts.length > 0 ? parts.join(", ") : (us.id || "User Story");
+
+            // POST /api/taiga/exporter-us
+            // Backend : @RequestBody UserStoryRequest userStory, @RequestHeader("Authorization") String token
+            // UserStoryRequest : { project: Long, subject: String }
+            const res = await taigaFetch(
+                "/api/taiga/exporter-us",
+                session.token,
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        project: projetChoisi.id,
+                        subject,
+                    }),
+                }
+            );
+
             if (!res.ok) {
+                const text = await res.text();
                 let msg;
-                try { msg = JSON.parse(text).error; } catch { msg = text; }
-                throw new Error(msg || `Erreur ${res.status}`);
+                try { msg = JSON.parse(text)?.error || text; } catch { msg = text || `Erreur ${res.status}`; }
+                throw new Error(msg);
             }
-            const data          = JSON.parse(text);
-            const backlogMisAJour = updateUS(us.id, { taigaId: data.taigaId, taigaRef: data.taigaRef });
+
+            const data = await res.json();
+            // UserStoryResponse : { taigaId, taigaRef (ex: "US-12") }
+            const backlogMisAJour = updateUS(us.id, {
+                taigaId:  data.taigaId,
+                taigaRef: data.getTaigaRef || data.taigaRef,
+            });
             onBacklogChange(backlogMisAJour);
             fermer();
         } catch (e) {
-            setError(e.message);
+            setError(e.message || "Erreur lors de l'export");
         } finally {
             setLoading(false);
         }
     }
 
+    // ── Déconnexion ───────────────────────────────────────────────────────────
+
     function deconnecter() {
         clearTaigaSession();
+        sessionStorage.removeItem("taiga_projet_choisi");
         setSession(null);
         setProjets([]);
         setProjetChoisi(null);
-        fermer();
+        setUsAExporter(null);
+        setError("");
+        setStep(TAIGA_STEP.CLOSED);
+    }
+
+    // ── Changer de projet (depuis la modale de gestion) ───────────────────────
+
+    function changerProjet() {
+        setError("");
+        if (session) {
+            chargerProjets(session.token, session.userId);
+        }
     }
 
     return {
         step, session, projets, projetChoisi, usAExporter,
         loading, error,
         ouvrirConnexion, ouvrirExportUS, fermer,
-        login, choisirProjet, exporterUS, deconnecter,
+        login, choisirProjet, exporterUS, deconnecter, changerProjet,
     };
 }

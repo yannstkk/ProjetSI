@@ -17,15 +17,76 @@ export function saveActeurs(acteurs) {
 }
 
 
+/**
+ * Agrège toutes les sources de notes disponibles dans le sessionStorage :
+ *  1. Les fichiers .txt importés en préparation (interview_draft.notesImportees)
+ *  2. Les notes structurées saisies en mode live (interview_live)
+ *
+ * Retourne une chaîne de texte brute utilisable par l'IA.
+ * Si aucune source n'est disponible, retourne "".
+ */
 export function getNotesTexte() {
+    const parties = [];
+
+    // ── Source 1 : fichiers .txt importés ────────────────────────────────────
     try {
         const draft = sessionStorage.getItem("interview_draft");
-        if (!draft) return "";
-        const parsed = JSON.parse(draft);
-        return (parsed.notesImportees || []).map((n) => n.contenu).join("\n\n");
+        if (draft) {
+            const parsed = JSON.parse(draft);
+            const contenuFichiers = (parsed.notesImportees || [])
+                .map((n) => n.contenu)
+                .filter(Boolean)
+                .join("\n\n");
+            if (contenuFichiers.trim()) {
+                parties.push(contenuFichiers);
+            }
+        }
     } catch {
-        return "";
+        // ignore
     }
+
+    // ── Source 2 : notes structurées saisies en live ─────────────────────────
+    try {
+        const live = sessionStorage.getItem("interview_live");
+        if (live) {
+            const parsed = JSON.parse(live);
+
+            const besoins = (parsed.besoins || [])
+                .map((el) => el.texte || "")
+                .filter(Boolean);
+
+            const regles = (parsed.regles || [])
+                .map((el) => el.texte || "")
+                .filter(Boolean);
+
+            const donnees = (parsed.donnees || [])
+                .map((el) => el.nom || el.texte || "")
+                .filter(Boolean);
+
+            const contraintes = (parsed.contraintes || [])
+                .map((el) => el.texte || "")
+                .filter(Boolean);
+
+            const solutions = (parsed.solutions || [])
+                .map((el) => el.texte || "")
+                .filter(Boolean);
+
+            const lignes = [];
+            if (besoins.length)     lignes.push("Besoins :\n" + besoins.join("\n"));
+            if (regles.length)      lignes.push("Règles métier :\n" + regles.join("\n"));
+            if (donnees.length)     lignes.push("Données :\n" + donnees.join("\n"));
+            if (contraintes.length) lignes.push("Contraintes :\n" + contraintes.join("\n"));
+            if (solutions.length)   lignes.push("Solutions proposées :\n" + solutions.join("\n"));
+
+            if (lignes.length) {
+                parties.push(lignes.join("\n\n"));
+            }
+        }
+    } catch {
+        // ignore
+    }
+
+    return parties.join("\n\n---\n\n");
 }
 
 // ─── Appel endpoint dédié ─────────────────────────────────────────────────────
@@ -40,7 +101,7 @@ export function getNotesTexte() {
 export async function appelDetectionActeurs(notesTexte) {
     const response = await authFetch("/api/mistral/detecter-acteurs", {
         method: "POST",
-        body: JSON.stringify({ notes: notesTexte }),
+        body: JSON.stringify({ contenu: notesTexte }),
     });
 
     if (!response.ok) {

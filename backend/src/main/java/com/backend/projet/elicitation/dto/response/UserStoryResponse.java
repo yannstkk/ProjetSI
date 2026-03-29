@@ -14,8 +14,8 @@ public class UserStoryResponse {
     private Long idActeur;
 
     public UserStoryResponse(Long idUs, String ref, String veux, String afin,
-                              String priorite, String criteres, String flux,
-                              String taigaRef, Long idProjet, Long idActeur) {
+                             String priorite, String criteres, String flux,
+                             String taigaRef, Long idProjet, Long idActeur) {
         this.idUs = idUs;
         this.ref = ref;
         this.veux = veux;
@@ -28,43 +28,43 @@ public class UserStoryResponse {
         this.idActeur = idActeur;
     }
 
-    public Long getIdUs() { 
-    	return idUs; 
+    public Long getIdUs() {
+        return idUs;
     }
-    
-    public String getRef() { 
-    	return ref; 
+
+    public String getRef() {
+        return ref;
     }
-    
-    public String getVeux() { 
-    	return veux; 
+
+    public String getVeux() {
+        return veux;
     }
-    
-    public String getAfin() { 
-    	return afin; 
+
+    public String getAfin() {
+        return afin;
     }
-    
-    public String getPriorite() { 
-    	return priorite; 
+
+    public String getPriorite() {
+        return priorite;
     }
-    
-    public String getCriteres() { 
-    	return criteres; 
+
+    public String getCriteres() {
+        return criteres;
     }
-    
-    public String getFlux() { 
-    	return flux; 
+
+    public String getFlux() {
+        return flux;
     }
-    
-    public String getTaigaRef() { 
-    	return taigaRef; 
+
+    public String getTaigaRef() {
+        return taigaRef;
     }
-    
-    public Long getIdProjet() { 
-    	return idProjet; 
+
+    public Long getIdProjet() {
+        return idProjet;
     }
-    
-    public Long getIdActeur() { 
-    	return idActeur; 
+
+    public Long getIdActeur() {
+        return idActeur;
     }
 }

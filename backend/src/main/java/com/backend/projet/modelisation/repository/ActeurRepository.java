@@ -10,7 +10,7 @@ import com.backend.projet.modelisation.entity.Acteur;
 
 @Repository
 public interface ActeurRepository extends JpaRepository<Acteur, Long> {
-	
-	List<Acteur> findByProjetIdProjet(Long idProjet);
+
+    List<Acteur> findByProjetIdProjet(Long idProjet);
 
 }

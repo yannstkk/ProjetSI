@@ -1,54 +1,54 @@
 package com.backend.projet.modelisation.dto.request;
 
 public class ActeurRequest {
-	
-	private Long idProjet;
-	private String nom;
-	private String type;
-	private String source;
-	private String role;
-	
-	public ActeurRequest() {}
 
-	public Long getIdProjet() {
-		return idProjet;
-	}
+    private Long idProjet;
+    private String nom;
+    private String type;
+    private String source;
+    private String role;
 
-	public void setIdProjet(Long idProjet) {
-		this.idProjet = idProjet;
-	}
+    public ActeurRequest() {}
 
-	public String getNom() {
-		return nom;
-	}
+    public Long getIdProjet() {
+        return idProjet;
+    }
 
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
+    public void setIdProjet(Long idProjet) {
+        this.idProjet = idProjet;
+    }
 
-	public String getType() {
-		return type;
-	}
+    public String getNom() {
+        return nom;
+    }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
 
-	public String getSource() {
-		return source;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public void setSource(String source) {
-		this.source = source;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 
-	public String getRole() {
-		return role;
-	}
+    public String getSource() {
+        return source;
+    }
 
-	public void setRole(String role) {
-		this.role = role;
-	}
-	
-	
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+
 }

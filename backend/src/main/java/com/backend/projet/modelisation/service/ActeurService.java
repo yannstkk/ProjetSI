@@ -15,33 +15,33 @@ import com.backend.projet.projet.repository.ProjetRepository;
 @Service
 public class ActeurService {
 
-	private final ActeurRepository acteurRepository;
+    private final ActeurRepository acteurRepository;
     private final ProjetRepository projetRepository;
-	
+
     public ActeurService(ActeurRepository acteurRepository, ProjetRepository projetRepository) {
-		super();
-		this.acteurRepository = acteurRepository;
-		this.projetRepository = projetRepository;
-	}
-	
+        super();
+        this.acteurRepository = acteurRepository;
+        this.projetRepository = projetRepository;
+    }
+
     public List<ActeurResponse> getByProjet(Long idProjet) {
         return acteurRepository.findByProjetIdProjet(idProjet)
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
-    
+
     private ActeurResponse toResponse(Acteur acteur) {
-    	return new ActeurResponse(
-    		acteur.getIdActeur(),
-    		acteur.getProjet().getIdProjet(),
-    		acteur.getNom(),
-    		acteur.getType(),
-    		acteur.getSource(),
-    		acteur.getRole()
-    	);
+        return new ActeurResponse(
+                acteur.getIdActeur(),
+                acteur.getProjet().getIdProjet(),
+                acteur.getNom(),
+                acteur.getType(),
+                acteur.getSource(),
+                acteur.getRole()
+        );
     }
-    
+
     public ActeurResponse create(ActeurRequest request) {
         Projet projet = projetRepository.findById(request.getIdProjet())
                 .orElseThrow(() -> new ResourceNotFoundException("Projet non trouvé : " + request.getIdProjet()));
