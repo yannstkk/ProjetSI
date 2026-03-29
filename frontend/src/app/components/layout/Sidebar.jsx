@@ -1,28 +1,31 @@
 import { Link, useLocation } from "react-router";
+import { useState, useEffect, useRef } from "react";
 import {
-    Users,
-    MessageSquare,
-    Users2,
-    FileText,
-    ListChecks,
-    Workflow,
-    Database,
-    LayoutDashboard,
+    Users, MessageSquare, Users2, FileText,
+    ListChecks, Workflow, Database, LayoutDashboard,
+    ChevronRight,
 } from "lucide-react";
 import { interviewExistsInDb } from "../../../services/interviewService";
 
+/* ── Couleurs HSL par phase (cohérentes avec le Header) ─────────────────── */
+const PHASE_COLORS = {
+    1: { hue: "258,72%,62%", hex: "#7c6ef0" },
+    2: { hue: "217,87%,60%", hex: "#4a90e2" },
+    3: { hue: "188,78%,41%", hex: "#17a2b8" },
+    4: { hue: "152,60%,40%", hex: "#2e9e6e" },
+    5: { hue: "38,92%,52%", hex: "#f5a623" },
+    6: { hue: "24,90%,55%", hex: "#f06a28" },
+    7: { hue: "349,75%,55%", hex: "#e84057" },
+};
+
 const phases = [
     {
-        id: 1,
-        name: "Interviewer le métier",
+        id: 1, name: "Interviewer le métier", shortName: "Entretien",
         icon: MessageSquare,
-        screens: [
-            { path: "/dashboard/phase1/interviews", label: "Interviews" },
-        ],
+        screens: [{ path: "/dashboard/phase1/interviews", label: "Interviews" }],
     },
     {
-        id: 2,
-        name: "Domaine",
+        id: 2, name: "Domaine", shortName: "Domaine",
         icon: Users2,
         screens: [
             { path: "/dashboard/phase2/actors", label: "Acteurs" },
@@ -31,16 +34,12 @@ const phases = [
         ],
     },
     {
-        id: 3,
-        name: "Élicitation",
+        id: 3, name: "Élicitation", shortName: "Élicitation",
         icon: Users,
-        screens: [
-            { path: "/dashboard/phase3/classification", label: "Classification" },
-        ],
+        screens: [{ path: "/dashboard/phase3/classification", label: "Classification" }],
     },
     {
-        id: 4,
-        name: "User Stories",
+        id: 4, name: "User Stories", shortName: "User Stories",
         icon: FileText,
         screens: [
             { path: "/dashboard/phase4/form", label: "Formulaire" },
@@ -49,8 +48,7 @@ const phases = [
         ],
     },
     {
-        id: 5,
-        name: "Exigences",
+        id: 5, name: "Exigences", shortName: "Exigences",
         icon: ListChecks,
         screens: [
             { path: "/dashboard/phase5/generate", label: "Générer" },
@@ -58,8 +56,7 @@ const phases = [
         ],
     },
     {
-        id: 6,
-        name: "BPMN",
+        id: 6, name: "BPMN", shortName: "BPMN",
         icon: Workflow,
         screens: [
             { path: "/dashboard/phase6/import", label: "Import" },
@@ -68,8 +65,7 @@ const phases = [
         ],
     },
     {
-        id: 7,
-        name: "Données / MCD",
+        id: 7, name: "Données / MCD", shortName: "Données",
         icon: Database,
         screens: [
             { path: "/dashboard/phase7/import", label: "Import" },
@@ -79,54 +75,175 @@ const phases = [
     },
 ];
 
-/* ── Logo SVG de l'app ────────────────────────────────────────────────────── */
-function AppLogo({ size = 36 }) {
+/* ── Logo SVG ────────────────────────────────────────────────────────────── */
+function AppLogo() {
     return (
-        <svg
-            width={size}
-            height={size}
-            viewBox="0 0 36 36"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ flexShrink: 0 }}
-        >
-            {/* Fond dégradé */}
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none" style={{ flexShrink: 0 }}>
             <defs>
-                <linearGradient id="logoGrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#2563eb" />
+                <linearGradient id="lg" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#3b82f6" />
                     <stop offset="100%" stopColor="#1d4ed8" />
                 </linearGradient>
             </defs>
-            <rect width="36" height="36" rx="10" fill="url(#logoGrad)" />
-
-            {/* Carré de validation (checkmark stylisé) */}
-            <rect x="7" y="9" width="14" height="14" rx="3" fill="white" fillOpacity="0.2" />
-            <polyline
-                points="9,16 12.5,19.5 19,12"
-                stroke="white"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-            />
-
-            {/* Lignes de données / analyse */}
-            <line x1="7" y1="26" x2="15" y2="26" stroke="white" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.9" />
-            <line x1="7" y1="29" x2="29" y2="29" stroke="white" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.5" />
-
-            {/* Indicateur de progression (arc partiel) */}
-            <circle cx="25" cy="13" r="6" stroke="white" strokeWidth="2" strokeOpacity="0.3" fill="none" />
-            <path
-                d="M25 7 A6 6 0 0 1 31 13"
-                stroke="white"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                fill="none"
-            />
+            <rect width="34" height="34" rx="9" fill="url(#lg)" />
+            <rect x="6" y="8" width="13" height="13" rx="3" fill="white" fillOpacity="0.18" />
+            <polyline points="8,14.5 11.2,18 18,10.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <line x1="6" y1="24.5" x2="14" y2="24.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeOpacity="0.9" />
+            <line x1="6" y1="27.5" x2="28" y2="27.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeOpacity="0.45" />
+            <circle cx="24" cy="13" r="5.5" stroke="white" strokeWidth="1.8" strokeOpacity="0.25" fill="none" />
+            <path d="M24 7.5 A5.5 5.5 0 0 1 29.5 13" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" />
         </svg>
     );
 }
 
+/* ── Item sous-nav avec animation de hauteur ─────────────────────────────── */
+function SubNav({ screens, isOpen, resolvePath, isActive, phaseHue }) {
+    const ref = useRef(null);
+    const [height, setHeight] = useState(0);
+
+    useEffect(() => {
+        if (ref.current) setHeight(isOpen ? ref.current.scrollHeight : 0);
+    }, [isOpen]);
+
+    return (
+        <div style={{
+            overflow: "hidden",
+            height: `${height}px`,
+            transition: "height 320ms cubic-bezier(0.4,0,0.2,1)",
+        }}>
+            <div ref={ref} style={{ paddingTop: "2px", paddingBottom: "4px" }}>
+                {screens.map((screen, idx) => {
+                    const active = isActive(screen.path);
+                    return (
+                        <Link
+                            key={screen.path}
+                            to={resolvePath(screen.path)}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                padding: "6px 10px 6px 36px",
+                                borderRadius: "8px",
+                                fontSize: "12.5px",
+                                fontWeight: active ? 500 : 400,
+                                color: active
+                                    ? `hsl(${phaseHue})`
+                                    : "var(--color-text-secondary)",
+                                background: active
+                                    ? `hsla(${phaseHue},0.08)`
+                                    : "transparent",
+                                textDecoration: "none",
+                                transition: "all 200ms ease",
+                                position: "relative",
+                                animationDelay: `${idx * 40}ms`,
+                            }}
+                            onMouseEnter={e => {
+                                if (!active) {
+                                    e.currentTarget.style.background = "var(--color-background-secondary)";
+                                    e.currentTarget.style.color = "var(--color-text-primary)";
+                                }
+                            }}
+                            onMouseLeave={e => {
+                                if (!active) {
+                                    e.currentTarget.style.background = "transparent";
+                                    e.currentTarget.style.color = "var(--color-text-secondary)";
+                                }
+                            }}
+                        >
+                            {/* Tiret remplacé par un petit rond */}
+                            <span style={{
+                                width: "5px",
+                                height: "5px",
+                                borderRadius: "50%",
+                                flexShrink: 0,
+                                background: active ? `hsl(${phaseHue})` : "var(--color-border-secondary)",
+                                transition: "background 200ms",
+                            }} />
+                            {screen.label}
+
+                            {/* Pill "actif" */}
+                            {active && (
+                                <span style={{
+                                    marginLeft: "auto",
+                                    width: "6px",
+                                    height: "6px",
+                                    borderRadius: "50%",
+                                    background: `hsl(${phaseHue})`,
+                                    boxShadow: `0 0 6px hsla(${phaseHue},0.6)`,
+                                }} />
+                            )}
+                        </Link>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+/* ── Ligne de jauge de progression en bas de la sidebar ─────────────────── */
+function SidebarProgressBar({ currentPhaseId }) {
+    const [w, setW] = useState(0);
+    const hue = currentPhaseId ? PHASE_COLORS[currentPhaseId].hue : "217,87%,60%";
+
+    useEffect(() => {
+        const t = setTimeout(() => {
+            setW(currentPhaseId ? Math.round((currentPhaseId / 7) * 100) : 0);
+        }, 200);
+        return () => clearTimeout(t);
+    }, [currentPhaseId]);
+
+    return (
+        <div style={{
+            padding: "8px 12px",
+            borderTop: "0.5px solid var(--color-border-tertiary)",
+        }}>
+            <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "5px",
+            }}>
+                <span style={{ fontSize: "10px", color: "var(--color-text-secondary)", fontWeight: 500 }}>
+                    Progression
+                </span>
+                <span style={{
+                    fontSize: "10px",
+                    fontWeight: 500,
+                    color: currentPhaseId ? `hsl(${hue})` : "var(--color-text-secondary)",
+                }}>
+                    {w}%
+                </span>
+            </div>
+            <div style={{
+                height: "3px",
+                borderRadius: "99px",
+                background: "var(--color-border-tertiary)",
+                overflow: "hidden",
+            }}>
+                <div style={{
+                    height: "100%",
+                    width: `${w}%`,
+                    borderRadius: "99px",
+                    background: currentPhaseId
+                        ? `linear-gradient(90deg, hsla(${hue},0.5), hsl(${hue}))`
+                        : "var(--color-border-secondary)",
+                    transition: "width 800ms cubic-bezier(0.34,1.56,0.64,1), background 600ms ease",
+                }} />
+            </div>
+            <p style={{
+                fontSize: "10px",
+                color: "var(--color-text-secondary)",
+                textAlign: "center",
+                marginTop: "6px",
+                opacity: 0.5,
+            }}>
+                v1.0.0
+            </p>
+        </div>
+    );
+}
+
+/* ── Composant principal ─────────────────────────────────────────────────── */
 export function Sidebar() {
     const location = useLocation();
 
@@ -138,108 +255,287 @@ export function Sidebar() {
         phase.screens.some((screen) =>
             location.pathname.startsWith(screen.path)
         )
-    );
+    ) ?? (location.pathname.startsWith("/dashboard/phase1/interview") ? phases[0] : null);
+
+    /* Phases ouvertes : la phase active s'ouvre automatiquement */
+    const [openPhases, setOpenPhases] = useState(() => {
+        const set = new Set();
+        if (currentPhase) set.add(currentPhase.id);
+        return set;
+    });
+
+    useEffect(() => {
+        if (currentPhase) {
+            setOpenPhases(prev => new Set([...prev, currentPhase.id]));
+        }
+    }, [currentPhase?.id]);
+
+    function togglePhase(id) {
+        setOpenPhases(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    }
 
     function resolvePath(screenPath) {
-        if (screenPath === "/dashboard/phase1/interviews") {
-            return interviewPath;
-        }
+        if (screenPath === "/dashboard/phase1/interviews") return interviewPath;
         return screenPath;
     }
 
     function isActive(screenPath) {
-        if (screenPath === "/dashboard/phase1/interviews") {
+        if (screenPath === "/dashboard/phase1/interviews")
             return location.pathname.startsWith("/dashboard/phase1/interview");
-        }
         return location.pathname.startsWith(screenPath);
     }
 
-    return (
-        <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+    const isCockpit = location.pathname === "/dashboard";
 
-            {/* ── Logo + nom de l'app ───────────────────────────────────────── */}
-            <div className="p-4 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                    <AppLogo size={36} />
-                    <div>
-                        <h1
-                            className="font-bold text-gray-900 leading-tight tracking-tight"
-                            style={{ fontSize: "15px", letterSpacing: "-0.02em" }}
-                        >
-                            Analyse Checker
-                        </h1>
-                        <p className="text-xs text-gray-400 font-medium" style={{ fontSize: "11px" }}>
-                            Business Analysis Tool
-                        </p>
-                    </div>
+    return (
+        <aside style={{
+            width: "240px",
+            minWidth: "240px",
+            display: "flex",
+            flexDirection: "column",
+            background: "var(--color-background-primary)",
+            borderRight: "0.5px solid var(--color-border-tertiary)",
+            height: "100%",
+        }}>
+
+            {/* ── Logo ──────────────────────────────────────────────────────── */}
+            <div style={{
+                padding: "14px 16px",
+                borderBottom: "0.5px solid var(--color-border-tertiary)",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                flexShrink: 0,
+            }}>
+                <AppLogo />
+                <div>
+                    <p style={{
+                        fontSize: "13.5px",
+                        fontWeight: 500,
+                        color: "var(--color-text-primary)",
+                        letterSpacing: "-0.02em",
+                        lineHeight: 1.2,
+                        margin: 0,
+                    }}>
+                        Analyse Checker
+                    </p>
+                    <p style={{
+                        fontSize: "10.5px",
+                        color: "var(--color-text-secondary)",
+                        margin: 0,
+                        lineHeight: 1,
+                        marginTop: "2px",
+                    }}>
+                        Business Analysis Tool
+                    </p>
                 </div>
             </div>
 
-            {/* ── Navigation ───────────────────────────────────────────────── */}
-            <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+            {/* ── Navigation ────────────────────────────────────────────────── */}
+            <nav style={{
+                flex: 1,
+                overflowY: "auto",
+                padding: "8px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "2px",
+            }}>
+
+                {/* Cockpit */}
                 <Link
                     to="/dashboard"
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                        location.pathname === "/dashboard"
-                            ? "bg-blue-50 text-blue-700 font-medium"
-                            : "text-gray-600 hover:bg-gray-50"
-                    }`}
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "9px",
+                        padding: "8px 10px",
+                        borderRadius: "9px",
+                        fontSize: "13px",
+                        fontWeight: isCockpit ? 500 : 400,
+                        color: isCockpit ? "hsl(217,87%,55%)" : "var(--color-text-secondary)",
+                        background: isCockpit ? "hsla(217,87%,60%,0.08)" : "transparent",
+                        textDecoration: "none",
+                        transition: "all 200ms ease",
+                        marginBottom: "4px",
+                    }}
+                    onMouseEnter={e => {
+                        if (!isCockpit) {
+                            e.currentTarget.style.background = "var(--color-background-secondary)";
+                            e.currentTarget.style.color = "var(--color-text-primary)";
+                        }
+                    }}
+                    onMouseLeave={e => {
+                        if (!isCockpit) {
+                            e.currentTarget.style.background = "transparent";
+                            e.currentTarget.style.color = "var(--color-text-secondary)";
+                        }
+                    }}
                 >
-                    <LayoutDashboard className="w-4 h-4" />
-                    <span className="text-sm">Cockpit global</span>
+                    <div style={{
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "7px",
+                        background: isCockpit ? "hsla(217,87%,60%,0.12)" : "var(--color-background-secondary)",
+                        border: isCockpit ? "0.5px solid hsla(217,87%,60%,0.25)" : "0.5px solid var(--color-border-tertiary)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        transition: "all 200ms",
+                    }}>
+                        <LayoutDashboard style={{
+                            width: "13px", height: "13px",
+                            color: isCockpit ? "hsl(217,87%,55%)" : "var(--color-text-secondary)",
+                        }} />
+                    </div>
+                    Cockpit global
+                    {isCockpit && (
+                        <span style={{
+                            marginLeft: "auto",
+                            width: "6px", height: "6px",
+                            borderRadius: "50%",
+                            background: "hsl(217,87%,60%)",
+                            boxShadow: "0 0 6px hsla(217,87%,60%,0.5)",
+                        }} />
+                    )}
                 </Link>
 
-                <div className="pt-3 space-y-4">
-                    {phases.map((phase) => {
-                        const Icon = phase.icon;
-                        const isPhaseActive =
-                            currentPhase?.id === phase.id ||
-                            (phase.id === 1 && location.pathname.startsWith("/dashboard/phase1"));
+                {/* Séparateur */}
+                <div style={{
+                    height: "0.5px",
+                    background: "var(--color-border-tertiary)",
+                    margin: "4px 2px 6px",
+                }} />
 
-                        return (
-                            <div key={phase.id}>
-                                <Link
-                                    to={resolvePath(phase.screens[0].path)}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors ${
-                                        isPhaseActive
-                                            ? "bg-blue-50 text-blue-700"
-                                            : "text-gray-700 hover:bg-gray-50"
-                                    }`}
-                                >
-                                    <Icon className="w-4 h-4" />
-                                    <span className="text-sm">Phase {phase.id}</span>
+                {/* Phases */}
+                {phases.map((phase, idx) => {
+                    const Icon = phase.icon;
+                    const colors = PHASE_COLORS[phase.id];
+                    const hue = colors.hue;
+                    const isOpen = openPhases.has(phase.id);
+                    const isPhaseActive =
+                        currentPhase?.id === phase.id ||
+                        (phase.id === 1 && location.pathname.startsWith("/dashboard/phase1/interview"));
+                    const hasActiveChild = phase.screens.some(s => isActive(s.path));
 
-                                    {/* Badge phase active */}
-                                    {isPhaseActive && (
-                                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500" />
-                                    )}
-                                </Link>
+                    return (
+                        <div key={phase.id} style={{ marginBottom: "1px" }}>
 
-                                <div className="ml-6 mt-1 space-y-0.5">
-                                    {phase.screens.map((screen) => (
-                                        <Link
-                                            key={screen.path}
-                                            to={resolvePath(screen.path)}
-                                            className={`block px-3 py-1.5 text-sm rounded transition-colors ${
-                                                isActive(screen.path)
-                                                    ? "bg-gray-100 text-gray-900 font-medium"
-                                                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                                            }`}
-                                        >
-                                            {screen.label}
-                                        </Link>
-                                    ))}
+                            {/* Bouton de phase */}
+                            <button
+                                onClick={() => togglePhase(phase.id)}
+                                style={{
+                                    width: "100%",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "9px",
+                                    padding: "7px 10px",
+                                    borderRadius: "9px",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    textAlign: "left",
+                                    background: isPhaseActive
+                                        ? `hsla(${hue},0.08)`
+                                        : "transparent",
+                                    transition: "all 200ms ease",
+                                    position: "relative",
+                                }}
+                                onMouseEnter={e => {
+                                    if (!isPhaseActive) {
+                                        e.currentTarget.style.background = "var(--color-background-secondary)";
+                                    }
+                                }}
+                                onMouseLeave={e => {
+                                    if (!isPhaseActive) {
+                                        e.currentTarget.style.background = "transparent";
+                                    }
+                                }}
+                            >
+                                {/* Icône colorée */}
+                                <div style={{
+                                    width: "28px",
+                                    height: "28px",
+                                    borderRadius: "7px",
+                                    flexShrink: 0,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    background: isPhaseActive
+                                        ? `hsla(${hue},0.15)`
+                                        : "var(--color-background-secondary)",
+                                    border: isPhaseActive
+                                        ? `0.5px solid hsla(${hue},0.3)`
+                                        : "0.5px solid var(--color-border-tertiary)",
+                                    transition: "all 250ms ease",
+                                }}>
+                                    <Icon style={{
+                                        width: "13px",
+                                        height: "13px",
+                                        color: isPhaseActive ? `hsl(${hue})` : "var(--color-text-secondary)",
+                                        transition: "color 250ms",
+                                    }} />
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
+
+                                {/* Textes */}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{
+                                        fontSize: "10px",
+                                        fontWeight: 500,
+                                        color: isPhaseActive ? `hsl(${hue})` : "var(--color-text-secondary)",
+                                        lineHeight: 1,
+                                        marginBottom: "1px",
+                                        opacity: isPhaseActive ? 0.7 : 0.5,
+                                        letterSpacing: "0.04em",
+                                        textTransform: "uppercase",
+                                    }}>
+                                        Phase {phase.id}
+                                    </div>
+                                    <div style={{
+                                        fontSize: "12.5px",
+                                        fontWeight: isPhaseActive ? 500 : 400,
+                                        color: isPhaseActive
+                                            ? `hsl(${hue})`
+                                            : "var(--color-text-primary)",
+                                        lineHeight: 1.2,
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        transition: "color 250ms",
+                                    }}>
+                                        {phase.name}
+                                    </div>
+                                </div>
+
+                                {/* Flèche rotation */}
+                                <ChevronRight style={{
+                                    width: "13px",
+                                    height: "13px",
+                                    flexShrink: 0,
+                                    color: isPhaseActive ? `hsl(${hue})` : "var(--color-text-secondary)",
+                                    opacity: 0.6,
+                                    transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                                    transition: "transform 280ms cubic-bezier(0.4,0,0.2,1), color 250ms",
+                                }} />
+                            </button>
+
+                            {/* Sous-nav animée */}
+                            <SubNav
+                                screens={phase.screens}
+                                isOpen={isOpen}
+                                resolvePath={resolvePath}
+                                isActive={isActive}
+                                phaseHue={hue}
+                            />
+                        </div>
+                    );
+                })}
             </nav>
 
-            {/* ── Footer version ───────────────────────────────────────────── */}
-            <div className="px-4 py-2 border-t border-gray-100">
-                <p className="text-xs text-gray-300 text-center">v1.0.0</p>
-            </div>
+            <SidebarProgressBar currentPhaseId={currentPhase?.id ?? null} />
         </aside>
     );
 }
