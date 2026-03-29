@@ -30,7 +30,15 @@ public class MCD {
     @Column(name = "reponse_mistral")
     private String reponseMistral;
 
-    @ManyToOne
+    public String getReponseMistral() {
+		return reponseMistral;
+	}
+
+	public void setReponseMistral(String reponseMistral) {
+		this.reponseMistral = reponseMistral;
+	}
+
+	@ManyToOne
     @JoinColumn(name = "id_projet")
     private Projet projet;
 
