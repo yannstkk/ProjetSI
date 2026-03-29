@@ -6,6 +6,9 @@ import {
     ChevronRight,
 } from "lucide-react";
 import { interviewExistsInDb } from "../../../services/interviewService";
+import logo from "../../../assets/logo.png";
+
+
 
 /* ── Couleurs HSL par phase (cohérentes avec le Header) ─────────────────── */
 const PHASE_COLORS = {
@@ -75,26 +78,7 @@ const phases = [
     },
 ];
 
-/* ── Logo SVG ────────────────────────────────────────────────────────────── */
-function AppLogo() {
-    return (
-        <svg width="34" height="34" viewBox="0 0 34 34" fill="none" style={{ flexShrink: 0 }}>
-            <defs>
-                <linearGradient id="lg" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#3b82f6" />
-                    <stop offset="100%" stopColor="#1d4ed8" />
-                </linearGradient>
-            </defs>
-            <rect width="34" height="34" rx="9" fill="url(#lg)" />
-            <rect x="6" y="8" width="13" height="13" rx="3" fill="white" fillOpacity="0.18" />
-            <polyline points="8,14.5 11.2,18 18,10.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            <line x1="6" y1="24.5" x2="14" y2="24.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeOpacity="0.9" />
-            <line x1="6" y1="27.5" x2="28" y2="27.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeOpacity="0.45" />
-            <circle cx="24" cy="13" r="5.5" stroke="white" strokeWidth="1.8" strokeOpacity="0.25" fill="none" />
-            <path d="M24 7.5 A5.5 5.5 0 0 1 29.5 13" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" />
-        </svg>
-    );
-}
+
 
 /* ── Item sous-nav avec animation de hauteur ─────────────────────────────── */
 function SubNav({ screens, isOpen, resolvePath, isActive, phaseHue }) {
@@ -311,7 +295,16 @@ export function Sidebar() {
                 gap: "10px",
                 flexShrink: 0,
             }}>
-                <AppLogo />
+                <img
+                    src={logo}
+                    alt="Analyse Checker"
+                    style={{
+                        height: "32px",
+                        width: "auto",
+                        flexShrink: 0,
+                        filter: "brightness(1.05) drop-shadow(0 2px 8px rgba(99,102,241,0.4))",
+                    }}
+                />
                 <div>
                     <p style={{
                         fontSize: "13.5px",
