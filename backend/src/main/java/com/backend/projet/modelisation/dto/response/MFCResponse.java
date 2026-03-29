@@ -14,4 +14,20 @@ public class MFCResponse {
         this.projetId = idProjet;
         this.analyse = fluxAnalyse;
     }
+
+    public Long getIdMfc(){
+        return this.idMfc;
+    }
+
+    public Long getProjetId(){
+        return this.projetId;
+    }
+
+    public String getNom(){
+        return this.nom;
+    }
+
+    public FluxResponse getFluxResponse(){
+        return this.analyse;
+    }
 }
