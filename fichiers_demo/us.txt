@@ -1,0 +1,5 @@
+US_01 : En tant qu'Adhérent, je veux rechercher un livre par titre afin de savoir s'il est en stock.
+
+US_02 : En tant que Bibliothécaire, je veux enregistrer un prêt afin de mettre à jour l'inventaire.
+
+US_03 : En tant que Système, je veux envoyer un rappel automatique afin d'éviter les retards de retour.
