@@ -1,9 +1,10 @@
 package com.backend.projet.modelisation.repository;
 
-import java.util.List;
+import com.backend.projet.modelisation.entity.MCD;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.backend.projet.modelisation.entity.MCD;
+
+import java.util.List;
 
 @Repository
 public interface MCDRepository extends JpaRepository<MCD, Long> {
