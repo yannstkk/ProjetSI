@@ -485,7 +485,7 @@ export function Projects() {
                             }}>
                                 {username}
                             </span>{" "}
-                            👋
+
                         </h1>
                         <p style={{ fontSize:"15px", color:"#64748b", lineHeight:1.6 }}>
                             Sélectionnez un projet existant ou créez-en un nouveau pour démarrer l'analyse.
