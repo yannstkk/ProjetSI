@@ -23,7 +23,6 @@ public class MCDController {
         this.mcdService = mcdService;
     }
 
-    /* POST /api/mcd — Créer */
     @PostMapping
     public ResponseEntity<MCDResponse> creer(@RequestBody MCDRequest request) {
         try {
@@ -34,7 +33,6 @@ public class MCDController {
         }
     }
 
-    /* GET /api/mcd/projet/{idProjet} — Lister par projet */
     @GetMapping("/projet/{idProjet}")
     public ResponseEntity<List<MCDResponse>> getByProjet(@PathVariable Long idProjet) {
         try {
@@ -44,7 +42,6 @@ public class MCDController {
         }
     }
 
-    /* GET /api/mcd/{idMcd} — Récupérer un MCD */
     @GetMapping("/{idMcd}")
     public ResponseEntity<MCDResponse> getById(@PathVariable Long idMcd) {
         try {
@@ -54,7 +51,6 @@ public class MCDController {
         }
     }
 
-    /* PUT /api/mcd/{idMcd} — Mettre à jour */
     @PutMapping("/{idMcd}")
     public ResponseEntity<MCDResponse> mettreAJour(
             @PathVariable Long idMcd,
@@ -66,7 +62,6 @@ public class MCDController {
         }
     }
 
-    /* DELETE /api/mcd/{idMcd} — Supprimer */
     @DeleteMapping("/{idMcd}")
     public ResponseEntity<Void> supprimer(@PathVariable Long idMcd) {
         try {
@@ -77,7 +72,6 @@ public class MCDController {
         }
     }
 
-    /* POST /api/mcd/analyser — Analyse Mistral */
     @PostMapping("/analyser")
     public ResponseEntity<?> analyser(@RequestBody MCDAnalyseRequest request) {
         if (request.getContenuPlantuml() == null

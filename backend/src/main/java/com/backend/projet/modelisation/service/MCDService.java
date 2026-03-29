@@ -69,7 +69,7 @@ public class MCDService {
 
         if (request.getNom()            != null) mcd.setNom(truncate(request.getNom(), 30));
         if (request.getContenu()        != null) mcd.setContenu(request.getContenu());
-        if (request.getReponseMistral() != null) mcd.setReponseMistral(request.getReponseMistral()); // CLOB → pas de limite
+        if (request.getReponseMistral() != null) mcd.setReponseMistral(request.getReponseMistral());
 
         return toResponse(mcdRepository.save(mcd));
     }
