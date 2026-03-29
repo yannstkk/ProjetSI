@@ -2,37 +2,37 @@ package com.backend.projet.mistral.enums;
 
 public enum Prompt {
     ELICITATION("""
-            Tu es un expert AFSI. Analyse les notes et extrait les Ã©lÃ©ments suivants : 
-            Acteurs, Actions, Objets MÃ©tiers, RÃ¨gles MÃ©tiers, Contraintes, Points de Douleur, Doublons, IncohÃ©rences, Termes Ambigus. 
-            Pour chaque Ã©lÃ©ment, trouve la 'valeur' (concept court) et la 'phraseSource' (citation exacte du texte). 
-            RÃ©ponds UNIQUEMENT en JSON brut avec cette structure : 
+            Tu es un expert AFSI. Analyse les notes et extrait les éléments suivants : 
+            Acteurs, Actions, Objets Métiers, Règles Métiers, Contraintes, Points de Douleur, Doublons, Incohérences, Termes Ambigus. 
+            Pour chaque élément, trouve la 'valeur' (concept court) et la 'phraseSource' (citation exacte du texte). 
+            Réponds UNIQUEMENT en JSON brut avec cette structure : 
             { "elements": [ { "categorie": "", "valeur": "", "phraseSource": "" } ] }
             """),
 
     MFC("""
-            Tu es un expert AFSI spÃ©cialisÃ© dans l'analyse systÃ©mique et Merise.
+            Tu es un expert AFSI spécialisé dans l'analyse systémique et Merise.
             Analyse ce diagramme de flux MFC (PlantUML) et extrais chaque interaction.
             
             Pour chaque flux, remplis :
-            - "nom" : Le libellÃ© du flux.
-            - "emetteur" : L'acteur Ã  l'origine.
+            - "nom" : Le libellé du flux.
+            - "emetteur" : L'acteur à l'origine.
             - "recepteur" : L'acteur de destination.
-            - "description" : Une brÃ¨ve explication du but du flux.
-            - "data" : Liste les objets mÃ©tiers sous forme d'une SEULE chaÃ®ne de caractÃ¨res sÃ©parÃ©s par des virgules (ex: "Facture, Client, RIB").
+            - "description" : Une brève explication du but du flux.
+            - "data" : Liste les objets métiers sous forme d'une SEULE chaîne de caractères séparés par des virgules (ex: "Facture, Client, RIB").
             
-            RÃ©ponds UNIQUEMENT en JSON brut : 
+            Réponds UNIQUEMENT en JSON brut : 
             { "flux" : [ { "nom" : "", "emetteur" : "", "recepteur" : "", "description" : "", "data" : "" }]}
             """),
 
     ACTEURIA("""
-            Tu es un expert AFSI. Voici des notes d'entretien mÃ©tier.
-            Identifie tous les acteurs (personnes, rÃ´les, systÃ¨mes, organisations) mentionnÃ©s ou implicites.
+            Tu es un expert AFSI. Voici des notes d'entretien métier.
+            Identifie tous les acteurs (personnes, rôles, systèmes, organisations) mentionnés ou implicites.
             Pour chaque acteur, fournis :
             - "nom"
             - "role"
             - "phraseSource"
 
-            RÃ©ponds UNIQUEMENT en JSON brut avec cette structure :
+            Réponds UNIQUEMENT en JSON brut avec cette structure :
             {
               "acteurs": [
                 { "nom": "", "role": "", "phraseSource": "" }
@@ -41,57 +41,57 @@ public enum Prompt {
             """),
 
     CRITEREIA("""
-            Tu es un expert AFSI. Analyse les documents fournis pour extraire les critÃ¨res de qualitÃ© (Exigences Non Fonctionnelles).
+            Tu es un expert AFSI. Analyse les documents fournis pour extraire les critères de qualité (Exigences Non Fonctionnelles).
 
             Tu dois extraire :
-            - "nom" : Le type de critÃ¨re (ex: SÃ©curitÃ©, Performance, Ergonomie)
-            - "description" : L'explication prÃ©cise du besoin
+            - "nom" : Le type de critère (ex: Sécurité, Performance, Ergonomie)
+            - "description" : L'explication précise du besoin
 
-            RÃ©ponds EXCLUSIVEMENT sous forme d'un objet JSON valide.
-            Interdiction d'ajouter du texte avant ou aprÃ¨s le JSON.
+            Réponds EXCLUSIVEMENT sous forme d'un objet JSON valide.
+            Interdiction d'ajouter du texte avant ou après le JSON.
 
             Structure attendue :
             {
               "criteres": [
-                { "nom": "SÃ©curitÃ©", "description": "Authentification via LDAP requise." }
+                { "nom": "Sécurité", "description": "Authentification via LDAP requise." }
               ]
             }
             """),
 
     QUESTIONS("""
-            Tu es un expert AFSI spÃ©cialisÃ© dans la conduite d'entretiens mÃ©tier.
-            Ã€ partir des notes fournies, suggÃ¨re exactement 5 questions pertinentes et prÃ©cises
-            Ã  poser lors d'un entretien mÃ©tier pour approfondir la comprÃ©hension du domaine.
-            Les questions doivent Ãªtre ouvertes, ciblÃ©es et aider Ã  identifier les besoins,
-            les contraintes et les processus mÃ©tier.
+            Tu es un expert AFSI spécialisé dans la conduite d'entretiens métier.
+            À partir des notes fournies, suggère exactement 5 questions pertinentes et précises
+            à poser lors d'un entretien métier pour approfondir la compréhension du domaine.
+            Les questions doivent être ouvertes, ciblées et aider à identifier les besoins,
+            les contraintes et les processus métier.
 
-            RÃ©ponds UNIQUEMENT en JSON brut avec cette structure :
+            Réponds UNIQUEMENT en JSON brut avec cette structure :
             { "questions": [ { "question": "" } ] }
             """),
 
     BACKLOG("""
-            Tu es un expert AFSI spÃ©cialisÃ© dans la qualitÃ© des backlogs agiles.
-            Analyse ces User Stories et dÃ©tecte tous les problÃ¨mes de qualitÃ©.
+            Tu es un expert AFSI spécialisé dans la qualité des backlogs agiles.
+            Analyse ces User Stories et détecte tous les problèmes de qualité.
 
-            Pour chaque problÃ¨me trouvÃ©, indique :
+            Pour chaque problème trouvé, indique :
             - "type" : "erreur", "avertissement" ou "suggestion"
-            - "usId" : l'identifiant de l'US concernÃ©e (ex: "US-001"), ou null si c'est un problÃ¨me global
-            - "titre" : titre court du problÃ¨me
-            - "description" : explication dÃ©taillÃ©e et actionnable
+            - "usId" : l'identifiant de l'US concernée (ex: "US-001"), ou null si c'est un problème global
+            - "titre" : titre court du problème
+            - "description" : explication détaillée et actionnable
 
-            DÃ©tecte notamment :
-            - US sans acteur dÃ©fini
+            Détecte notamment :
+            - US sans acteur défini
             - US sans champ "je veux" ou "afin de"
-            - US sans critÃ¨res d'acceptation
+            - US sans critères d'acceptation
             - Doublons ou redondances entre US
-            - IncohÃ©rences entre US
+            - Incohérences entre US
             - Formulations trop vagues
-            - PrioritÃ©s incohÃ©rentes
-            - Acteurs non dÃ©finis ou flous
+            - Priorités incohérentes
+            - Acteurs non définis ou flous
 
-            Fournis aussi un "resume" global sur l'Ã©tat du backlog.
+            Fournis aussi un "resume" global sur l'état du backlog.
 
-            RÃ©ponds UNIQUEMENT en JSON brut :
+            Réponds UNIQUEMENT en JSON brut :
             {
               "resume": "",
               "alertes": [
@@ -101,34 +101,34 @@ public enum Prompt {
             """),
 
     BPMN_COHERENCE("""
-            Tu es un expert AFSI spÃ©cialisÃ© en BPMN, analyse mÃ©tier, MFC et MCD.
+            Tu es un expert AFSI spécialisé en BPMN, analyse métier, MFC et MCD.
 
             Ta mission :
             1. Lire le BPMN fourni.
             2. Lire les User Stories fournies.
-            3. Identifier les acteurs mÃ©tier prÃ©sents dans le BPMN.
-            4. Identifier les activitÃ©s mÃ©tier prÃ©sentes dans le BPMN.
-            5. DÃ©terminer quelles User Stories sont couvertes par le BPMN, mÃªme si les mots ne sont pas exactement les mÃªmes.
-            6. DÃ©terminer quelles User Stories ne sont pas couvertes.
-            7. DÃ©tecter les incohÃ©rences entre le processus BPMN, les acteurs et les User Stories.
-            8. Produire une synthÃ¨se utile Ã  un Business Analyst.
+            3. Identifier les acteurs métier présents dans le BPMN.
+            4. Identifier les activités métier présentes dans le BPMN.
+            5. Déterminer quelles User Stories sont couvertes par le BPMN, même si les mots ne sont pas exactement les mêmes.
+            6. Déterminer quelles User Stories ne sont pas couvertes.
+            7. Détecter les incohérences entre le processus BPMN, les acteurs et les User Stories.
+            8. Produire une synthèse utile à un Business Analyst.
 
-            RÃ¨gles :
+            Règles :
             - Sois intelligent sur le sens, pas seulement sur les mots exacts.
-            - ConsidÃ¨re les synonymes et formulations proches.
-            - Si une tÃ¢che BPMN correspond clairement Ã  une intention mÃ©tier d'une User Story, considÃ¨re-les liÃ©es.
+            - Considère les synonymes et formulations proches.
+            - Si une tâche BPMN correspond clairement à une intention métier d'une User Story, considère-les liées.
             - Ne jamais utiliser l'expression "User Story non technique".
-            - Utilise des formulations mÃ©tier claires, par exemple :
+            - Utilise des formulations métier claires, par exemple :
               - "User Story non exploitable"
-              - "User Story non alignÃ©e avec le BPMN"
-              - "Acteur mÃ©tier non couvert"
-              - "ActivitÃ© BPMN non couverte"
-              - "IncohÃ©rence entre acteur et activitÃ©"
-            - Quand une User Story est vague, hors pÃ©rimÃ¨tre ou non reliÃ©e au systÃ¨me, indique clairement qu'elle ne correspond pas Ã  une fonctionnalitÃ© claire du systÃ¨me.
-            - Les recommandations doivent Ãªtre orientÃ©es BA et modÃ©lisation, en lien avec le BPMN, le MFC et le MCD si pertinent.
-            - RÃ©ponds UNIQUEMENT en JSON brut.
-            - Le champ "score" doit Ãªtre un entier de 0 Ã  100.
-            - Le champ "type" doit Ãªtre "warning" ou "erreur".
+              - "User Story non alignée avec le BPMN"
+              - "Acteur métier non couvert"
+              - "Activité BPMN non couverte"
+              - "Incohérence entre acteur et activité"
+            - Quand une User Story est vague, hors périmètre ou non reliée au système, indique clairement qu'elle ne correspond pas à une fonctionnalité claire du système.
+            - Les recommandations doivent être orientées BA et modélisation, en lien avec le BPMN, le MFC et le MCD si pertinent.
+            - Réponds UNIQUEMENT en JSON brut.
+            - Le champ "score" doit être un entier de 0 à 100.
+            - Le champ "type" doit être "warning" ou "erreur".
 
             Format attendu :
             {
@@ -168,23 +168,23 @@ public enum Prompt {
             """),
 
     MCD_ANALYSE("""
-            Tu es un expert AFSI et Merise spÃ©cialisÃ© en modÃ©lisation conceptuelle de donnÃ©es (MCD).
-            Analyse ce diagramme MCD au format PlantUML et extrais sa structure complÃ¨te.
+            Tu es un expert AFSI et Merise spécialisé en modélisation conceptuelle de données (MCD).
+            Analyse ce diagramme MCD au format PlantUML et extrais sa structure complète.
 
-            Pour chaque entitÃ©, fournis :
-            - "nom" : nom exact de l'entitÃ©
+            Pour chaque entité, fournis :
+            - "nom" : nom exact de l'entité
             - "attributs" : liste d'objets { "nom": "", "type": "", "estCle": true/false }
 
-            Pour chaque association entre entitÃ©s :
+            Pour chaque association entre entités :
             - "nom"
             - "entites"
             - "cardinalite"
 
-            Pour "donnees" : liste plate de tous les attributs de toutes les entitÃ©s
-            Pour "alertes" : problÃ¨mes dÃ©tectÃ©s
-            Pour "resume" : synthÃ¨se en 2-3 phrases
+            Pour "donnees" : liste plate de tous les attributs de toutes les entités
+            Pour "alertes" : problèmes détectés
+            Pour "resume" : synthèse en 2-3 phrases
 
-            RÃ©ponds EXCLUSIVEMENT en JSON brut :
+            Réponds EXCLUSIVEMENT en JSON brut :
             {
               "resume": "",
               "entites": [
@@ -200,7 +200,7 @@ public enum Prompt {
                 {
                   "nom": "",
                   "entites": ["Entite1", "Entite2"],
-                  "cardinalite": "1,1 â€” 0,N"
+                  "cardinalite": "1,1 — 0,N"
                 }
               ],
               "donnees": [
