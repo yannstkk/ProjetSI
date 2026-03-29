@@ -8,7 +8,6 @@ import com.backend.projet.elicitation.entity.UserStory;
 import com.backend.projet.elicitation.entity.Interview;
 import com.backend.projet.elicitation.entity.Participant;
 import com.backend.projet.modelisation.entity.BPMN;
-import com.backend.projet.modelisation.entity.DictionnaireDonnee;
 import com.backend.projet.modelisation.entity.MCD;
 import com.backend.projet.modelisation.entity.Acteur;
 import com.backend.projet.modelisation.entity.MFC;
@@ -53,9 +52,6 @@ public class Projet {
 
     @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
     private List<MCD> mcds = new ArrayList<>();
-
-    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
-    private List<DictionnaireDonnee> dictionnaires = new ArrayList<>();
 
     @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL)
     private List<Acteur> acteurs = new ArrayList<>();

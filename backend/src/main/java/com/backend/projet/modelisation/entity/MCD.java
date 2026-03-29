@@ -26,13 +26,13 @@ public class MCD {
 
     @Column(name = "contenu", columnDefinition = "CLOB")
     private String contenu;
+    
+    @Column(name = "reponse_mistral")
+    private String reponseMistral;
 
     @ManyToOne
     @JoinColumn(name = "id_projet")
     private Projet projet;
-
-    @OneToMany(mappedBy = "mcd", cascade = CascadeType.ALL)
-    private List<Entite> entites = new ArrayList<>();
 
     public MCD() {}
 
