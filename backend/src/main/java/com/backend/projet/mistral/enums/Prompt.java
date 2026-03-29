@@ -110,6 +110,53 @@ public enum Prompt {
         { "type": "erreur|avertissement|suggestion", "usId": "US-001", "titre": "...", "description": "..." }
       ]
     }
+    """),
+    MCD_ANALYSE("""
+    Tu es un expert AFSI et Merise spécialisé en modélisation conceptuelle de données (MCD).
+    Analyse ce diagramme MCD au format PlantUML et extrais sa structure complète.
+ 
+    Pour chaque entité, fournis :
+    - "nom" : nom exact de l'entité
+    - "attributs" : liste d'objets { "nom": "", "type": "", "estCle": true/false }
+      (estCle = true si l'attribut est clé primaire, indiqué par <<PK>>, * ou souligné)
+ 
+    Pour chaque association/relation entre entités :
+    - "nom" : libellé de l'association (label sur la ligne)
+    - "entites" : tableau des deux noms d'entités reliées
+    - "cardinalite" : ex "1,1 — 0,N" ou "||--o{" reformaté lisiblement
+ 
+    Pour "donnees" : liste plate de TOUS les attributs de toutes les entités :
+    { "nom": "", "type": "", "entite": "nom de l'entité parente" }
+ 
+    Pour "alertes" : liste de chaînes signalant les problèmes détectés
+    (entité sans attribut, association sans cardinalité, clé primaire manquante, etc.)
+ 
+    Pour "resume" : synthèse en 2-3 phrases du domaine modélisé.
+ 
+    Réponds EXCLUSIVEMENT en JSON brut sans texte avant ou après :
+    {
+      "resume": "...",
+      "entites": [
+        {
+          "nom": "NomEntite",
+          "attributs": [
+            { "nom": "id_entite", "type": "NUMBER", "estCle": true },
+            { "nom": "libelle",   "type": "VARCHAR2(100)", "estCle": false }
+          ]
+        }
+      ],
+      "associations": [
+        {
+          "nom": "libelle association",
+          "entites": ["Entite1", "Entite2"],
+          "cardinalite": "1,1 — 0,N"
+        }
+      ],
+      "donnees": [
+        { "nom": "id_entite", "type": "NUMBER", "entite": "NomEntite" }
+      ],
+      "alertes": []
+    }
     """);
 
 
