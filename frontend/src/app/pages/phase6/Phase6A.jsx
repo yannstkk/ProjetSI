@@ -102,12 +102,16 @@ export function Phase6A() {
         setDbSuccess(false);
 
         try {
-            const res = await authFetch("/api/bpmn", {
+            const res = await authFetch("/api/bpmn/save", {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
                 body: JSON.stringify({
                     idProjet: projet.id,
-                    titre:    titre.trim(),
-                    contenu:  selected.contenu,
+                    titre: titre.trim(),
+                    contenu: selected.contenu,
                 }),
             });
 

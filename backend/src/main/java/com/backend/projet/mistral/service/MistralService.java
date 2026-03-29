@@ -1,28 +1,30 @@
 package com.backend.projet.mistral.service;
+
 import com.backend.projet.elicitation.dto.response.AnalysisResponse;
 import com.backend.projet.mistral.dto.BacklogAnalyseResponse;
 import com.backend.projet.mistral.enums.Prompt;
 import com.backend.projet.mistral.exceptions.MistralApiException;
 import com.backend.projet.modelisation.dto.FluxResponse;
+import com.backend.projet.modelisation.dto.response.BpmnCoherenceIaResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 
 @Service
 public class MistralService {
 
-    private RestTemplate restTemplate;
-
-    private ObjectMapper mapper;
+    private final RestTemplate restTemplate;
+    private final ObjectMapper mapper;
 
     @Value("${mistral.api.key}")
     private String cleApi;
@@ -30,49 +32,40 @@ public class MistralService {
     @Value("${mistral.api.url}")
     private String urlApi;
 
-    private String systemNotesPrompt = "Tu es un expert AFSI. Analyse les notes et extrait les éléments suivants : " +
-            "Acteurs, Actions, Objets Métiers, Règles Métiers, Contraintes, Points de Douleur, Doublons, Incohérences, Termes Ambigus. " +
-            "Pour chaque élément, trouve la 'valeur' (concept court) et la 'phraseSource' (citation exacte du texte). " +
-            "Réponds UNIQUEMENT en JSON brut avec cette structure : " +
+    private final String systemNotesPrompt = "Tu es un expert AFSI. Analyse les notes et extrait les Ã©lÃ©ments suivants : " +
+            "Acteurs, Actions, Objets MÃ©tiers, RÃ¨gles MÃ©tiers, Contraintes, Points de Douleur, Doublons, IncohÃ©rences, Termes Ambigus. " +
+            "Pour chaque Ã©lÃ©ment, trouve la 'valeur' (concept court) et la 'phraseSource' (citation exacte du texte). " +
+            "RÃ©ponds UNIQUEMENT en JSON brut avec cette structure : " +
             "{ \"elements\": [ { \"categorie\": \"\", \"valeur\": \"\", \"phraseSource\": \"\" } ] }";
 
-
-    private String systemQuestionsPrompt = "Tu es un expert AFSI spécialisé dans la conduite d'entretiens métier. " +
-            "À partir des notes fournies, suggère exactement 5 questions pertinentes et précises " +
-            "à poser lors d'un entretien métier pour approfondir la compréhension du domaine. " +
-            "Les questions doivent être ouvertes, ciblées et aider à identifier les besoins, " +
-            "les contraintes et les processus métier. " +
-            "Réponds UNIQUEMENT en JSON brut sans aucun texte avant ou après, avec cette structure : " +
+    private final String systemQuestionsPrompt = "Tu es un expert AFSI spÃ©cialisÃ© dans la conduite d'entretiens mÃ©tier. " +
+            "Ã€ partir des notes fournies, suggÃ¨re exactement 5 questions pertinentes et prÃ©cises " +
+            "Ã  poser lors d'un entretien mÃ©tier pour approfondir la comprÃ©hension du domaine. " +
+            "Les questions doivent Ãªtre ouvertes, ciblÃ©es et aider Ã  identifier les besoins, " +
+            "les contraintes et les processus mÃ©tier. " +
+            "RÃ©ponds UNIQUEMENT en JSON brut sans aucun texte avant ou aprÃ¨s, avec cette structure : " +
             "{ \"questions\": [ { \"question\": \"\" } ] }";
 
-    private String systemMFCPrompt = """
-            Tu es un expert AFSI spécialisé dans l'analyse systémique et Merise.
+    private final String systemMFCPrompt = """
+            Tu es un expert AFSI spÃ©cialisÃ© dans l'analyse systÃ©mique et Merise.
             Analyse ce diagramme de flux MFC (PlantUML) et extrais chaque interaction.
             
             Pour chaque flux, remplis :
-            - "nom" : Le libellé du flux.
-            - "emetteur" : L'acteur à l'origine.
+            - "nom" : Le libellÃ© du flux.
+            - "emetteur" : L'acteur Ã  l'origine.
             - "recepteur" : L'acteur de destination.
-            - "description" : Une brève explication du but du flux.
-            - "data" : Liste les objets métiers sous forme d'une SEULE chaîne de caractères séparés par des virgules (ex: \\"Facture, Client, RIB\\").". C'est CRUCIAL pour la cohérence avec le MCD/BPMN.
+            - "description" : Une brÃ¨ve explication du but du flux.
+            - "data" : Liste les objets mÃ©tiers sous forme d'une SEULE chaÃ®ne de caractÃ¨res sÃ©parÃ©s par des virgules (ex: "Facture, Client, RIB").
             
-            Réponds UNIQUEMENT en JSON brut : 
-            { "flux" : [ { "nom" : "", "emetteur" : "", "recepteur" : "", "description" : "", "data" :"" }]}
+            RÃ©ponds UNIQUEMENT en JSON brut : 
+            { "flux" : [ { "nom" : "", "emetteur" : "", "recepteur" : "", "description" : "", "data" : "" }]}
             """;
 
-    /**
-     * Initialise le service avec le RestTemplate requis et configure l'ObjectMapper.
-     * @param restTemplate le client HTTP utilisé pour les appels API.
-     */
     public MistralService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         this.mapper = new ObjectMapper();
     }
 
-    /**
-     * Configure les en-têtes HTTP pour l'API Mistral, incluant l'authentification Bearer.
-     * @return HttpHeaders configurés pour une requête JSON avec authentification.
-     */
     private HttpHeaders setHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -81,101 +74,83 @@ public class MistralService {
         return headers;
     }
 
-    /**
-     * Construit le corps de la requête JSON pour l'API Mistral.
-     * Définit le modèle, les rôles (system/user) et force le format de réponse en JSON.
-     * @param content Le contenu textuel fourni par l'utilisateur.
-     * @param systemPrompt Les instructions spécifiques pour guider l'IA.
-     * @return Une Map représentant la structure JSON attendue par Mistral.
-     */
     private Map<String, Object> setBody(String content, String systemPrompt) {
         Map<String, Object> body = new HashMap<>();
         body.put("model", "mistral-medium-latest");
+
         List<Map<String, String>> messages = new ArrayList<>();
         messages.add(Map.of("role", "system", "content", systemPrompt));
         messages.add(Map.of("role", "user", "content", content));
+
         body.put("messages", messages);
         body.put("response_format", Map.of("type", "json_object"));
         return body;
     }
 
-    /**
-     * Exécute l'appel à l'API et extrait uniquement le contenu textuel de la réponse.
-     * Nettoie également les éventuelles balises Markdown (ex: ```json) envoyées par l'IA.
-     * @param entity L'entité HTTP contenant le corps et les headers.
-     * @return La chaîne de caractères JSON épurée provenant de Mistral.
-     */
-    private String extractMistralsResponse(HttpEntity<Map<String, Object>> entity){
+    private String extractMistralsResponse(HttpEntity<Map<String, Object>> entity) {
         Map<String, Object> response = restTemplate.postForObject(urlApi, entity, Map.class);
+
+        if (response == null || !response.containsKey("choices")) {
+            throw new RuntimeException("RÃ©ponse Mistral invalide");
+        }
+
         List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
-        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+
+        if (choices == null || choices.isEmpty()) {
+            throw new RuntimeException("Aucun choix retournÃ© par Mistral");
+        }
+
+        Map<String, Object> firstChoice = choices.get(0);
+        Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
+
+        if (message == null || message.get("content") == null) {
+            throw new RuntimeException("RÃ©ponse Mistral vide");
+        }
+
         String content = (String) message.get("content");
-        return content.replace("```json", "").replace("```", "").trim();
+
+        return content
+                .replace("```json", "")
+                .replace("```", "")
+                .trim();
     }
 
-    /**
-     * Méthode utilitaire pour initialiser l'entité HTTP à partir du contenu et du prompt.
-     * @param userContent Texte de l'utilisateur.
-     * @param prompt Instructions système.
-     * @return L'objet HttpEntity prêt pour l'envoi.
-     */
-    private HttpEntity<Map<String, Object>> initEntity(String userContent, String prompt){
-        return new HttpEntity<>(setBody(userContent, prompt),setHeaders());
+    private HttpEntity<Map<String, Object>> initEntity(String userContent, String prompt) {
+        return new HttpEntity<>(setBody(userContent, prompt), setHeaders());
     }
 
-    /**
-     * Méthode générique orchestrant l'analyse complète : préparation, appel et désérialisation.
-     * @param <T> Le type de DTO de réponse attendu.
-     * @param userContent Le contenu à analyser.
-     * @param prompt Le prompt système à appliquer.
-     * @param returnType La classe de destination pour le mapping JSON.
-     * @return Une instance de returnType contenant les données extraites par l'IA.
-     * @throws MistralApiException Si une erreur survient lors de l'appel ou du parsing.
-     */
     public <T> T executerAnalyse(String userContent, String prompt, Class<T> returnType) throws MistralApiException {
         HttpEntity<Map<String, Object>> entity = initEntity(userContent, prompt);
-        try{
+
+        try {
             String analyseDeMistral = extractMistralsResponse(entity);
 
+            if (analyseDeMistral == null || analyseDeMistral.isBlank()) {
+                throw new RuntimeException("RÃ©ponse JSON vide");
+            }
+
             return mapper.readValue(analyseDeMistral, returnType);
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw new MistralApiException(e.getMessage());
         }
     }
 
-
-    /**
-     * Analyse des notes textuelles pour en extraire les concepts métiers (Acteurs, Actions, etc.).
-     * @param notes Le texte brut des notes d'entretien.
-     * @return Un objet AnalysisResponse contenant la liste des éléments catégorisés.
-     */
     public AnalysisResponse analyserNotes(String notes) {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
                 setBody(notes, systemNotesPrompt),
                 setHeaders()
         );
+
         try {
-            Map<String, Object> response = restTemplate.postForObject(urlApi, entity, Map.class);
-            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
-            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-            String analyseDeMistral = (String) message.get("content");
-
-            ObjectMapper mapper = new ObjectMapper();
+            String analyseDeMistral = extractMistralsResponse(entity);
             return mapper.readValue(analyseDeMistral, AnalysisResponse.class);
-
-
         } catch (Exception e) {
             System.err.println("Erreur API : " + e.getMessage());
             return new AnalysisResponse();
         }
     }
 
-    /**
-     * Génère une suggestion de 5 questions d'entretien à partir de notes existantes.
-     * @param notes Les notes de base pour générer les questions.
-     * @return Une String au format JSON contenant les questions suggérées.
-     */
     public String suggererQuestions(String notes) {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
                 setBody(notes, systemQuestionsPrompt),
@@ -183,43 +158,93 @@ public class MistralService {
         );
 
         try {
-            return restTemplate.postForObject(urlApi, entity, String.class);
+            return extractMistralsResponse(entity);
         } catch (Exception e) {
             return "Erreur API : " + e.getMessage();
         }
     }
 
-    /**
-     * Analyse un diagramme de flux PlantUML pour extraire les interactions entre acteurs.
-     * @param plantUmlContent Le code source du diagramme PlantUML.
-     * @return Un objet FluxResponse contenant la liste structurée des flux et données.
-     */
     public FluxResponse analyserMFC(String plantUmlContent) {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
                 setBody(plantUmlContent, systemMFCPrompt),
                 setHeaders()
         );
+
         try {
-            Map<String, Object> response = restTemplate.postForObject(urlApi, entity, Map.class);
-
-            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
-            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-            String analyseDeMistral = (String) message.get("content");
-
-            ObjectMapper mapper = new ObjectMapper();
+            String analyseDeMistral = extractMistralsResponse(entity);
             return mapper.readValue(analyseDeMistral, FluxResponse.class);
-
         } catch (Exception e) {
             System.err.println("Erreur technique lors de l'analyse MFC : " + e.getMessage());
-            e.printStackTrace(); // ça m'aide à mieux lire les erreurs !!!
+            e.printStackTrace();
             return new FluxResponse();
         }
     }
-
 
     public BacklogAnalyseResponse analyserBacklog(String backlogTexte) throws MistralApiException {
         return executerAnalyse(backlogTexte, Prompt.BACKLOG.getPrompt(), BacklogAnalyseResponse.class);
     }
 
+    public BpmnCoherenceIaResponse analyserCoherenceBpmn(String contenuBpmn, String userStories)
+            throws MistralApiException {
 
+        String userContent = """
+                Tu vas analyser la cohÃ©rence entre un BPMN et des User Stories dans un contexte de Business Analysis.
+
+                Attendus :
+                - identifier les acteurs mÃ©tier prÃ©sents dans le BPMN
+                - identifier les activitÃ©s mÃ©tier prÃ©sentes dans le BPMN
+                - relier les activitÃ©s BPMN aux User Stories correspondantes
+                - signaler les User Stories non couvertes
+                - signaler les activitÃ©s BPMN non couvertes
+                - dÃ©tecter les incohÃ©rences entre acteurs, activitÃ©s et objectifs mÃ©tier
+                - produire des messages clairs pour un Business Analyst
+
+                Important :
+                - ne jamais utiliser l'expression "User Story non technique"
+                - utiliser plutÃ´t des formulations comme "User Story non exploitable" ou "User Story non alignÃ©e avec le BPMN"
+                - les recommandations doivent Ãªtre concrÃ¨tes et orientÃ©es BPMN / MFC / MCD si pertinent
+
+                === BPMN ===
+                %s
+
+                === USER STORIES ===
+                %s
+                """.formatted(
+                contenuBpmn == null ? "" : contenuBpmn,
+                userStories == null ? "" : userStories
+        );
+
+        try {
+            BpmnCoherenceIaResponse response = executerAnalyse(
+                    userContent,
+                    Prompt.BPMN_COHERENCE.getPrompt(),
+                    BpmnCoherenceIaResponse.class
+            );
+
+            if (response == null) {
+                response = new BpmnCoherenceIaResponse();
+            }
+
+            if (response.getLiens() == null) {
+                response.setLiens(new ArrayList<>());
+            }
+            if (response.getAlertes() == null) {
+                response.setAlertes(new ArrayList<>());
+            }
+            if (response.getUserStoriesNonCouvertes() == null) {
+                response.setUserStoriesNonCouvertes(new ArrayList<>());
+            }
+            if (response.getTachesBpmnNonCouvertes() == null) {
+                response.setTachesBpmnNonCouvertes(new ArrayList<>());
+            }
+            if (response.getResumeGlobal() == null) {
+                response.setResumeGlobal("");
+            }
+
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new MistralApiException("Erreur parsing IA: " + e.getMessage());
+        }
+    }
 }
