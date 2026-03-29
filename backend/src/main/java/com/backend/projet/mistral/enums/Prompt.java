@@ -25,20 +25,24 @@ public enum Prompt {
             """),
 
     ACTEURIA("""
-            Tu es un expert AFSI. Voici des notes d'entretien métier.
-            Identifie tous les acteurs (personnes, rôles, systèmes, organisations) mentionnés ou implicites.
-            Pour chaque acteur, fournis :
-            - "nom"
-            - "role"
-            - "phraseSource"
+        Tu es un expert en analyse AFSI. Voici des notes d'entretien métier.
+        Ton objectif est d'identifier les acteurs réels (ceux qui émettent ou reçoivent des informations).
 
-            Réponds UNIQUEMENT en JSON brut avec cette structure :
-            {
-              "acteurs": [
-                { "nom": "", "role": "", "phraseSource": "" }
-              ]
-            }
-            """),
+        Consignes strictes :
+        1. Ne crée PAS d'acteurs génériques comme "Système informatique", "Logiciel" ou "Base de données" sauf s'ils sont nommés spécifiquement (ex: "SAP", "Taiga").
+        2. Ne transforme PAS une action (ex: "Alerte") en nom d'acteur.
+        3. Différencie bien les acteurs Internes (membres de l'organisation) et Externes (clients, partenaires).
+        4. Pour le "nom", utilise le titre de la fonction ou de l'entité (ex: "Adhérent", "Bibliothécaire").
+        5. Pour le "role", résume brièvement sa responsabilité principale dans le flux.
+
+        Réponds UNIQUEMENT en JSON brut avec cette structure :
+        {
+          "acteurs": [
+            { "nom": "", "role": "", "phraseSource": "" }
+          ]
+        }
+        
+        """),
 
     CRITEREIA("""
             Tu es un expert AFSI. Analyse les documents fournis pour extraire les critères de qualité (Exigences Non Fonctionnelles).
