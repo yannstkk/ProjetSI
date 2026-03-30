@@ -23,6 +23,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
+/**
+ * Classe qui communique directement avec l'API de Taiga.
+ * Elle envoie et reçoit les données brutes pour l'authentification, les projets et les User Stories.
+ */
 @Repository
 public class TaigaDao {
 
@@ -30,12 +34,25 @@ public class TaigaDao {
     private TaigaConfig taigaConfig;
     private ObjectMapper objectMapper;
 
+    /**
+     * Constructeur qui reçoit les outils pour les appels HTTP et la gestion du JSON.
+     * @param restTemplate Outil pour envoyer les requêtes HTTP.
+     * @param taigaConfig Configuration contenant l'URL de Taiga.
+     * @param objectMapper Outil pour transformer le JSON en objets Java.
+     */
     public TaigaDao(RestTemplate restTemplate, TaigaConfig taigaConfig, ObjectMapper objectMapper ){
         this.restTemplate = restTemplate;
         this.taigaConfig = taigaConfig;
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Demande une connexion à Taiga.
+     * @param username Nom d'utilisateur Taiga.
+     * @param password Mot de passe Taiga.
+     * @return La réponse contenant les informations de connexion.
+     * @throws AuthTaigaException Si l'identifiant est faux ou si la communication échoue.
+     */
     public TaigaAuthResponse authentificationTaiga(String username, String password) throws AuthTaigaException {
         try {
             String url = this.taigaConfig.getUrl() + "/auth";
@@ -53,6 +70,14 @@ public class TaigaDao {
         }
     }
 
+    /**
+     * Récupère la liste des projets d'un utilisateur.
+     * @param userId Identifiant de l'utilisateur.
+     * @param token Jeton d'accès à l'API.
+     * @return Une liste de projets.
+     * @throws AuthTaigaException Si le jeton est invalide.
+     * @throws TaigaDataException Si les données reçues sont mal formées.
+     */
     public List<ProjectTaigaResponse> getProjects(Long userId, String token) throws AuthTaigaException, TaigaDataException {
         try {
             String url = this.taigaConfig.getUrl() + "/projects?member=" + userId;
@@ -74,6 +99,14 @@ public class TaigaDao {
         }
     }
 
+    /**
+     * Crée une nouvelle User Story sur Taiga.
+     * @param projectId Identifiant du projet de destination.
+     * @param userStory Contenu de la User Story à créer.
+     * @param token Jeton d'accès à l'API.
+     * @return La réponse de création de la User Story.
+     * @throws AuthTaigaException Si l'accès est refusé ou en cas d'erreur réseau.
+     */
     public UserStoryResponse createUserStory(Long projectId, UserStoryRequest userStory, String token) throws AuthTaigaException {
         try {
             String url = this.taigaConfig.getUrl() + "/userstories";
