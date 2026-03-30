@@ -27,7 +27,6 @@ export function LigneUS({ us, isLast, taigaConnecte, onExporter, onSupprimer, on
         }
     }
 
-    // Détermine le rendu du bouton BDD selon l'état de l'US
     function renderBddButton() {
         if (dbLoading) {
             return (
@@ -42,7 +41,6 @@ export function LigneUS({ us, isLast, taigaConnecte, onExporter, onSupprimer, on
         }
 
         if (us.dbId) {
-            // US déjà en BDD → bouton "Mettre à jour"
             return (
                 <button
                     onClick={handleStockerBdd}
@@ -55,7 +53,6 @@ export function LigneUS({ us, isLast, taigaConnecte, onExporter, onSupprimer, on
             );
         }
 
-        // US pas encore en BDD → bouton "Stocker"
         return (
             <button
                 onClick={handleStockerBdd}
@@ -72,7 +69,6 @@ export function LigneUS({ us, isLast, taigaConnecte, onExporter, onSupprimer, on
         <>
             <tr className="hover:bg-gray-50 transition-colors">
 
-                {/* ID */}
                 <td className={tdClass}>
                     <div className="flex items-center gap-1.5">
                         <span className="font-mono text-xs font-medium text-gray-700">
@@ -89,7 +85,6 @@ export function LigneUS({ us, isLast, taigaConnecte, onExporter, onSupprimer, on
                     </div>
                 </td>
 
-                {/* User Story */}
                 <td className={`${tdClass} max-w-xs`}>
                     <div className="text-sm font-medium text-gray-900">
                         En tant que <span className="text-blue-600">{us.acteur || "—"}</span>
@@ -102,14 +97,12 @@ export function LigneUS({ us, isLast, taigaConnecte, onExporter, onSupprimer, on
                     </div>
                 </td>
 
-                {/* Priorité */}
                 <td className={tdClass}>
                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${prioriteCfg.className}`}>
                         {prioriteCfg.label}
                     </span>
                 </td>
 
-                {/* Critères */}
                 <td className={tdClass}>
                     <span className={`text-xs ${us.criteres?.length > 0 ? "text-green-600 font-medium" : "text-gray-400"}`}>
                         {us.criteres?.length > 0
@@ -119,14 +112,11 @@ export function LigneUS({ us, isLast, taigaConnecte, onExporter, onSupprimer, on
                     </span>
                 </td>
 
-                {/* Actions */}
                 <td className={tdClass}>
                     <div className="flex items-center gap-2 flex-wrap">
 
-                        {/* Stocker / Sync BDD */}
                         {renderBddButton()}
 
-                        {/* Exporter vers Taiga */}
                         <button
                             onClick={onExporter}
                             title={taigaConnecte ? "Exporter vers Taiga" : "Connectez-vous d'abord à Taiga"}
@@ -144,7 +134,6 @@ export function LigneUS({ us, isLast, taigaConnecte, onExporter, onSupprimer, on
                             }
                         </button>
 
-                        {/* Éditer */}
                         <Link
                             to={`/dashboard/phase4/form?id=${us.id}`}
                             className="flex items-center p-1.5 border border-gray-200 rounded-lg text-gray-400 hover:text-blue-600 hover:border-blue-300 transition-colors"
@@ -152,7 +141,6 @@ export function LigneUS({ us, isLast, taigaConnecte, onExporter, onSupprimer, on
                             <Edit className="w-3.5 h-3.5" />
                         </Link>
 
-                        {/* Supprimer */}
                         <button
                             onClick={onSupprimer}
                             className="flex items-center p-1.5 border border-gray-200 rounded-lg text-gray-400 hover:text-red-600 hover:border-red-300 transition-colors"
@@ -162,7 +150,6 @@ export function LigneUS({ us, isLast, taigaConnecte, onExporter, onSupprimer, on
 
                     </div>
 
-                    {/* Message d'erreur BDD inline */}
                     {dbError && (
                         <p className="text-xs text-red-600 mt-1 max-w-[260px]">
                             {dbError}

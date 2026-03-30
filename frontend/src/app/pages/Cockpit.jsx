@@ -24,7 +24,6 @@ import { loadActeurs } from "./phase2/components/helpers/acteurIA";
 import { loadMFC } from "./phase2/components/helpers/mfcStorage";
 import { loadBpmn } from "./phase6/helpers/bpmnStorage";
 
-/* ── Hook d'animation du compteur ────────────────────────────────────────── */
 function useCountUp(target, duration = 800, delay = 0) {
     const [value, setValue] = useState(0);
     useEffect(() => {
@@ -45,7 +44,6 @@ function useCountUp(target, duration = 800, delay = 0) {
     return value;
 }
 
-/* ── Barre de progression animée ─────────────────────────────────────────── */
 function AnimatedBar({ value, color, delay = 0 }) {
     const [width, setWidth] = useState(0);
     useEffect(() => {
@@ -62,7 +60,6 @@ function AnimatedBar({ value, color, delay = 0 }) {
     );
 }
 
-/* ── Calcul de la progression par phase ──────────────────────────────────── */
 function computePhaseProgress() {
     const backlog = loadBacklog();
     const acteurs = loadActeurs();
@@ -130,7 +127,6 @@ function computePhaseProgress() {
     ];
 }
 
-/* ── Carte de phase ───────────────────────────────────────────────────────── */
 function PhaseCard({ phase, index }) {
     const [visible, setVisible] = useState(false);
     useEffect(() => {
@@ -192,7 +188,6 @@ function PhaseCard({ phase, index }) {
     );
 }
 
-/* ── Composant principal ──────────────────────────────────────────────────── */
 export function Cockpit() {
     const projet = getProjetCourant();
     const phases = computePhaseProgress();
@@ -200,7 +195,6 @@ export function Cockpit() {
     const backlog = loadBacklog();
     const acteurs = loadActeurs();
 
-    // Progression globale
     const globalProgress = Math.round(
         phases.reduce((acc, p) => acc + p.progress, 0) / phases.length
     );
@@ -208,13 +202,11 @@ export function Cockpit() {
     const phasesActives = phases.filter((p) => p.progress > 0 && p.progress < 100).length;
     const phasesTerminees = phases.filter((p) => p.progress === 100).length;
 
-    // Compteurs animés
     const animUS = useCountUp(backlog.length, 700, 300);
     const animActeurs = useCountUp(acteurs.length, 700, 400);
     const animPhases = useCountUp(phasesTerminees, 600, 200);
     const animGlobal = useCountUp(globalProgress, 1000, 100);
 
-    // Animation barre globale
     const [globalBarWidth, setGlobalBarWidth] = useState(0);
     useEffect(() => {
         const t = setTimeout(() => setGlobalBarWidth(globalProgress), 300);
@@ -224,7 +216,6 @@ export function Cockpit() {
     return (
         <div className="p-6 space-y-6 min-h-full bg-gray-50">
 
-            {/* ── En-tête ────────────────────────────────────────────────── */}
             <div
                 className="rounded-2xl overflow-hidden relative"
                 style={{
@@ -271,14 +262,12 @@ export function Cockpit() {
                             </p>
                         </div>
 
-                        {/* Jauge circulaire globale */}
                         <div className="flex flex-col items-center">
                             <CircularGauge value={animGlobal} size={80} />
                             <p className="text-blue-200 text-xs mt-1.5 font-medium">Progression</p>
                         </div>
                     </div>
 
-                    {/* Barre globale */}
                     <div className="mt-4">
                         <div className="flex justify-between text-xs text-blue-300 mb-1.5">
                             <span>Avancement global</span>
@@ -297,7 +286,6 @@ export function Cockpit() {
                 </div>
             </div>
 
-            {/* ── Statistiques rapides ───────────────────────────────────── */}
             <div className="grid grid-cols-4 gap-4">
                 {[
                     { label: "User Stories", value: animUS, icon: FileText, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
@@ -326,7 +314,6 @@ export function Cockpit() {
                 })}
             </div>
 
-            {/* ── Grille des phases ──────────────────────────────────────── */}
             <div>
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-base font-bold text-gray-900" style={{ letterSpacing: "-0.02em" }}>
@@ -348,7 +335,6 @@ export function Cockpit() {
                 </div>
             </div>
 
-            {/* ── Actions rapides ────────────────────────────────────────── */}
             <div className="rounded-xl border border-gray-200 bg-white p-4">
                 <h2 className="text-sm font-bold text-gray-700 mb-3">Actions rapides</h2>
                 <div className="flex flex-wrap gap-2">
@@ -374,7 +360,6 @@ export function Cockpit() {
                 </div>
             </div>
 
-            {/* Keyframes d'animation */}
             <style>{`
                 @keyframes fadeSlideUp {
                     from { opacity: 0; transform: translateY(12px); }
@@ -385,7 +370,6 @@ export function Cockpit() {
     );
 }
 
-/* ── Jauge circulaire SVG ─────────────────────────────────────────────────── */
 function CircularGauge({ value, size = 80 }) {
     const r = (size - 10) / 2;
     const circumference = 2 * Math.PI * r;
@@ -400,14 +384,12 @@ function CircularGauge({ value, size = 80 }) {
 
     return (
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: "rotate(-90deg)" }}>
-            {/* Piste de fond */}
             <circle
                 cx={size / 2} cy={size / 2} r={r}
                 fill="none"
                 stroke="rgba(255,255,255,0.12)"
                 strokeWidth="5"
             />
-            {/* Arc de progression */}
             <circle
                 cx={size / 2} cy={size / 2} r={r}
                 fill="none"
@@ -418,7 +400,6 @@ function CircularGauge({ value, size = 80 }) {
                 strokeDashoffset={circumference - dash}
                 style={{ transition: "stroke-dashoffset 1200ms cubic-bezier(0.34, 1.56, 0.64, 1)" }}
             />
-            {/* Texte centré */}
             <text
                 x={size / 2} y={size / 2 + 5}
                 textAnchor="middle"

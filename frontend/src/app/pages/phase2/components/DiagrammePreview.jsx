@@ -26,7 +26,6 @@ export function DiagrammePreview({
     return (
         <div className="space-y-4">
 
-            {/* Fichier importé */}
             <div className="flex items-center gap-3 px-4 py-3 bg-green-50 border border-green-200 rounded-xl">
                 <FileText className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <span className="text-sm font-medium text-green-800 flex-1 truncate">
@@ -47,7 +46,6 @@ export function DiagrammePreview({
                 />
             </div>
 
-            {/* Aperçu SVG */}
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                 <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">
@@ -85,7 +83,6 @@ export function DiagrammePreview({
                 </div>
             </div>
 
-            {/* Bouton analyse IA */}
             <BoutonIA
                 onClick={onAnalyserIA}
                 loading={iaLoading}
@@ -95,7 +92,6 @@ export function DiagrammePreview({
                 Analyser les flux avec l'IA
             </BoutonIA>
 
-            {/* Erreur IA */}
             {iaError && (
                 <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
                     <AlertTriangle className="w-4 h-4 flex-shrink-0" />

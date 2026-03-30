@@ -59,7 +59,6 @@ export function clearClassification() {
     sessionStorage.removeItem(STORAGE_KEY);
 }
 
-// Importe les éléments de interview_live et les pré-classe
 export function importerDepuisPhase1() {
     try {
         const raw = sessionStorage.getItem("interview_live");

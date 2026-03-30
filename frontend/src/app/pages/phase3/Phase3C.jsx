@@ -79,7 +79,6 @@ export function Phase3C() {
     }
     function handleReimporter() { const fresh = importerDepuisPhase1(); update(fresh); setIaMessage(""); setIaError(""); }
 
-   // ── Détection doublons IA ─────────────────────────────────────────────────
 
    async function detecterDoublons() {
        const tousLesElements = Object.entries(classification)
@@ -122,7 +121,6 @@ export function Phase3C() {
                return;
            }
 
-           // Marquer les items suspects
            const idsDoublons = new Set(doublons.flatMap((d) => d.ids));
            const newClass = { ...classification };
 

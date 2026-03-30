@@ -1,6 +1,5 @@
 import { authFetch } from "./authFetch";
 
-// ─── Notes brutes ─────────────────────────────────────────────────────────────
 
 export async function getNotesByInterview(numeroInterview) {
     const res = await authFetch(`/api/notes/interview/${numeroInterview}`);
@@ -24,7 +23,6 @@ export async function deleteNotesByInterview(numeroInterview) {
     if (!res.ok) throw new Error(`Erreur serveur : ${res.status}`);
 }
 
-// ─── Notes structurées ────────────────────────────────────────────────────────
 
 export async function getNotesStructureesByInterview(numeroInterview) {
     const res = await authFetch(`/api/notes-structurees/interview/${numeroInterview}`);
@@ -48,7 +46,6 @@ export async function deleteNotesStructureesByInterview(numeroInterview) {
     if (!res.ok) throw new Error(`Erreur serveur : ${res.status}`);
 }
 
-// ─── Questions IA ─────────────────────────────────────────────────────────────
 
 export async function getQuestionsByInterview(numeroInterview) {
     const res = await authFetch(`/api/questions/interview/${numeroInterview}`);
@@ -72,7 +69,6 @@ export async function deleteQuestionsByInterview(numeroInterview) {
     if (!res.ok) throw new Error(`Erreur serveur : ${res.status}`);
 }
 
-// ─── Participants ─────────────────────────────────────────────────────────────
 
 export async function getParticipantsByInterview(numeroInterview) {
     const res = await authFetch(`/api/participants/interview/${numeroInterview}`);
@@ -96,12 +92,7 @@ export async function deleteParticipantsByInterview(numeroInterview) {
     if (!res.ok) throw new Error(`Erreur serveur : ${res.status}`);
 }
 
-// ─── Sauvegarde depuis sessionStorage ────────────────────────────────────────
 
-/**
- * Sauvegarde les notes brutes importées en BDD.
- * Supprime d'abord les anciennes pour éviter la duplication.
- */
 export async function saveNotesFromSession(numeroInterview) {
     try {
         await deleteNotesByInterview(numeroInterview);
@@ -116,9 +107,7 @@ export async function saveNotesFromSession(numeroInterview) {
     }
 }
 
-/**
- * Sauvegarde les notes structurées (interview_live) en BDD.
- */
+
 export async function saveNotesStructureesFromSession(numeroInterview) {
     try {
         await deleteNotesStructureesByInterview(numeroInterview);
@@ -139,9 +128,7 @@ export async function saveNotesStructureesFromSession(numeroInterview) {
     }
 }
 
-/**
- * Sauvegarde les questions suggérées par l'IA en BDD.
- */
+
 export async function saveQuestionsFromSession(numeroInterview) {
     try {
         await deleteQuestionsByInterview(numeroInterview);
@@ -157,9 +144,7 @@ export async function saveQuestionsFromSession(numeroInterview) {
     }
 }
 
-/**
- * Sauvegarde les participants depuis interview_draft en BDD.
- */
+
 export async function saveParticipantsFromSession(numeroInterview) {
     try {
         await deleteParticipantsByInterview(numeroInterview);
@@ -176,7 +161,6 @@ export async function saveParticipantsFromSession(numeroInterview) {
     }
 }
 
-// ─── Chargement dans sessionStorage ──────────────────────────────────────────
 
 export async function loadNotesIntoSession(numeroInterview) {
     try {

@@ -20,7 +20,6 @@ export function Phase6A() {
 
     const fileInputRef = useRef(null);
 
-    // ── Import fichier ────────────────────────────────────────────────────────
 
     function handleFiles(files) {
         const accepted = Array.from(files).filter(
@@ -361,7 +360,6 @@ export function Phase6A() {
                     </Card>
                 )}
 
-                {/* Navigation */}
                 <div className="flex gap-3">
                     <Link
                         to="/dashboard/phase6/viewer"

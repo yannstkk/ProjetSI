@@ -28,7 +28,7 @@ export function NewProject() {
                 method: "POST",
                 body: JSON.stringify({
                     nom:    nom.trim(),
-                    idUser: username,   // ← idUser (pas idUtilisateur)
+                    idUser: username,
                 }),
             });
 
@@ -36,7 +36,6 @@ export function NewProject() {
 
             const projet = await res.json();
 
-            // Stocker le projet courant
             setProjetCourant({
                 id:           projet.idProjet,
                 nom:          projet.nom,
@@ -44,10 +43,8 @@ export function NewProject() {
                 idUser:       projet.idUser,
             });
 
-            // Nouveau projet = sessionStorage interview vierge
             clearInterviewSession();
 
-            // Rediriger vers le cockpit (pas vers interviews)
             navigate("/dashboard");
 
         } catch (err) {
@@ -61,7 +58,6 @@ export function NewProject() {
     return (
         <div className="min-h-screen bg-gray-50">
 
-            {/* Header */}
             <header className="bg-white border-b border-gray-200 px-6 py-4">
                 <div className="max-w-5xl mx-auto">
                     <h1 className="text-2xl font-semibold text-gray-900">
@@ -73,7 +69,6 @@ export function NewProject() {
                 </div>
             </header>
 
-            {/* Main Content */}
             <main className="max-w-5xl mx-auto p-6">
 
                 {error && (
@@ -101,7 +96,6 @@ export function NewProject() {
                     </CardContent>
                 </Card>
 
-                {/* Actions */}
                 <div className="mt-6 flex gap-3">
                     <Link
                         to="/projects"

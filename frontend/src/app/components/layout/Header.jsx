@@ -58,7 +58,6 @@ export function Header() {
             overflow: "hidden",
         }}>
 
-            {/* Lueur d'ambiance très subtile à gauche */}
             <div style={{
                 position: "absolute",
                 inset: 0,
@@ -69,7 +68,6 @@ export function Header() {
                 pointerEvents: "none",
             }} />
 
-            {/* Accent vertical gauche */}
             <div style={{
                 position: "absolute",
                 left: 0,
@@ -82,7 +80,6 @@ export function Header() {
                 transition: "background 400ms ease, box-shadow 400ms ease",
             }} />
 
-            {/* Contenu animé */}
             <div style={{
                 display: "flex",
                 alignItems: "center",
@@ -93,10 +90,8 @@ export function Header() {
                 transition: "opacity 280ms ease, transform 280ms ease",
             }}>
 
-                {/* Gauche : icône + nom + phase */}
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
 
-                    {/* Icône dans un carré coloré */}
                     <div style={{
                         width: "36px",
                         height: "36px",
@@ -117,7 +112,6 @@ export function Header() {
                         }
                     </div>
 
-                    {/* Nom projet + badge + sous-titre */}
                     <div>
                         <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
                             <span style={{
@@ -184,17 +178,14 @@ export function Header() {
                     </div>
                 </div>
 
-                {/* Droite : stepper */}
                 <PhaseStepper currentId={dp?.id} />
             </div>
 
-            {/* Barre de progression en bas */}
             <ProgressBar currentPhase={dp} />
         </header>
     );
 }
 
-/* ── Barre de progression coulissante ──────────────────────────────────── */
 function ProgressBar({ currentPhase }) {
     const [w, setW] = useState(0);
 
@@ -227,7 +218,6 @@ function ProgressBar({ currentPhase }) {
     );
 }
 
-/* ── Stepper 7 phases ───────────────────────────────────────────────────── */
 function PhaseStepper({ currentId }) {
     return (
         <nav style={{ display: "flex", alignItems: "center", gap: "1px", flexShrink: 0 }}>
@@ -289,7 +279,6 @@ function PhaseStepper({ currentId }) {
                             )}
                         </div>
 
-                        {/* Connecteur */}
                         {i < phases.length - 1 && (
                             <div style={{
                                 width: "10px",

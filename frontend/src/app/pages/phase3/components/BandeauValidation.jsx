@@ -13,7 +13,6 @@ export function BandeauValidation({ classification }) {
         <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
             <div className="flex items-center gap-6">
 
-                {/* Progression */}
                 <div className="flex-1">
                     <div className="flex items-center justify-between text-sm mb-1.5">
                         <span className="text-gray-600 font-medium">
@@ -31,7 +30,6 @@ export function BandeauValidation({ classification }) {
                     </div>
                 </div>
 
-                {/* Doublons */}
                 {doublons > 0 && (
                     <div className="flex items-center gap-2 text-sm text-orange-600 bg-orange-50 border border-orange-200 px-3 py-2 rounded-lg">
                         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
@@ -39,7 +37,6 @@ export function BandeauValidation({ classification }) {
                     </div>
                 )}
 
-                {/* Bouton vers Phase 4 */}
                 <Link
                     to="/dashboard/phase4/backlog"
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm transition-colors ${

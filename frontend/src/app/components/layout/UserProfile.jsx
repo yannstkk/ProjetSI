@@ -17,7 +17,6 @@ export function UserProfile() {
         <div className="border-t border-gray-200 p-3">
             <div className="relative">
 
-                {/* Profile Button */}
                 <button
                     onClick={() => setProfileMenuOpen(!profileMenuOpen)}
                     className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
@@ -38,7 +37,6 @@ export function UserProfile() {
                     />
                 </button>
 
-                {/* Dropdown Menu */}
                 {profileMenuOpen && (
                     <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
 

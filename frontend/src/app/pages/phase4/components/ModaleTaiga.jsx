@@ -2,7 +2,6 @@ import { useState } from "react";
 import { X, LogIn, FolderOpen, ExternalLink, Loader2, AlertTriangle, ChevronRight, Check, ArrowLeft, RefreshCw } from "lucide-react";
 import { TAIGA_STEP } from "../../../../hooks/useTaiga";
 
-// ─── Styles CSS injectés ──────────────────────────────────────────────────────
 
 const STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
@@ -443,7 +442,6 @@ const STYLES = `
 }
 `;
 
-// ─── Composant principal ──────────────────────────────────────────────────────
 
 export function ModaleTaiga({ taiga }) {
     const {
@@ -472,7 +470,6 @@ export function ModaleTaiga({ taiga }) {
             <div className="taiga-overlay" onClick={(e) => e.target === e.currentTarget && fermer()}>
                 <div className="taiga-modal">
 
-                    {/* Header */}
                     <div className="taiga-header">
                         <div className="taiga-logo">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
@@ -490,10 +487,8 @@ export function ModaleTaiga({ taiga }) {
                         </button>
                     </div>
 
-                    {/* Body */}
                     <div className="taiga-body">
 
-                        {/* Indicateur d'étapes */}
                         <div className="taiga-steps">
                             {[0, 1, 2].map((i) => (
                                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -503,7 +498,6 @@ export function ModaleTaiga({ taiga }) {
                             ))}
                         </div>
 
-                        {/* Erreur */}
                         {error && (
                             <div className="taiga-error">
                                 <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
@@ -511,12 +505,10 @@ export function ModaleTaiga({ taiga }) {
                             </div>
                         )}
 
-                        {/* Étape LOGIN */}
                         {step === TAIGA_STEP.LOGIN && (
                             <FormLogin onSubmit={login} loading={loading} />
                         )}
 
-                        {/* Étape PROJETS */}
                         {step === TAIGA_STEP.PROJETS && (
                             <ListeProjets
                                 projets={projets}
@@ -526,7 +518,6 @@ export function ModaleTaiga({ taiga }) {
                             />
                         )}
 
-                        {/* Étape EXPORT */}
                         {step === TAIGA_STEP.EXPORT && (
                             <ConfirmExport
                                 us={usAExporter}
@@ -556,7 +547,6 @@ export function ModaleTaiga({ taiga }) {
     );
 }
 
-// ── Formulaire de login ───────────────────────────────────────────────────────
 
 function FormLogin({ onSubmit, loading }) {
     const [username, setUsername] = useState("");
@@ -607,7 +597,6 @@ function FormLogin({ onSubmit, loading }) {
     );
 }
 
-// ── Liste des projets ─────────────────────────────────────────────────────────
 
 function ListeProjets({ projets, loading, projetActuel, onChoisir }) {
     if (loading) {
@@ -657,14 +646,12 @@ function ListeProjets({ projets, loading, projetActuel, onChoisir }) {
     );
 }
 
-// ── Confirmation d'export ─────────────────────────────────────────────────────
 
 function ConfirmExport({ us, projet, loading, onConfirmer, onChangerProjet }) {
     if (!us || !projet) return null;
 
     return (
         <div>
-            {/* Badge projet sélectionné */}
             <div style={{ marginBottom: 16 }}>
                 <div className="taiga-export-project-badge">
                     <FolderOpen size={12} />
@@ -676,7 +663,6 @@ function ConfirmExport({ us, projet, loading, onConfirmer, onChangerProjet }) {
                 </button>
             </div>
 
-            {/* Aperçu de l'US */}
             <div className="taiga-us-preview">
                 <div className="taiga-us-id">{us.id}</div>
                 <div className="taiga-us-actor">
@@ -700,7 +686,6 @@ function ConfirmExport({ us, projet, loading, onConfirmer, onChangerProjet }) {
                 )}
             </div>
 
-            {/* Bouton confirmer */}
             <button
                 className="taiga-btn-primary"
                 onClick={onConfirmer}
