@@ -10,7 +10,6 @@ import logo from "../../../assets/logo.png";
 
 
 
-/* ── Couleurs HSL par phase (cohérentes avec le Header) ─────────────────── */
 const PHASE_COLORS = {
     1: { hue: "258,72%,62%", hex: "#7c6ef0" },
     2: { hue: "217,87%,60%", hex: "#4a90e2" },
@@ -80,7 +79,6 @@ const phases = [
 
 
 
-/* ── Item sous-nav avec animation de hauteur ─────────────────────────────── */
 function SubNav({ screens, isOpen, resolvePath, isActive, phaseHue }) {
     const ref = useRef(null);
     const [height, setHeight] = useState(0);
@@ -134,7 +132,6 @@ function SubNav({ screens, isOpen, resolvePath, isActive, phaseHue }) {
                                 }
                             }}
                         >
-                            {/* Tiret remplacé par un petit rond */}
                             <span style={{
                                 width: "5px",
                                 height: "5px",
@@ -145,7 +142,6 @@ function SubNav({ screens, isOpen, resolvePath, isActive, phaseHue }) {
                             }} />
                             {screen.label}
 
-                            {/* Pill "actif" */}
                             {active && (
                                 <span style={{
                                     marginLeft: "auto",
@@ -164,7 +160,6 @@ function SubNav({ screens, isOpen, resolvePath, isActive, phaseHue }) {
     );
 }
 
-/* ── Ligne de jauge de progression en bas de la sidebar ─────────────────── */
 function SidebarProgressBar({ currentPhaseId }) {
     const [w, setW] = useState(0);
     const hue = currentPhaseId ? PHASE_COLORS[currentPhaseId].hue : "217,87%,60%";
@@ -227,7 +222,6 @@ function SidebarProgressBar({ currentPhaseId }) {
     );
 }
 
-/* ── Composant principal ─────────────────────────────────────────────────── */
 export function Sidebar() {
     const location = useLocation();
 
@@ -241,7 +235,6 @@ export function Sidebar() {
         )
     ) ?? (location.pathname.startsWith("/dashboard/phase1/interview") ? phases[0] : null);
 
-    /* Phases ouvertes : la phase active s'ouvre automatiquement */
     const [openPhases, setOpenPhases] = useState(() => {
         const set = new Set();
         if (currentPhase) set.add(currentPhase.id);
@@ -286,7 +279,6 @@ export function Sidebar() {
             height: "100%",
         }}>
 
-            {/* ── Logo ──────────────────────────────────────────────────────── */}
             <div style={{
                 padding: "14px 16px",
                 borderBottom: "0.5px solid var(--color-border-tertiary)",
@@ -328,7 +320,6 @@ export function Sidebar() {
                 </div>
             </div>
 
-            {/* ── Navigation ────────────────────────────────────────────────── */}
             <nav style={{
                 flex: 1,
                 overflowY: "auto",
@@ -338,7 +329,6 @@ export function Sidebar() {
                 gap: "2px",
             }}>
 
-                {/* Cockpit */}
                 <Link
                     to="/dashboard"
                     style={{
@@ -397,7 +387,6 @@ export function Sidebar() {
                     )}
                 </Link>
 
-                {/* Séparateur */}
                 <div style={{
                     height: "0.5px",
                     background: "var(--color-border-tertiary)",
@@ -418,7 +407,6 @@ export function Sidebar() {
                     return (
                         <div key={phase.id} style={{ marginBottom: "1px" }}>
 
-                            {/* Bouton de phase */}
                             <button
                                 onClick={() => togglePhase(phase.id)}
                                 style={{
@@ -448,7 +436,6 @@ export function Sidebar() {
                                     }
                                 }}
                             >
-                                {/* Icône colorée */}
                                 <div style={{
                                     width: "28px",
                                     height: "28px",
@@ -473,7 +460,6 @@ export function Sidebar() {
                                     }} />
                                 </div>
 
-                                {/* Textes */}
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{
                                         fontSize: "10px",
@@ -503,7 +489,6 @@ export function Sidebar() {
                                     </div>
                                 </div>
 
-                                {/* Flèche rotation */}
                                 <ChevronRight style={{
                                     width: "13px",
                                     height: "13px",
@@ -515,7 +500,6 @@ export function Sidebar() {
                                 }} />
                             </button>
 
-                            {/* Sous-nav animée */}
                             <SubNav
                                 screens={phase.screens}
                                 isOpen={isOpen}

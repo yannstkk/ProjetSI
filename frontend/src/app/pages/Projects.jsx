@@ -18,7 +18,6 @@ import { saveMFC, clearMFC } from "./phase2/components/helpers/mfcStorage";
 import { saveBpmn, clearBpmn } from "./phase6/helpers/bpmnStorage";
 import { buildPlantUMLUrl } from "./phase2/components/helpers/plantuml";
 
-/* ─── helpers chargement BDD (identiques à l'original) ─────────────────────── */
 async function loadActeursIntoSession(idProjet) {
     const res = await authFetch(`/api/acteur/projet/${idProjet}`);
     if (!res.ok) return;
@@ -56,7 +55,6 @@ async function loadBpmnIntoSession(idProjet) {
     saveBpmn({ fichiers: [fichier], selected: fichier, titre: bpmn.titre || "", liens: [], iaResult: null });
 }
 
-/* ─── Utilitaire date ───────────────────────────────────────────────────────── */
 function formatDate(raw) {
     if (!raw) return "";
     return new Date(raw).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
@@ -71,12 +69,10 @@ function timeAgo(raw) {
     return formatDate(raw);
 }
 
-/* ─── Composant carte projet ────────────────────────────────────────────────── */
 function ProjectCard({ projet, index, onSelect, selecting }) {
     const [hovered, setHovered] = useState(false);
     const isSelecting = selecting === projet.idProjet;
 
-    /* couleur d'accent déterministe par projet */
     const accents = [
         ["#6366f1","#8b5cf6"], ["#0ea5e9","#6366f1"], ["#10b981","#0ea5e9"],
         ["#f59e0b","#ef4444"], ["#ec4899","#8b5cf6"], ["#14b8a6","#6366f1"],
@@ -105,7 +101,6 @@ function ProjectCard({ projet, index, onSelect, selecting }) {
                 animation: `cardIn 420ms cubic-bezier(0.34,1.56,0.64,1) ${index * 60}ms both`,
             }}
         >
-            {/* Bande colorée en haut */}
             <div style={{
                 position: "absolute", top: 0, left: 0, right: 0, height: "3px",
                 background: `linear-gradient(90deg, ${c1}, ${c2})`,
@@ -114,7 +109,6 @@ function ProjectCard({ projet, index, onSelect, selecting }) {
                 borderRadius: "16px 16px 0 0",
             }}/>
 
-            {/* Halo d'ambiance */}
             <div style={{
                 position: "absolute", top: "-30px", right: "-30px",
                 width: "100px", height: "100px", borderRadius: "50%",
@@ -124,7 +118,6 @@ function ProjectCard({ projet, index, onSelect, selecting }) {
                 pointerEvents: "none",
             }}/>
 
-            {/* Icône */}
             <div style={{
                 width: "42px", height: "42px", borderRadius: "12px",
                 background: `linear-gradient(135deg, ${c1}18, ${c2}12)`,
@@ -137,7 +130,6 @@ function ProjectCard({ projet, index, onSelect, selecting }) {
                 <FolderOpen style={{ width: "18px", height: "18px", color: c1 }}/>
             </div>
 
-            {/* Nom */}
             <h3 style={{
                 fontSize: "15px", fontWeight: 600, color: "#0f172a",
                 letterSpacing: "-0.025em", marginBottom: "6px", lineHeight: 1.3,
@@ -145,7 +137,6 @@ function ProjectCard({ projet, index, onSelect, selecting }) {
                 {projet.nom}
             </h3>
 
-            {/* Date */}
             <div style={{
                 display: "flex", alignItems: "center", gap: "5px",
                 fontSize: "12px", color: "#94a3b8", marginBottom: "16px",
@@ -154,7 +145,6 @@ function ProjectCard({ projet, index, onSelect, selecting }) {
                 {timeAgo(projet.dateCreation)}
             </div>
 
-            {/* Footer */}
             <div style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 paddingTop: "12px",
@@ -194,7 +184,6 @@ function ProjectCard({ projet, index, onSelect, selecting }) {
     );
 }
 
-/* ─── Carte "Nouveau projet" ────────────────────────────────────────────────── */
 function NewProjectCard({ index }) {
     const [hovered, setHovered] = useState(false);
     return (
@@ -241,7 +230,6 @@ function NewProjectCard({ index }) {
     );
 }
 
-/* ─── Page principale ───────────────────────────────────────────────────────── */
 export function Projects() {
     const [projets,   setProjets]   = useState([]);
     const [loading,   setLoading]   = useState(true);
@@ -350,7 +338,6 @@ export function Projects() {
                 position: "relative", overflow: "hidden",
             }}>
 
-                {/* ── Orbes d'ambiance ── */}
                 <div style={{ position:"fixed", inset:0, overflow:"hidden", pointerEvents:"none", zIndex:0 }}>
                     <div style={{
                         position:"absolute", width:"600px", height:"600px",
@@ -364,7 +351,6 @@ export function Projects() {
                         background:"radial-gradient(circle, rgba(168,85,247,0.07) 0%, transparent 70%)",
                         animation:"orb2 28s ease-in-out infinite",
                     }}/>
-                    {/* Grille fine */}
                     <div style={{
                         position:"absolute", inset:0,
                         backgroundImage:
@@ -376,7 +362,6 @@ export function Projects() {
                     }}/>
                 </div>
 
-                {/* ── Header ────────────────────────────────────────────────── */}
                 <header style={{
                     position:"sticky", top:0, zIndex:10,
                     background:"rgba(255,255,255,0.82)",
@@ -390,7 +375,6 @@ export function Projects() {
                         padding:"0 24px", height:"60px",
                         display:"flex", alignItems:"center", justifyContent:"space-between",
                     }}>
-                        {/* Logo + nom */}
                         <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
                             <img src={logo} alt="logo" style={{
                                 height:"34px",
@@ -409,7 +393,6 @@ export function Projects() {
                             </div>
                         </div>
 
-                        {/* Droite : avatar + déconnexion */}
                         <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
                             <div style={{
                                 display:"flex", alignItems:"center", gap:"8px",
@@ -443,7 +426,6 @@ export function Projects() {
                     </div>
                 </header>
 
-                {/* ── Contenu ────────────────────────────────────────────────── */}
                 <main style={{
                     maxWidth:"1100px", margin:"0 auto", padding:"48px 24px",
                     position:"relative", zIndex:1,
@@ -492,7 +474,6 @@ export function Projects() {
                         </p>
                     </div>
 
-                    {/* Barre de recherche */}
                     <div style={{
                         maxWidth:"440px", margin:"0 auto 36px",
                         animation:"fadeUp 500ms cubic-bezier(0.34,1.56,0.64,1) 180ms both",
@@ -549,7 +530,6 @@ export function Projects() {
                         </div>
                     </div>
 
-                    {/* Erreur */}
                     {error && (
                         <div style={{
                             padding:"14px 18px", borderRadius:"12px",
@@ -561,7 +541,6 @@ export function Projects() {
                         </div>
                     )}
 
-                    {/* Loading */}
                     {loading && (
                         <div style={{
                             display:"flex", flexDirection:"column",
@@ -584,7 +563,6 @@ export function Projects() {
                         </div>
                     )}
 
-                    {/* Grille de projets */}
                     {!loading && (
                         <div style={{
                             display:"grid",
@@ -605,7 +583,6 @@ export function Projects() {
                                 />
                             ))}
 
-                            {/* Aucun résultat */}
                             {filtered.length === 0 && !loading && search && (
                                 <div style={{
                                     gridColumn:"1/-1", textAlign:"center",
@@ -617,7 +594,6 @@ export function Projects() {
                         </div>
                     )}
 
-                    {/* Stats footer */}
                     {!loading && projets.length > 0 && (
                         <div style={{
                             marginTop:"48px", textAlign:"center",

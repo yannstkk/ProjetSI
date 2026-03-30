@@ -28,7 +28,6 @@ export function BarreOutils({
             <CardContent className="p-4">
                 <div className="flex items-center gap-3 flex-wrap">
 
-                    {/* Recherche */}
                     <div className="relative flex-1 min-w-48">
                         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <Input
@@ -39,7 +38,6 @@ export function BarreOutils({
                         />
                     </div>
 
-                    {/* Filtre déroulant */}
                     <div style={{ position: "relative" }}>
                         <button
                             onClick={() => setFiltreOuvert(!filtreOuvert)}
@@ -112,7 +110,6 @@ export function BarreOutils({
                         )}
                     </div>
 
-                    {/* Nouvelle US */}
                     <Link
                         to="/dashboard/phase4/form"
                         style={{

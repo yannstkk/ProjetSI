@@ -17,18 +17,10 @@ export function saveActeurs(acteurs) {
 }
 
 
-/**
- * Agrège toutes les sources de notes disponibles dans le sessionStorage :
- *  1. Les fichiers .txt importés en préparation (interview_draft.notesImportees)
- *  2. Les notes structurées saisies en mode live (interview_live)
- *
- * Retourne une chaîne de texte brute utilisable par l'IA.
- * Si aucune source n'est disponible, retourne "".
- */
+
 export function getNotesTexte() {
     const parties = [];
 
-    // ── Source 1 : fichiers .txt importés ────────────────────────────────────
     try {
         const draft = sessionStorage.getItem("interview_draft");
         if (draft) {
@@ -42,10 +34,8 @@ export function getNotesTexte() {
             }
         }
     } catch {
-        // ignore
     }
 
-    // ── Source 2 : notes structurées saisies en live ─────────────────────────
     try {
         const live = sessionStorage.getItem("interview_live");
         if (live) {
@@ -83,21 +73,12 @@ export function getNotesTexte() {
             }
         }
     } catch {
-        // ignore
     }
 
     return parties.join("\n\n---\n\n");
 }
 
-// ─── Appel endpoint dédié ─────────────────────────────────────────────────────
 
-/**
- * Appelle le nouvel endpoint /api/mistral/detecter-acteurs.
- * Retourne une liste d'objets { nom, role, phraseSource }.
- * - nom       : toujours présent (obligatoire côté back)
- * - role      : peut être une chaîne vide si non identifiable
- * - phraseSource : citation extraite des notes
- */
 export async function appelDetectionActeurs(notesTexte) {
     const response = await authFetch("/api/mistral/detecter-acteurs", {
         method: "POST",

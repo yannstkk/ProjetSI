@@ -58,7 +58,6 @@ export function CarteElement({ item, colonneId, onValider, onSupprimer, onEditer
         >
             <div className="flex items-start gap-2 p-3">
 
-                {/* Handle drag */}
                 <button
                     {...attributes}
                     {...listeners}
@@ -67,17 +66,14 @@ export function CarteElement({ item, colonneId, onValider, onSupprimer, onEditer
                     <GripVertical className="w-4 h-4" />
                 </button>
 
-                {/* Contenu */}
                 <div className="flex-1 min-w-0">
 
-                    {/* Badge source */}
                     {item.source && (
                         <span className="inline-block text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 mb-1">
                             {item.source}
                         </span>
                     )}
 
-                    {/* Doublon suspecté */}
                     {item.doublonSuspecte && (
                         <div className="flex items-center gap-1 text-xs text-orange-600 mb-1">
                             <AlertTriangle className="w-3 h-3" />
@@ -85,7 +81,6 @@ export function CarteElement({ item, colonneId, onValider, onSupprimer, onEditer
                         </div>
                     )}
 
-                    {/* Texte ou éditeur */}
                     {editing ? (
                         <textarea
                             autoFocus

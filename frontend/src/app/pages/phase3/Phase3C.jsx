@@ -79,7 +79,6 @@ export function Phase3C() {
     }
     function handleReimporter() { const fresh = importerDepuisPhase1(); update(fresh); setIaMessage(""); setIaError(""); }
 
-   // ── Détection doublons IA ─────────────────────────────────────────────────
 
    async function detecterDoublons() {
        const tousLesElements = Object.entries(classification)
@@ -122,7 +121,6 @@ export function Phase3C() {
                return;
            }
 
-           // Marquer les items suspects
            const idsDoublons = new Set(doublons.flatMap((d) => d.ids));
            const newClass = { ...classification };
 
@@ -180,7 +178,7 @@ export function Phase3C() {
                 )}
 
                 <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                         {Object.keys(COLONNES).map((colonneId) => (
                             <ColonneKanban key={colonneId} colonneId={colonneId} items={classification[colonneId] || []} onValider={handleValider} onSupprimer={handleSupprimer} onEditer={handleEditer} onAjouter={handleAjouter} />
                         ))}

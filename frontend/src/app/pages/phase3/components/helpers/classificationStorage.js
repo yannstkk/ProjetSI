@@ -25,21 +25,12 @@ export const COLONNES = {
         badge: "bg-yellow-100 text-yellow-700",
         dot: "bg-yellow-500",
     },
-    ressentis: {
-        id: "ressentis",
-        label: "Ressentis / Points de douleur",
-        couleur: "border-t-purple-500",
-        bg: "bg-purple-50",
-        badge: "bg-purple-100 text-purple-700",
-        dot: "bg-purple-500",
-    },
 };
 
 const ETAT_INITIAL = {
     besoinsF: [],
     contraintes: [],
     donnees: [],
-    ressentis: [],
 };
 
 export function loadClassification() {
@@ -59,7 +50,6 @@ export function clearClassification() {
     sessionStorage.removeItem(STORAGE_KEY);
 }
 
-// Importe les éléments de interview_live et les pré-classe
 export function importerDepuisPhase1() {
     try {
         const raw = sessionStorage.getItem("interview_live");
@@ -84,7 +74,6 @@ export function importerDepuisPhase1() {
                 ...(live.contraintes || []).map((el) => makeItem(el, "contrainte")),
             ],
             donnees: (live.donnees || []).map((el) => makeItem(el, "donnée")),
-            ressentis: [],
         };
     } catch {
         return ETAT_INITIAL;

@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../../assets/logo.png";
 
-/* ─── Canvas de particules légères ─────────────────────────────────────────── */
 function ParticleCanvas() {
     const ref = useRef(null);
 
@@ -89,7 +88,6 @@ function ParticleCanvas() {
     );
 }
 
-/* ─── Icônes SVG ────────────────────────────────────────────────────────────── */
 function Icon({ d, size = 16, stroke = "currentColor", sw = 2, extra = {} }) {
     return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
@@ -132,7 +130,6 @@ function Spinner() {
     );
 }
 
-/* ─── Champ premium ─────────────────────────────────────────────────────────── */
 function Field({ label, type, value, onChange, placeholder, error, valid, LeftIcon }) {
     const [focused, setFocused] = useState(false);
     const [showPwd, setShowPwd] = useState(false);
@@ -167,7 +164,6 @@ function Field({ label, type, value, onChange, placeholder, error, valid, LeftIc
             </label>
 
             <div style={{ position: "relative" }}>
-                {/* Icône gauche */}
                 <span style={{
                     position: "absolute", left: "14px", top: "50%",
                     transform: "translateY(-50%)", pointerEvents: "none",
@@ -200,7 +196,6 @@ function Field({ label, type, value, onChange, placeholder, error, valid, LeftIc
                     }}
                 />
 
-                {/* Droite : toggle ou icône statut */}
                 <span style={{
                     position: "absolute", right: "12px", top: "50%",
                     transform: "translateY(-50%)",
@@ -237,7 +232,6 @@ function Field({ label, type, value, onChange, placeholder, error, valid, LeftIc
     );
 }
 
-/* ─── Jauge de force du mot de passe ────────────────────────────────────────── */
 function PwdStrength({ password }) {
     if (!password) return null;
 
@@ -290,7 +284,6 @@ function PwdStrength({ password }) {
     );
 }
 
-/* ─── Page principale ───────────────────────────────────────────────────────── */
 export default function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -425,7 +418,6 @@ export default function LoginPage() {
                 fontFamily: "'DM Sans', system-ui, sans-serif",
             }}>
 
-                {/* ── Orbes d'ambiance colorées ── */}
                 <div style={{ position:"absolute", inset:0, overflow:"hidden", pointerEvents:"none" }}>
                     <div style={{
                         position:"absolute", width:"500px", height:"500px",
@@ -447,12 +439,10 @@ export default function LoginPage() {
                     }}/>
                 </div>
 
-                {/* ── Canvas particules ── */}
                 <div style={{ position:"absolute", inset:0, pointerEvents:"none" }}>
                     <ParticleCanvas/>
                 </div>
 
-                {/* ── Grille de fond ── */}
                 <div style={{
                     position:"absolute", inset:0, pointerEvents:"none",
                     backgroundImage:
@@ -463,20 +453,17 @@ export default function LoginPage() {
                     WebkitMaskImage:"radial-gradient(ellipse 75% 75% at 50% 50%, black 30%, transparent 100%)",
                 }}/>
 
-                {/* ── Layout ── */}
                 <div style={{
                     display:"flex", gap:"72px", alignItems:"center",
                     width:"100%", maxWidth:"960px", padding:"0 24px",
                     position:"relative", zIndex:1,
                 }}>
 
-                    {/* ── Colonne gauche : branding ── */}
                     <div style={{
                         flex:1,
                         opacity: ready ? 1 : 0,
                         animation: ready ? "fadeLeft 600ms cubic-bezier(0.34,1.56,0.64,1) 100ms both" : "none",
                     }}>
-                        {/* Logo */}
                         <img
                             src={logo}
                             alt="Analyse Checker"
@@ -489,7 +476,6 @@ export default function LoginPage() {
                             }}
                         />
 
-                        {/* Titre */}
                         <h1 style={{
                             fontSize: "38px", fontWeight: 600, lineHeight: 1.1,
                             letterSpacing: "-0.04em", color: "#0f172a",
@@ -516,7 +502,6 @@ export default function LoginPage() {
                             Structurez, tracez et validez vos exigences métier avec l'aide de l'intelligence artificielle.
                         </p>
 
-                        {/* Feature pills */}
                         <div style={{ display:"flex", flexDirection:"column", gap:"9px" }}>
                             {[
                                 { icon:"✦", label:"Analyse IA des entretiens", delay:"0s", dur:"3.8s" },
@@ -536,7 +521,6 @@ export default function LoginPage() {
                         </div>
                     </div>
 
-                    {/* ── Colonne droite : carte ── */}
                     <div style={{
                         width: "370px", flexShrink:0, position:"relative",
                         opacity: ready ? 1 : 0,
@@ -544,14 +528,12 @@ export default function LoginPage() {
                             ? `fadeUp 550ms cubic-bezier(0.34,1.56,0.64,1) both ${success ? ", successPop 600ms ease" : ""}`
                             : "none",
                     }}>
-                        {/* Halo derrière */}
                         <div style={{
                             position:"absolute", inset:"-16px", borderRadius:"28px",
                             background:"radial-gradient(ellipse at 50% 50%, rgba(99,102,241,0.10) 0%, transparent 70%)",
                             pointerEvents:"none",
                         }}/>
 
-                        {/* Carte */}
                         <div style={{
                             background:"#ffffff",
                             border:"1px solid rgba(99,102,241,0.12)",
@@ -564,7 +546,6 @@ export default function LoginPage() {
                             position:"relative",
                         }}>
 
-                            {/* Bande colorée en haut */}
                             <div style={{
                                 position:"absolute", top:0, left:"32px", right:"32px",
                                 height:"3px", borderRadius:"0 0 4px 4px",
@@ -572,7 +553,6 @@ export default function LoginPage() {
                                 opacity:0.8,
                             }}/>
 
-                            {/* En-tête */}
                             <div style={{ marginBottom:"26px" }}>
                                 <h2 style={{
                                     fontSize:"20px", fontWeight:600, color:"#0f172a",
@@ -585,7 +565,6 @@ export default function LoginPage() {
                                 </p>
                             </div>
 
-                            {/* Formulaire */}
                             <form onSubmit={handleSubmit}>
                                 <Field
                                     label="Identifiant"
@@ -611,7 +590,6 @@ export default function LoginPage() {
 
                                 <PwdStrength password={password}/>
 
-                                {/* Erreur serveur */}
                                 {error && (
                                     <div style={{
                                         padding:"11px 14px", borderRadius:"10px",
@@ -628,7 +606,6 @@ export default function LoginPage() {
                                     </div>
                                 )}
 
-                                {/* Bouton */}
                                 <button
                                     type="submit"
                                     disabled={!canSubmit}
@@ -659,7 +636,6 @@ export default function LoginPage() {
                                 </button>
                             </form>
 
-                            {/* Footer */}
                             <p style={{
                                 marginTop:"20px", textAlign:"center",
                                 fontSize:"11.5px", color:"#cbd5e1",
@@ -670,7 +646,6 @@ export default function LoginPage() {
                     </div>
                 </div>
 
-                {/* Version */}
                 <p style={{
                     position:"fixed", bottom:"16px", left:"50%",
                     transform:"translateX(-50%)",
