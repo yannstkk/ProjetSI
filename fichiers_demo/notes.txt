@@ -1,0 +1,1 @@
+"L'adhérent doit pouvoir emprunter un livre. Le bibliothécaire vérifie la disponibilité. Si le livre est disponible, on enregistre l'emprunt. L'adhérent reçoit une confirmation par mail. Le système doit alerter si l'adhérent a déjà 3 livres."

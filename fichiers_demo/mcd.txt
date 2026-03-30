@@ -1,0 +1,26 @@
+@startuml
+entity "LIVRE" {
+  * id_livre : number
+  --
+  titre : varchar
+  auteur : varchar
+  disponible : boolean
+}
+
+entity "ADHERENT" {
+  * id_adherent : number
+  --
+  nom : varchar
+  email : varchar
+}
+
+entity "EMPRUNT" {
+  * id_emprunt : number
+  --
+  date_debut : date
+  date_retour_prevue : date
+}
+
+ADHERENT "1" -- "0..*" EMPRUNT : Effectue
+LIVRE "1" -- "0..*" EMPRUNT : Est concerné
+@enduml
