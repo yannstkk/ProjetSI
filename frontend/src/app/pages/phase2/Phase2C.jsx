@@ -10,39 +10,32 @@ import { CarteCoherence } from "./components/CarteCoherence";
 import { CarteAlertes } from "./components/CarteAlertes";
 import { MatriceActeursFlux } from "./components/MatriceActeursFlux";
 
-// ─── Logique de cohérence ─────────────────────────────────────────────────────
 
 function calculerCoherence(acteurs2A, mfc2B) {
     const flux = mfc2B?.flux || [];
     const acteursMFC = mfc2B?.acteurs || [];
 
-    // Ensembles de noms normalisés
     const nomsActeurs2A = new Set(acteurs2A.map((a) => a.nom.toLowerCase()));
     const nomsActeursMFC = new Set(acteursMFC.map((a) => a.nom.toLowerCase()));
 
-    // Acteurs cohérents : déclarés en 2A ET présents dans les flux
     const coherents = acteurs2A.filter((a) =>
         nomsActeursMFC.has(a.nom.toLowerCase())
     );
 
-    // Alertes
     const alertes = [];
 
-    // Orphelins : déclarés en 2A mais absents des flux
     acteurs2A
         .filter((a) => !nomsActeursMFC.has(a.nom.toLowerCase()))
         .forEach((a) =>
             alertes.push({ nom: a.nom, type: "orphelin" })
         );
 
-    // Fantômes : dans les flux MFC mais non déclarés en 2A
     acteursMFC
         .filter((a) => !nomsActeurs2A.has(a.nom.toLowerCase()))
         .forEach((a) =>
             alertes.push({ nom: a.nom, type: "fantome" })
         );
 
-    // Sans rôle : déclarés en 2A sans rôle défini
     acteurs2A
         .filter((a) => !a.role?.trim())
         .forEach((a) =>
@@ -52,7 +45,6 @@ function calculerCoherence(acteurs2A, mfc2B) {
     return { coherents, alertes, flux };
 }
 
-// ─── Composant principal ──────────────────────────────────────────────────────
 
 export function Phase2C() {
     const acteurs2A = useMemo(() => loadActeurs(), []);
@@ -81,7 +73,6 @@ export function Phase2C() {
                     </p>
                 </div>
 
-                {/* Stats rapides */}
                 <StatsBarre
                     nbActeurs={acteurs2A.length}
                     nbFlux={flux.length}
@@ -89,16 +80,13 @@ export function Phase2C() {
                     nbCoherents={coherents.length}
                 />
 
-                {/* Deux colonnes : cohérents + alertes */}
                 <div className="grid grid-cols-2 gap-4">
                     <CarteCoherence acteurs={coherents} />
                     <CarteAlertes alertes={alertes} />
                 </div>
 
-                {/* Matrice */}
                 <MatriceActeursFlux acteurs={acteurs2A} flux={flux} />
 
-                {/* Bandeau validation */}
                 {!peutValider && (
                     <div className="flex items-center gap-3 p-4 bg-orange-50 border border-orange-200 rounded-xl text-sm text-orange-800">
                         <span className="font-medium">
@@ -121,7 +109,6 @@ export function Phase2C() {
                     </div>
                 )}
 
-                {/* Navigation */}
                 <div className="flex gap-3">
                     <Link
                         to="/dashboard/phase2/flows"

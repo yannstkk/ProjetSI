@@ -14,7 +14,6 @@ import { LigneUS }        from "./components/LigneUS";
 import { AlertesQualite } from "./components/AlertesQualite";
 
 export function Phase4A() {
-    // L'état React EST la source de vérité — on le charge depuis sessionStorage
     const [backlog, setBacklog]               = useState(loadBacklog);
     const [recherche, setRecherche]           = useState("");
     const [filtrePriorite, setFiltrePriorite] = useState("tous");
@@ -24,27 +23,22 @@ export function Phase4A() {
     const [dbError, setDbError]       = useState("");
     const [dbLoadDone, setDbLoadDone] = useState(false);
 
-    // Flag pour ne charger la BDD qu'une seule fois au montage initial
     const dbLoadedRef = useRef(false);
 
     const location = useLocation();
 
     const taiga = useTaiga({ onBacklogChange: setBacklog });
 
-    // ── Persistance sessionStorage : l'état React → sessionStorage ────────────
     useEffect(() => {
         saveBacklog(backlog);
     }, [backlog]);
 
-    // ── Rechargement depuis sessionStorage quand on revient sur cette page ────
-    // Quand Phase4B sauvegarde dans sessionStorage et navigue ici,
-    // on resynchronise l'état React avec le sessionStorage à jour
+
     useEffect(() => {
         const fresh = loadBacklog();
         setBacklog(fresh);
-    }, [location.key]); // se déclenche à chaque navigation vers cette page
+    }, [location.key]);
 
-    // ── Chargement BDD une seule fois au premier montage ─────────────────────
     useEffect(() => {
         if (dbLoadedRef.current) return;
         dbLoadedRef.current = true;
@@ -63,23 +57,18 @@ export function Phase4A() {
                 }
 
                 setBacklog((prev) => {
-                    // Index du backlog local par id
                     const localById = Object.fromEntries(prev.map((us) => [us.id, us]));
 
-                    // Pour chaque US BDD : on l'ajoute seulement si absente localement
-                    // Si elle existe déjà localement → on garde la version locale (plus fraîche)
-                    // et on enrichit juste avec dbId si manquant
+
                     usDb.forEach((usFromDb) => {
                         if (localById[usFromDb.id]) {
-                            // US existe localement → enrichir avec dbId uniquement
                             localById[usFromDb.id] = {
-                                ...localById[usFromDb.id],          // ← version locale garde la priorité
-                                dbId:     usFromDb.dbId,            // ← on récupère le dbId BDD
+                                ...localById[usFromDb.id],
+                                dbId:     usFromDb.dbId,
                                 taigaRef: localById[usFromDb.id].taigaRef || usFromDb.taigaRef,
                                 taigaId:  localById[usFromDb.id].taigaId  || usFromDb.taigaId,
                             };
                         } else {
-                            // US absente localement → on l'ajoute depuis la BDD
                             localById[usFromDb.id] = usFromDb;
                         }
                     });
@@ -94,16 +83,14 @@ export function Phase4A() {
                 setDbLoadDone(true);
             })
             .finally(() => setDbLoading(false));
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
 
-    // ── Stocker une US en BDD ─────────────────────────────────────────────────
-    // On utilise directement le state React courant — c'est la source de vérité
+
     async function handleStockerBdd(us) {
         const projet = getProjetCourant();
         if (!projet?.id) throw new Error("Aucun projet sélectionné.");
 
-        // Prendre la version courante depuis le state React
-        // (qui est synchronisé avec sessionStorage via location.key)
+
         const usCourante = backlog.find((u) => u.id === us.id) || us;
 
         const usUpdated = await saveUSToDb(usCourante, projet.id);
@@ -113,7 +100,6 @@ export function Phase4A() {
         );
     }
 
-    // ── Rechargement manuel depuis BDD ────────────────────────────────────────
     async function handleRechargerBdd() {
         const projet = getProjetCourant();
         if (!projet?.id) return;
@@ -123,7 +109,6 @@ export function Phase4A() {
 
         try {
             const usDb = await loadUSFromDb(projet.id);
-            // Rechargement manuel : la BDD remplace tout
             setBacklog(usDb);
         } catch (err) {
             setDbError("Erreur rechargement BDD : " + err.message);
@@ -132,7 +117,6 @@ export function Phase4A() {
         }
     }
 
-    // ── Suppression ───────────────────────────────────────────────────────────
     async function handleDelete(id) {
         const us = backlog.find((u) => u.id === id);
 
@@ -144,7 +128,6 @@ export function Phase4A() {
         setConfirmDelete(null);
     }
 
-    // ── Filtrage ──────────────────────────────────────────────────────────────
     const backlogFiltre = useMemo(() => backlog.filter((us) => {
         const q = recherche.toLowerCase();
         const matchQ = !q
@@ -155,7 +138,6 @@ export function Phase4A() {
         return matchQ && matchP;
     }), [backlog, recherche, filtrePriorite]);
 
-    // ── Alertes qualité ───────────────────────────────────────────────────────
     const alertes = useMemo(() => {
         const liste = [];
         backlog.forEach((us) => {

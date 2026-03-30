@@ -24,7 +24,6 @@ export function ColonneKanban({ colonneId, items, onValider, onSupprimer, onEdit
     return (
         <div className={`flex flex-col rounded-xl border-t-4 ${config.couleur} bg-white shadow-sm min-h-[500px]`}>
 
-            {/* En-tête colonne */}
             <div className="px-4 pt-4 pb-3 border-b border-gray-100">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -47,7 +46,6 @@ export function ColonneKanban({ colonneId, items, onValider, onSupprimer, onEdit
                 </div>
             </div>
 
-            {/* Zone droppable + cartes */}
             <div
                 ref={setNodeRef}
                 className={`flex-1 p-3 space-y-2 transition-colors rounded-b-xl ${
@@ -80,7 +78,6 @@ export function ColonneKanban({ colonneId, items, onValider, onSupprimer, onEdit
                     ))}
                 </SortableContext>
 
-                {/* Ajout rapide */}
                 {showAdd ? (
                     <div className="pt-1">
                         <textarea

@@ -9,17 +9,14 @@ export function FluxCard({ flux, index }) {
             className="group border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 hover:shadow-md transition-all duration-200"
             style={{ animationDelay: `${index * 60}ms` }}
         >
-            {/* En-tête toujours visible */}
             <button
                 onClick={() => setOpen((o) => !o)}
                 className="w-full flex items-center gap-3 p-4 text-left bg-white hover:bg-gray-50 transition-colors"
             >
-                {/* Numéro */}
                 <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">
                     {index + 1}
                 </span>
 
-                {/* Émetteur → Récepteur */}
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                     <span className="text-sm font-semibold text-gray-800 truncate">
                         {flux.emetteur || "?"}

@@ -3,40 +3,32 @@ import { ProtectedRoute } from "./app/components/ProtectedRoute";
 import { Layout } from "./app/components/Layout";
 import { Cockpit } from "./app/pages/Cockpit";
 
-// Auth
 import Login from "./app/pages/auth/LoginPage";
 import { Projects } from "./app/pages/Projects";
 import { NewProject } from "./app/pages/NewProject";
 
-// Phase 1
 import InterviewsList from "./app/pages/phase1/InterviewsList";
 import NewInterview from "./app/pages/phase1/NewInterview";
 import InterviewDetail from "./app/pages/phase1/InterviewDetail";
 import { Phase1B } from "./app/pages/phase1/Phase1B";
 
-// Phase 2
 import { Phase2A } from "./app/pages/phase2/Phase2A";
 import { Phase2B } from "./app/pages/phase2/Phase2B";
 import { Phase2C } from "./app/pages/phase2/Phase2C";
 
-// Phase 3
 import { Phase3C } from "./app/pages/phase3/Phase3C";
 
-// Phase 4
 import { Phase4A } from "./app/pages/phase4/Phase4A";
 import { Phase4B } from "./app/pages/phase4/Phase4B";
 import { Phase4C } from "./app/pages/phase4/Phase4C";
 
-// Phase 5
 import { Phase5A } from "./app/pages/phase5/Phase5A";
 import { Phase5B } from "./app/pages/phase5/Phase5B";
 
-// Phase 6
 import { Phase6A } from "./app/pages/phase6/Phase6A";
 import { Phase6B } from "./app/pages/phase6/Phase6B";
 import { Phase6C } from "./app/pages/phase6/Phase6C";
 
-// Phase 7
 import { Phase7A } from "./app/pages/phase7/Phase7A";
 import { Phase7B } from "./app/pages/phase7/Phase7B";
 import { Phase7C } from "./app/pages/phase7/Phase7C";

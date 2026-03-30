@@ -8,7 +8,6 @@ export default function InterviewDetail() {
         <div className="p-6">
             <div className="max-w-6xl mx-auto space-y-6">
 
-                {/* Header */}
                 <div className="flex items-start justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900">
@@ -31,7 +30,6 @@ export default function InterviewDetail() {
                     </div>
                 </div>
 
-                {/* Informations générales */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Informations générales</CardTitle>
@@ -76,7 +74,6 @@ export default function InterviewDetail() {
                     </CardContent>
                 </Card>
 
-                {/* Échanges */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Échanges et notes</CardTitle>
@@ -91,7 +88,6 @@ export default function InterviewDetail() {
                     </CardContent>
                 </Card>
 
-                {/* Actions */}
                 <div className="flex gap-3">
 
                     <Link

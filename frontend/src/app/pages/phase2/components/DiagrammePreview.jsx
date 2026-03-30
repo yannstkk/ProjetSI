@@ -1,5 +1,6 @@
 import { useRef } from "react";
-import { FileText, AlertTriangle, Sparkles } from "lucide-react";
+import { FileText, AlertTriangle } from "lucide-react";
+import { BoutonIA } from "../../../components/BoutonIA";
 
 export function DiagrammePreview({
     fileName,
@@ -25,7 +26,6 @@ export function DiagrammePreview({
     return (
         <div className="space-y-4">
 
-            {/* Fichier importé */}
             <div className="flex items-center gap-3 px-4 py-3 bg-green-50 border border-green-200 rounded-xl">
                 <FileText className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <span className="text-sm font-medium text-green-800 flex-1 truncate">
@@ -46,7 +46,6 @@ export function DiagrammePreview({
                 />
             </div>
 
-            {/* Aperçu SVG */}
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                 <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">
@@ -84,26 +83,15 @@ export function DiagrammePreview({
                 </div>
             </div>
 
-            {/* Bouton analyse IA */}
-            <button
+            <BoutonIA
                 onClick={onAnalyserIA}
-                disabled={iaLoading}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:bg-purple-300 transition-colors font-medium"
+                loading={iaLoading}
+                loadingText="Analyse en cours..."
+                className="w-full justify-center"
             >
-                {iaLoading ? (
-                    <>
-                        <span className="animate-spin">⏳</span>
-                        Analyse en cours...
-                    </>
-                ) : (
-                    <>
-                        <Sparkles className="w-4 h-4" />
-                        Analyser les flux avec l'IA
-                    </>
-                )}
-            </button>
+                Analyser les flux avec l'IA
+            </BoutonIA>
 
-            {/* Erreur IA */}
             {iaError && (
                 <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
                     <AlertTriangle className="w-4 h-4 flex-shrink-0" />

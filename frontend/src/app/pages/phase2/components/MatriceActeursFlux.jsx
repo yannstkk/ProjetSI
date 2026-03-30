@@ -17,7 +17,6 @@ export function MatriceActeursFlux({ acteurs, flux }) {
         );
     }
 
-    // Vérifie si un acteur participe à un flux (émetteur ou récepteur)
     function participe(acteurNom, flux) {
         const nom = acteurNom.toLowerCase();
         return (
@@ -57,14 +56,12 @@ export function MatriceActeursFlux({ acteurs, flux }) {
                                         </div>
                                     </th>
                                 ))}
-                                {/* Colonne total */}
                                 <th className="px-3 py-2 bg-gray-50 border border-gray-200 font-medium text-gray-500 text-center">
                                     Total
                                 </th>
                             </tr>
                         </thead>
 
-                        {/* Corps : une ligne par acteur */}
                         <tbody>
                             {acteurs.map((acteur) => {
                                 const participations = flux.filter((f) =>
@@ -77,7 +74,6 @@ export function MatriceActeursFlux({ acteurs, flux }) {
                                         key={acteur.id || acteur.nom}
                                         className="hover:bg-gray-50 transition-colors"
                                     >
-                                        {/* Nom acteur */}
                                         <td className="px-3 py-2 border border-gray-200 font-medium text-gray-900">
                                             <div>{acteur.nom}</div>
                                             {acteur.role && (
@@ -87,7 +83,6 @@ export function MatriceActeursFlux({ acteurs, flux }) {
                                             )}
                                         </td>
 
-                                        {/* Cellules flux */}
                                         {flux.map((f, i) => {
                                             const ok = participe(acteur.nom, f);
                                             return (
@@ -104,7 +99,6 @@ export function MatriceActeursFlux({ acteurs, flux }) {
                                             );
                                         })}
 
-                                        {/* Total */}
                                         <td className="border border-gray-200 text-center py-2">
                                             <span className={`text-sm font-semibold ${
                                                 total === 0
@@ -119,7 +113,6 @@ export function MatriceActeursFlux({ acteurs, flux }) {
                             })}
                         </tbody>
 
-                        {/* Pied : total par flux */}
                         <tfoot>
                             <tr className="bg-gray-50">
                                 <td className="px-3 py-2 border border-gray-200 text-xs font-medium text-gray-500">

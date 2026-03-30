@@ -28,7 +28,6 @@ export function useInterviewForm() {
     const [savedMessage, setSavedMessage] = useState("");
     const [notesError, setNotesError]     = useState("");
 
-    // Exposé pour permettre un rechargement complet depuis l'extérieur (ex: import BDD)
     function setForm(newForm) {
         setFormState({ ...initialState, ...newForm });
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ ...initialState, ...newForm }));

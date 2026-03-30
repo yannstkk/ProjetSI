@@ -22,7 +22,6 @@ export function ActeurModal({ acteur, onSave, onDelete, onClose }) {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
             <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
 
-                {/* Header */}
                 <div className="flex items-center justify-between mb-5">
                     <h3 className="font-semibold text-lg text-gray-900">
                         {isNew ? "Ajouter un acteur" : "Modifier l'acteur"}
@@ -32,7 +31,6 @@ export function ActeurModal({ acteur, onSave, onDelete, onClose }) {
                     </button>
                 </div>
 
-                {/* Badge source */}
                 {!isNew && (
                     <div className="mb-4">
                         <span className="text-xs text-gray-500">Source : </span>
@@ -48,7 +46,6 @@ export function ActeurModal({ acteur, onSave, onDelete, onClose }) {
                     </div>
                 )}
 
-                {/* Formulaire */}
                 <div className="space-y-4">
 
                     <div>
@@ -103,7 +100,6 @@ export function ActeurModal({ acteur, onSave, onDelete, onClose }) {
                         </div>
                     </div>
 
-                    {/* Phrase source IA */}
                     {acteur.phraseSource && (
                         <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
                             <p className="text-xs text-purple-600 font-medium mb-1">
@@ -116,7 +112,6 @@ export function ActeurModal({ acteur, onSave, onDelete, onClose }) {
                     )}
                 </div>
 
-                {/* Actions */}
                 <div className="mt-6 flex gap-3">
 
                     {!isNew && !confirmDelete && (
