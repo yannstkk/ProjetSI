@@ -64,7 +64,6 @@ export function BarreEnregistrement({
         <Card className={`mb-4 border-l-4 ${borderColor}`}>
             <CardContent className="p-4 space-y-4">
 
-                {/* Ligne principale */}
                 <div className="flex items-center justify-between">
 
                     <div className="flex items-center gap-3">
@@ -80,7 +79,6 @@ export function BarreEnregistrement({
                         </div>
                     </div>
 
-                    {/* Boutons selon statut */}
                     <div className="flex gap-2">
 
                         {statut === "idle" && (
@@ -159,7 +157,6 @@ export function BarreEnregistrement({
                     </div>
                 </div>
 
-                {/* Notification limite atteinte */}
                 {limitAtteinte && (
                     <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-300 rounded-lg text-yellow-800 text-sm">
                         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
@@ -167,7 +164,6 @@ export function BarreEnregistrement({
                     </div>
                 )}
 
-                {/* Lecteur pendant pause */}
                 {statut === "paused" && ecouteEnPause && audioPauseUrl && (
                     <div className="space-y-2">
                         <p className="text-xs text-gray-500">
@@ -201,7 +197,6 @@ export function BarreEnregistrement({
                     </div>
                 )}
 
-                {/* Lecteur final après stop */}
                 {statut === "stopped" && audioUrl && (
                     <div className="space-y-3">
                         <audio

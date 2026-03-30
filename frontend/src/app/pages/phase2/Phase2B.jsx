@@ -32,13 +32,11 @@ export function Phase2B() {
     const [dbError,      setDbError]      = useState("");
     const [dbSuccess,    setDbSuccess]    = useState(false);
 
-    // Affichage du bloc d'import (toggle)
     const [showUpload,   setShowUpload]   = useState(false);
 
     const hasData    = flux.length > 0 || acteurs.length > 0;
     const hasDiagram = !!plantUmlCode;
 
-    // ── Traitement fichier ────────────────────────────────────────────────────
 
     function handleFileProcessed(code, name) {
         const url = buildPlantUMLUrl(code);
@@ -53,7 +51,6 @@ export function Phase2B() {
         saveMFC({ code, diagramUrl: url, flux: [], acteurs: [], fileName: name, mfcDbId });
     }
 
-    // ── Analyse IA ────────────────────────────────────────────────────────────
 
     async function lancerAnalyseIA() {
         if (!plantUmlCode.trim()) return;
@@ -87,7 +84,6 @@ export function Phase2B() {
         }
     }
 
-    // ── Sauvegarde BDD ────────────────────────────────────────────────────────
 
     async function handleSauvegarderBdd() {
         if (!plantUmlCode.trim() || flux.length === 0) {
@@ -128,7 +124,6 @@ export function Phase2B() {
         }
     }
 
-    // ── Reset ─────────────────────────────────────────────────────────────────
 
     function handleReset() {
         setPlantUmlCode(""); setDiagramUrl(""); setFlux([]); setActeurs([]);
@@ -137,13 +132,11 @@ export function Phase2B() {
         clearMFC();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
 
     return (
         <div className="p-6">
             <div className="max-w-7xl mx-auto space-y-6">
 
-                {/* Titre */}
                 <div className="flex items-start justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900">Flux MFC</h1>
@@ -157,7 +150,6 @@ export function Phase2B() {
                     )}
                 </div>
 
-                {/* Feedbacks BDD */}
                 {dbSuccess && (
                     <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm">
                         <CheckCircle className="w-4 h-4 flex-shrink-0" />
@@ -170,16 +162,13 @@ export function Phase2B() {
                     </div>
                 )}
 
-                {/* ── CAS 1 : rien du tout → zone upload principale ── */}
                 {!hasDiagram && !hasData && (
                     <ZoneUpload onFileProcessed={handleFileProcessed} />
                 )}
 
-                {/* ── CAS 2 : données BDD sans diagramme ── */}
                 {!hasDiagram && hasData && (
                     <div className="space-y-4">
 
-                        {/* Bandeau info + bouton importer */}
                         <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
                             <Database className="w-5 h-5 text-blue-600 flex-shrink-0" />
                             <div className="flex-1">
@@ -200,17 +189,14 @@ export function Phase2B() {
                             </button>
                         </div>
 
-                        {/* Zone upload repliable */}
                         {showUpload && (
                             <ZoneUpload onFileProcessed={handleFileProcessed} compact />
                         )}
 
-                        {/* Résultats directement visibles */}
                         <PanneauResultats acteurs={acteurs} flux={flux} />
                     </div>
                 )}
 
-                {/* ── CAS 3 : diagramme présent ── */}
                 {hasDiagram && (
                     <div className="grid grid-cols-12 gap-6">
                         <div className="col-span-5 space-y-4">
@@ -225,7 +211,6 @@ export function Phase2B() {
                                 onDiagramError={() => setDiagramError(true)}
                             />
 
-                            {/* Bouton Sauvegarder BDD */}
                             <button
                                 onClick={handleSauvegarderBdd}
                                 disabled={dbLoading || flux.length === 0}
@@ -251,7 +236,6 @@ export function Phase2B() {
                     </div>
                 )}
 
-                {/* Navigation */}
                 <div className="flex gap-3 pt-2">
                     <Link to="/dashboard/phase2/actors"
                         className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm">

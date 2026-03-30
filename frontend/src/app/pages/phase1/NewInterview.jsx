@@ -52,21 +52,18 @@ export default function NewInterview() {
         e.target.value = "";
     }
 
-    // ── Retour → /dashboard/phase1/interviews ────────────────────────────────
 
     function handleConfirmRetour() {
         clearDraft();
         navigate("/dashboard/phase1/interviews");
     }
 
-    // ── Créer l'entretien → mode live ────────────────────────────────────────
 
     function handleCreerEntretien() {
         saveDraft();
         navigate("/dashboard/phase1/interview");
     }
 
-    // ── Importer depuis la base ───────────────────────────────────────────────
 
     async function handleConfirmImport() {
         setShowConfirmImport(false);
@@ -94,7 +91,6 @@ export default function NewInterview() {
             await loadNotesStructureesIntoSession(interview.numeroInterview);
             await loadQuestionsIntoSession(interview.numeroInterview);
 
-            // Recharger le formulaire depuis le sessionStorage mis à jour
             const updatedDraft = JSON.parse(
                 sessionStorage.getItem("interview_draft") || "{}"
             );
@@ -117,11 +113,9 @@ export default function NewInterview() {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
 
     return (
         <>
-            {/* Modale confirmation retour */}
             {showConfirmRetour && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
                     <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full mx-4">
@@ -150,7 +144,6 @@ export default function NewInterview() {
                 </div>
             )}
 
-            {/* Modale confirmation import */}
             {showConfirmImport && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
                     <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full mx-4">
@@ -183,7 +176,6 @@ export default function NewInterview() {
             <div className="p-6">
                 <div className="max-w-5xl mx-auto space-y-6">
 
-                    {/* Titre + bouton Importer */}
                     <div className="flex items-start justify-between">
                         <div>
                             <h1 className="text-2xl font-semibold text-gray-900">
@@ -204,7 +196,6 @@ export default function NewInterview() {
                         </button>
                     </div>
 
-                    {/* Messages */}
                     {savedMessage && (
                         <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-300 rounded-lg text-green-700 text-sm">
                             <CheckCircle className="w-4 h-4" />
@@ -223,7 +214,6 @@ export default function NewInterview() {
                         </div>
                     )}
 
-                    {/* Informations entretien */}
                     <Card>
                         <CardHeader>
                             <CardTitle>Informations entretien</CardTitle>
@@ -266,7 +256,6 @@ export default function NewInterview() {
                                 </div>
                             </div>
 
-                            {/* Parties prenantes */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     <Users className="w-4 h-4 inline mr-1" />
@@ -314,7 +303,6 @@ export default function NewInterview() {
                                 </div>
                             </div>
 
-                            {/* Objectifs */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Objectifs de l'entretien
@@ -330,7 +318,6 @@ export default function NewInterview() {
                         </CardContent>
                     </Card>
 
-                    {/* Import notes TXT */}
                     <Card>
                         <CardHeader>
                             <CardTitle>Importer des notes existantes (optionnel)</CardTitle>
@@ -403,7 +390,6 @@ export default function NewInterview() {
                         </CardContent>
                     </Card>
 
-                    {/* Actions bas de page */}
                     <div className="flex gap-3">
                         <button
                             onClick={() => setShowConfirmRetour(true)}

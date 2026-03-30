@@ -31,14 +31,12 @@ export function useEnregistrement() {
 
     const [limitAtteinte, setLimitAtteinte] = useState(false);
 
-    // Nouvel état : est-ce qu'on est en train d'écouter pendant une pause
     const [ecouteEnPause, setEcouteEnPause] = useState(false);
 
     const mediaRecorderRef = useRef(null);
     const chunksRef = useRef([]);
     const intervalRef = useRef(null);
     const tempsRef = useRef(0);
-    // Audio partiel pour écoute pendant pause
     const audioPauseUrlRef = useRef(null);
 
     useEffect(() => {

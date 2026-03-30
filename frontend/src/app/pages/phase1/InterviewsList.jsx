@@ -32,7 +32,6 @@ export default function InterviewsList() {
                     </Link>
                 </div>
 
-                {/* Etat vide */}
                 <div className="grid grid-cols-2 gap-6">
                     <Card className="col-span-2 border-2 border-dashed border-gray-300">
                         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
