@@ -558,7 +558,7 @@ export default function LoginPage() {
                                     fontSize:"20px", fontWeight:600, color:"#0f172a",
                                     letterSpacing:"-0.03em", marginBottom:"5px",
                                 }}>
-                                    Bon retour \uD83D\uDC4B
+                                    Bon retour
                                 </h2>
                                 <p style={{ fontSize:"13.5px", color:"#94a3b8", fontWeight:400 }}>
                                     Connectez-vous à votre espace
