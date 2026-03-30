@@ -7,7 +7,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bpmn")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class BpmnSaveController {
 
     @PostMapping("/save")
@@ -20,10 +20,10 @@ public class BpmnSaveController {
         String contenu = contenuObj != null ? contenuObj.toString() : null;
 
         if (titre == null || titre.isBlank() || contenu == null || contenu.isBlank()) {
-            return ResponseEntity.badRequest().body("DonnÃ©es invalides");
+            return ResponseEntity.badRequest().body("Données invalides");
         }
 
-        System.out.println("BPMN sauvegardÃ© : " + titre);
+        System.out.println("BPMN sauvegardé : " + titre);
 
         return ResponseEntity.ok(Map.of("idBpmn", 1));
     }
