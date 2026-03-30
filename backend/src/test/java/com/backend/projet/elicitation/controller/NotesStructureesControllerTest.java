@@ -2,10 +2,10 @@ package com.backend.projet.elicitation;
 
 import com.backend.projet.auth.security.JwtUtil;
 import com.backend.projet.config.JwtConfig;
-import com.backend.projet.elicitation.controller.QuestionController;
-import com.backend.projet.elicitation.dto.request.QuestionRequest;
-import com.backend.projet.elicitation.dto.response.QuestionResponse;
-import com.backend.projet.elicitation.service.QuestionService;
+import com.backend.projet.elicitation.controller.NotesStructureesController;
+import com.backend.projet.elicitation.dto.request.NotesStructureesRequest;
+import com.backend.projet.elicitation.dto.response.NotesStructureesResponse;
+import com.backend.projet.elicitation.service.NotesStructureesService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
@@ -25,9 +25,9 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(QuestionController.class)
+@WebMvcTest(NotesStructureesController.class)
 @WithMockUser
-public class QuestionControllerTest {
+public class NotesStructureesControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -36,7 +36,7 @@ public class QuestionControllerTest {
             .registerModule(new JavaTimeModule());
 
     @MockitoBean
-    private QuestionService questionService;
+    private NotesStructureesService notesStructureesService;
 
     @MockitoBean
     private JwtUtil jwtUtil;
@@ -46,62 +46,67 @@ public class QuestionControllerTest {
 
     @Test
     public void testGetByInterview() throws Exception {
-        List<QuestionResponse> questions = List.of(
-                new QuestionResponse(1L, 1L, "Quels sont vos besoins ?"),
-                new QuestionResponse(2L, 1L, "Quels sont vos contraintes ?")
+        List<NotesStructureesResponse> notes = List.of(
+                new NotesStructureesResponse(1L, 1L, "BESOIN", "Le client veut X"),
+                new NotesStructureesResponse(2L, 1L, "CONTRAINTE", "Délai serré")
         );
 
-        when(questionService.getByInterview(1L)).thenReturn(questions);
+        when(notesStructureesService.getByInterview(1L)).thenReturn(notes);
 
-        mockMvc.perform(get("/api/questions/interview/1"))
+        mockMvc.perform(get("/api/notes-structurees/interview/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].libelle").value("Quels sont vos besoins ?"))
-                .andExpect(jsonPath("$[0].numeroInterview").value(1))
-                .andExpect(jsonPath("$[1].libelle").value("Quels sont vos contraintes ?"));
+                .andExpect(jsonPath("$[0].categorie").value("BESOIN"))
+                .andExpect(jsonPath("$[0].contenu").value("Le client veut X"))
+                .andExpect(jsonPath("$[1].categorie").value("CONTRAINTE"))
+                .andExpect(jsonPath("$[1].contenu").value("Délai serré"));
     }
 
     @Test
     public void testGetByInterview_Empty() throws Exception {
-        when(questionService.getByInterview(99L)).thenReturn(List.of());
+        when(notesStructureesService.getByInterview(99L)).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/questions/interview/99"))
+        mockMvc.perform(get("/api/notes-structurees/interview/99"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test
     public void testCreer() throws Exception {
-        QuestionRequest request = new QuestionRequest();
+        NotesStructureesRequest request = new NotesStructureesRequest();
         request.setNumeroInterview(1L);
-        request.setLibelle("Quels sont vos besoins ?");
+        request.setCategorie("BESOIN");
+        request.setContenu("Le client veut X");
 
-        QuestionResponse response = new QuestionResponse(
-                1L, 1L, "Quels sont vos besoins ?"
+        NotesStructureesResponse response = new NotesStructureesResponse(
+                1L, 1L, "BESOIN", "Le client veut X"
         );
 
-        when(questionService.creer(any(QuestionRequest.class))).thenReturn(response);
+        when(notesStructureesService.creer(any(NotesStructureesRequest.class)))
+                .thenReturn(response);
 
-        mockMvc.perform(post("/api/questions")
+        mockMvc.perform(post("/api/notes-structurees")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.numeroQuestion").value(1))
+                .andExpect(jsonPath("$.idNotesStructurees").value(1))
                 .andExpect(jsonPath("$.numeroInterview").value(1))
-                .andExpect(jsonPath("$.libelle").value("Quels sont vos besoins ?"));
+                .andExpect(jsonPath("$.categorie").value("BESOIN"))
+                .andExpect(jsonPath("$.contenu").value("Le client veut X"));
     }
 
     @Test
     public void testCreer_BadRequest() throws Exception {
-        QuestionRequest request = new QuestionRequest();
+        NotesStructureesRequest request = new NotesStructureesRequest();
         request.setNumeroInterview(99L);
-        request.setLibelle("Quels sont vos besoins ?");
+        request.setCategorie("BESOIN");
+        request.setContenu("Le client veut X");
 
-        when(questionService.creer(any(QuestionRequest.class)))
+        when(notesStructureesService.creer(any(NotesStructureesRequest.class)))
                 .thenThrow(new RuntimeException("Interview non trouvée : 99"));
 
-        mockMvc.perform(post("/api/questions")
+        mockMvc.perform(post("/api/notes-structurees")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -110,18 +115,18 @@ public class QuestionControllerTest {
 
     @Test
     public void testDeleteByInterview() throws Exception {
-        doNothing().when(questionService).deleteByInterview(1L);
+        doNothing().when(notesStructureesService).deleteByInterview(1L);
 
-        mockMvc.perform(delete("/api/questions/interview/1")
+        mockMvc.perform(delete("/api/notes-structurees/interview/1")
                         .with(csrf()))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     public void testDeleteByInterview_Empty() throws Exception {
-        doNothing().when(questionService).deleteByInterview(99L);
+        doNothing().when(notesStructureesService).deleteByInterview(99L);
 
-        mockMvc.perform(delete("/api/questions/interview/99")
+        mockMvc.perform(delete("/api/notes-structurees/interview/99")
                         .with(csrf()))
                 .andExpect(status().isNoContent());
     }

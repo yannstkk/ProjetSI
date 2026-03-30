@@ -1,8 +1,7 @@
-package com.backend.projet.modelisation;
+package com.backend.projet.modelisation.controller;
 
 import com.backend.projet.auth.security.JwtUtil;
 import com.backend.projet.config.JwtConfig;
-import com.backend.projet.modelisation.controller.ActeurController;
 import com.backend.projet.modelisation.dto.request.ActeurRequest;
 import com.backend.projet.modelisation.dto.response.ActeurResponse;
 import com.backend.projet.modelisation.service.ActeurService;
