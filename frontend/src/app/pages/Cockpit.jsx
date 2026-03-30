@@ -16,7 +16,7 @@ import {
     TrendingUp,
     ChevronRight,
 } from "lucide-react";
-
+import { loadMCD } from "./phase7/helpers/mcdStorage";
 import { getProjetCourant } from "../../services/projetCourant";
 import { interviewExistsInDb } from "../../services/interviewService";
 import { loadBacklog } from "./phase4/components/usStorage";
@@ -65,6 +65,7 @@ function computePhaseProgress() {
     const acteurs = loadActeurs();
     const mfc = loadMFC();
     const bpmn = loadBpmn();
+    const mcd = loadMCD();
     const hasInterview = interviewExistsInDb();
 
     return [
@@ -119,8 +120,8 @@ function computePhaseProgress() {
         {
             id: 7, name: "Données / MCD", icon: Database,
             path: "/dashboard/phase7/import",
-            progress: 0,
-            items: 0, unit: "entité",
+            progress: mcd?.code ? 60 : 0,
+            items: mcd?.code ? 1 : 0, unit: "MCD",
             color: "bg-rose-500",
             accent: "text-rose-600", bg: "bg-rose-50", border: "border-rose-200",
         },
