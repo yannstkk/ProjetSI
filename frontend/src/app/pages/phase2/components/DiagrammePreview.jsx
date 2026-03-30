@@ -1,5 +1,6 @@
 import { useRef } from "react";
-import { FileText, AlertTriangle, Sparkles } from "lucide-react";
+import { FileText, AlertTriangle } from "lucide-react";
+import { BoutonIA } from "../../../components/BoutonIA";
 
 export function DiagrammePreview({
     fileName,
@@ -85,23 +86,14 @@ export function DiagrammePreview({
             </div>
 
             {/* Bouton analyse IA */}
-            <button
+            <BoutonIA
                 onClick={onAnalyserIA}
-                disabled={iaLoading}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:bg-purple-300 transition-colors font-medium"
+                loading={iaLoading}
+                loadingText="Analyse en cours..."
+                className="w-full justify-center"
             >
-                {iaLoading ? (
-                    <>
-                        <span className="animate-spin">⏳</span>
-                        Analyse en cours...
-                    </>
-                ) : (
-                    <>
-                        <Sparkles className="w-4 h-4" />
-                        Analyser les flux avec l'IA
-                    </>
-                )}
-            </button>
+                Analyser les flux avec l'IA
+            </BoutonIA>
 
             {/* Erreur IA */}
             {iaError && (
