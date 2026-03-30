@@ -3,6 +3,7 @@ package com.backend.projet.modelisation.service;
 import com.backend.projet.elicitation.entity.UserStory;
 import com.backend.projet.elicitation.repository.UserStoryRepository;
 import com.backend.projet.modelisation.dto.request.ExigenceRequest;
+import com.backend.projet.modelisation.dto.response.ExigenceResponse;
 import com.backend.projet.modelisation.entity.ExigenceFonctionnelle;
 import com.backend.projet.modelisation.repository.ExigenceFonctionnelleRepository;
 import com.backend.projet.projet.entity.Projet;
@@ -26,6 +27,7 @@ public class ExigenceService {
 
     @Autowired
     private UserStoryRepository userStoryRepository;
+
 
     @Transactional
     public void sauvegarderExigences(Long projetId, List<ExigenceRequest> requests) {

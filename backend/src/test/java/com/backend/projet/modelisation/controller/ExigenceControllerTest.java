@@ -77,6 +77,7 @@ public class ExigenceControllerTest {
         when(userStoryRepository.findByProjetIdProjet(41L)).thenReturn(List.of(us));
 
         ExigenceController.ExigencesWrapper wrapper = new ExigenceController.ExigencesWrapper();
+        Long id = 10L;
         wrapper.setExigences(List.of(new ExigenceResponse("EF-01", "Libelle", "Desc", List.of("US-01"))));
 
         when(mistralService.executerAnalyse(anyString(), anyString(), any())).thenReturn(wrapper);

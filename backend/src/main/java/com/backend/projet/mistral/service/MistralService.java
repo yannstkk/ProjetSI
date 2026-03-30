@@ -4,7 +4,7 @@ import com.backend.projet.elicitation.dto.response.AnalysisResponse;
 import com.backend.projet.mistral.dto.BacklogAnalyseResponse;
 import com.backend.projet.mistral.enums.Prompt;
 import com.backend.projet.mistral.exceptions.MistralApiException;
-import com.backend.projet.modelisation.dto.FluxResponse;
+import com.backend.projet.modelisation.dto.response.FluxResponse;
 import com.backend.projet.modelisation.dto.response.BpmnCoherenceIaResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;

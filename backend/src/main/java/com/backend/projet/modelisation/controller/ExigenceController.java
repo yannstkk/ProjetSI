@@ -80,8 +80,12 @@ public class ExigenceController {
      * Classe interne pour mapper le JSON de Mistral { "exigences": [...] }
      */
     public static class ExigencesWrapper {
-        private List<ExigenceResponse> exigences;
-        public List<ExigenceResponse> getExigences() { return exigences; }
+        private List<ExigenceResponse> exigences; // <--- Ce nom doit correspondre à la clé JSON
+
+        // Ajoute une initialisation par défaut pour éviter le NullPointerException
+        public List<ExigenceResponse> getExigences() {
+            return exigences != null ? exigences : new java.util.ArrayList<>();
+        }
         public void setExigences(List<ExigenceResponse> exigences) { this.exigences = exigences; }
     }
 }

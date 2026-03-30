@@ -54,17 +54,22 @@ public enum Prompt {
     3. Attribue à chaque EF un code (ex: EF-001, EF-002).
     4. Remplis le champ 'usLiees' avec la liste des CODES des User Stories (ex: ["US-001", "US-003"]) qui ont permis de définir cette exigence.
     
-    Réponds UNIQUEMENT en JSON brut avec cette structure :
-    {
-      "exigences": [
-        {
-          "code": "EF-001",
-          "libelle": "Titre de l'exigence",
-          "description": "Description précise du comportement attendu du système",
-          "usLiees": ["US-001", "US-002"]
-        }
-      ]
-    }
+                  CONSIGNES STRICTES :
+                  - Ton résultat doit être un objet JSON unique.
+                  - Cet objet DOIT contenir une clé racine nommée "exigences".
+                  - La valeur de cette clé doit être le tableau des exigences générées.
+            
+                  STRUCTURE JSON ATTENDUE (RESPECTE SCRUPULEUSEMENT) :
+                  {
+                    "exigences": [
+                      {
+                        "code": "EF-001",
+                        "libelle": "Titre",
+                        "description": "Description",
+                        "usLiees": ["US-001"]
+                      }
+                    ]
+                  }
     """),
 
     QUESTIONS("Tu es un expert AFSI spécialisé dans la conduite d'entretiens métier. " +
