@@ -80,8 +80,8 @@ export function Phase6A() {
         saveBpmn({ fichiers, selected: fichier, titre: fichier.nom.replace(/\.(bpmn|xml)$/, "") });
     }
 
-    // ── Sauvegarde BDD ────────────────────────────────────────────────────────
 
+<<<<<<< HEAD
     async function sauvegarderBdd() {
         if (!selected?.contenu) {
             setDbError("Sélectionnez un fichier BPMN avant de sauvegarder.");
@@ -118,31 +118,122 @@ export function Phase6A() {
             if (!res.ok) {
                 const text = await res.text();
                 throw new Error(`Erreur serveur ${res.status} : ${text}`);
+=======
+        async function sauvegarderBdd() {
+            if (!selected?.contenu) {
+                setDbError("Sélectionnez un fichier BPMN avant de sauvegarder.");
+                return;
+            }
+            if (!titre.trim()) {
+                setDbError("Donnez un titre au BPMN.");
+                return;
+            }
+            const projet = getProjetCourant();
+            if (!projet?.id) {
+                setDbError("Aucun projet sélectionné.");
+                return;
+>>>>>>> main
             }
 
-            const created = await res.json();
+            setDbLoading(true);
+            setDbError("");
+            setDbSuccess(false);
 
-            // Mettre à jour le fichier sélectionné avec son dbId
-            setFichiers((prev) => {
-                const updated = prev.map((f) =>
-                    f.id === selected.id ? { ...f, dbId: created.idBpmn } : f
-                );
-                const newSel = { ...selected, dbId: created.idBpmn };
-                setSelected(newSel);
-                saveBpmn({ fichiers: updated, selected: newSel, titre });
-                return updated;
-            });
+            try {
+                let contenuJson;
+                try {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(selected.contenu, "application/xml");
 
-            setDbSuccess(true);
-            setTimeout(() => setDbSuccess(false), 3000);
-        } catch (err) {
-            setDbError("Erreur lors de la sauvegarde : " + err.message);
-        } finally {
-            setDbLoading(false);
+                    if (xmlDoc.parseError && xmlDoc.parseError.errorCode !== 0) {
+                        throw new Error("XML invalide");
+                    }
+
+                    contenuJson = JSON.stringify(xmlToJson(xmlDoc.documentElement));
+                } catch (xmlError) {
+                    contenuJson = JSON.stringify({ raw: selected.contenu });
+                }
+
+                const res = await authFetch("/api/bpmn/save", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({
+                        idProjet: projet.id,
+                        titre: titre.trim(),
+                        contenu: contenuJson,
+                    }),
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || `Erreur ${res.status}`);
+                }
+
+                const created = await res.json();
+
+                setFichiers((prev) => {
+                    const updated = prev.map((f) =>
+                        f.id === selected.id ? { ...f, dbId: created.idBpmn } : f
+                    );
+                    const newSel = { ...selected, dbId: created.idBpmn };
+                    setSelected(newSel);
+                    saveBpmn({ fichiers: updated, selected: newSel, titre });
+                    return updated;
+                });
+
+                setDbSuccess(true);
+                setTimeout(() => setDbSuccess(false), 3000);
+            } catch (err) {
+                setDbError("Erreur lors de la sauvegarde : " + err.message);
+            } finally {
+                setDbLoading(false);
+            }
         }
-    }
 
-    // ─────────────────────────────────────────────────────────────────────────
+        function xmlToJson(element) {
+            const result = {};
+
+            if (element.attributes.length > 0) {
+                result._attributes = {};
+                for (let i = 0; i < element.attributes.length; i++) {
+                    const attr = element.attributes[i];
+                    result._attributes[attr.name] = attr.value;
+                }
+            }
+
+            if (element.childNodes.length === 1 && element.childNodes[0].nodeType === 3) {
+                result._text = element.textContent;
+                return result;
+            }
+
+            const children = {};
+            for (let i = 0; i < element.childNodes.length; i++) {
+                const child = element.childNodes[i];
+                if (child.nodeType === 1) {  // Element node
+                    const childName = child.nodeName;
+                    const childJson = xmlToJson(child);
+
+                    if (children[childName]) {
+                        if (!Array.isArray(children[childName])) {
+                            children[childName] = [children[childName]];
+                        }
+                        children[childName].push(childJson);
+                    } else {
+                        children[childName] = childJson;
+                    }
+                }
+            }
+
+            if (Object.keys(children).length > 0) {
+                result._children = children;
+            }
+
+            return result;
+        }
+
 
     return (
         <div className="p-6">

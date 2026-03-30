@@ -31,7 +31,7 @@ public class Evenement {
 
     @ManyToOne
     @JoinColumn(name = "id_bpmn")
-    private BPMN bpmn;
+    private Bpmn bpmn;
 
     @ManyToMany
     @JoinTable(
@@ -59,11 +59,11 @@ public class Evenement {
 		this.nom = nom;
 	}
 
-	public BPMN getBpmn() {
+	public Bpmn getBpmn() {
 		return bpmn;
 	}
 
-	public void setBpmn(BPMN bpmn) {
+	public void setBpmn(Bpmn bpmn) {
 		this.bpmn = bpmn;
 	}
 

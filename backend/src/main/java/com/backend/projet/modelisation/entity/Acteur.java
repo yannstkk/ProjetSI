@@ -44,8 +44,6 @@ public class Acteur {
 	@Column(name = "role", length = 100)
 	private String role;
 
-	@ManyToMany(mappedBy = "acteurs")
-	private List<BPMN> bpmns = new ArrayList<>();
 
 	@ManyToMany(mappedBy = "acteurs")
 	private List<MFC> mfcs = new ArrayList<>();
