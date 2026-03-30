@@ -1,0 +1,11 @@
+@startuml
+actor Adhérent
+actor Bibliothécaire
+control Système
+
+Adhérent -> Bibliothécaire : Demande d'emprunt
+Bibliothécaire -> Système : Vérifier disponibilité
+Système -> Bibliothécaire : État du stock
+Bibliothécaire -> Adhérent : Remise du livre
+Système -> Adhérent : Email de confirmation
+@enduml

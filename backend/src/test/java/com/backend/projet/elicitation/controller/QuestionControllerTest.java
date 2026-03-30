@@ -1,11 +1,10 @@
-package com.backend.projet.elicitation;
+package com.backend.projet.elicitation.controller;
 
 import com.backend.projet.auth.security.JwtUtil;
 import com.backend.projet.config.JwtConfig;
-import com.backend.projet.elicitation.controller.ParticipantController;
-import com.backend.projet.elicitation.dto.request.ParticipantRequest;
-import com.backend.projet.elicitation.dto.response.ParticipantResponse;
-import com.backend.projet.elicitation.service.ParticipantService;
+import com.backend.projet.elicitation.dto.request.QuestionRequest;
+import com.backend.projet.elicitation.dto.response.QuestionResponse;
+import com.backend.projet.elicitation.service.QuestionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
@@ -19,16 +18,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ParticipantController.class)
+@WebMvcTest(QuestionController.class)
 @WithMockUser
-public class ParticipantControllerTest {
+public class QuestionControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -37,7 +35,7 @@ public class ParticipantControllerTest {
             .registerModule(new JavaTimeModule());
 
     @MockitoBean
-    private ParticipantService participantService;
+    private QuestionService questionService;
 
     @MockitoBean
     private JwtUtil jwtUtil;
@@ -47,62 +45,62 @@ public class ParticipantControllerTest {
 
     @Test
     public void testGetByInterview() throws Exception {
-        List<ParticipantResponse> participants = List.of(
-                new ParticipantResponse(1L, "Alice", "Décideur"),
-                new ParticipantResponse(2L, "Bob", "Expert technique")
+        List<QuestionResponse> questions = List.of(
+                new QuestionResponse(1L, 1L, "Quels sont vos besoins ?"),
+                new QuestionResponse(2L, 1L, "Quels sont vos contraintes ?")
         );
 
-        when(participantService.getByInterview(1L)).thenReturn(participants);
+        when(questionService.getByInterview(1L)).thenReturn(questions);
 
-        mockMvc.perform(get("/api/participants/interview/1"))
+        mockMvc.perform(get("/api/questions/interview/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].nom").value("Alice"))
-                .andExpect(jsonPath("$[0].role").value("Décideur"))
-                .andExpect(jsonPath("$[1].nom").value("Bob"))
-                .andExpect(jsonPath("$[1].role").value("Expert technique"));
+                .andExpect(jsonPath("$[0].libelle").value("Quels sont vos besoins ?"))
+                .andExpect(jsonPath("$[0].numeroInterview").value(1))
+                .andExpect(jsonPath("$[1].libelle").value("Quels sont vos contraintes ?"));
     }
 
     @Test
     public void testGetByInterview_Empty() throws Exception {
-        when(participantService.getByInterview(99L)).thenReturn(List.of());
+        when(questionService.getByInterview(99L)).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/participants/interview/99"))
+        mockMvc.perform(get("/api/questions/interview/99"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test
-    public void testAjouterParticipant() throws Exception {
-        ParticipantRequest request = new ParticipantRequest();
-        request.setNom("Alice");
-        request.setRole("Décideur");
+    public void testCreer() throws Exception {
+        QuestionRequest request = new QuestionRequest();
+        request.setNumeroInterview(1L);
+        request.setLibelle("Quels sont vos besoins ?");
 
-        ParticipantResponse response = new ParticipantResponse(1L, "Alice", "Décideur");
+        QuestionResponse response = new QuestionResponse(
+                1L, 1L, "Quels sont vos besoins ?"
+        );
 
-        when(participantService.ajouterParticipant(eq(1L), any(ParticipantRequest.class)))
-                .thenReturn(response);
+        when(questionService.creer(any(QuestionRequest.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/participants/interview/1")
+        mockMvc.perform(post("/api/questions")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.idParticipant").value(1))
-                .andExpect(jsonPath("$.nom").value("Alice"))
-                .andExpect(jsonPath("$.role").value("Décideur"));
+                .andExpect(jsonPath("$.numeroQuestion").value(1))
+                .andExpect(jsonPath("$.numeroInterview").value(1))
+                .andExpect(jsonPath("$.libelle").value("Quels sont vos besoins ?"));
     }
 
     @Test
-    public void testAjouterParticipant_BadRequest() throws Exception {
-        ParticipantRequest request = new ParticipantRequest();
-        request.setNom("Alice");
-        request.setRole("Décideur");
+    public void testCreer_BadRequest() throws Exception {
+        QuestionRequest request = new QuestionRequest();
+        request.setNumeroInterview(99L);
+        request.setLibelle("Quels sont vos besoins ?");
 
-        when(participantService.ajouterParticipant(eq(99L), any(ParticipantRequest.class)))
+        when(questionService.creer(any(QuestionRequest.class)))
                 .thenThrow(new RuntimeException("Interview non trouvée : 99"));
 
-        mockMvc.perform(post("/api/participants/interview/99")
+        mockMvc.perform(post("/api/questions")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -111,18 +109,18 @@ public class ParticipantControllerTest {
 
     @Test
     public void testDeleteByInterview() throws Exception {
-        doNothing().when(participantService).deleteByInterview(1L);
+        doNothing().when(questionService).deleteByInterview(1L);
 
-        mockMvc.perform(delete("/api/participants/interview/1")
+        mockMvc.perform(delete("/api/questions/interview/1")
                         .with(csrf()))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     public void testDeleteByInterview_Empty() throws Exception {
-        doNothing().when(participantService).deleteByInterview(99L);
+        doNothing().when(questionService).deleteByInterview(99L);
 
-        mockMvc.perform(delete("/api/participants/interview/99")
+        mockMvc.perform(delete("/api/questions/interview/99")
                         .with(csrf()))
                 .andExpect(status().isNoContent());
     }

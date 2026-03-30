@@ -45,11 +45,7 @@ const phases = [
         id: 4, name: "User Stories", shortName: "User Stories",
         icon: FileText,
         screens: [
-<<<<<<< HEAD
-            { path: "/dashboard/phase4/form",    label: "Formulaire" },  // ← en premier
-=======
             { path: "/dashboard/phase4/form", label: "Formulaire" },
->>>>>>> main
             { path: "/dashboard/phase4/backlog", label: "Backlog" },
             { path: "/dashboard/phase4/control", label: "Cohérence" },
         ],
