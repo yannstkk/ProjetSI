@@ -1,4 +1,4 @@
-package com.backend.projet.elicitation;
+package com.backend.projet.elicitation.controller;
 
 import com.backend.projet.auth.security.JwtUtil;
 import com.backend.projet.config.JwtConfig;
