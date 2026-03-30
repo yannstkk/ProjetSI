@@ -26,6 +26,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Service gérant les opérations liées aux MFCs des projets.
+ */
 @Service
 public class MFCService {
 
@@ -44,14 +47,20 @@ public class MFCService {
         this.acteurRepository = acteurRepository;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-
+    /**
+     * Analyse un contenu PlantUML.
+     * @param content
+     * @return
+     */
     public FluxResponse analyserPlantUML(String content) {
         return mistralService.executerAnalyse(content, Prompt.MFC.getPrompt(), FluxResponse.class);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-
+    /**
+     * Importe et sauvegarde un MFC à partir d'un contenu PlantUML.
+     * @param request
+     * @return
+     */
     @Transactional
     public MFCResponse importerEtSauvegarder(@NonNull MFCRequest request) {
         FluxResponse fluxAnalyse = analyserPlantUML(request.getPlantUmlContent());
@@ -100,8 +109,11 @@ public class MFCService {
         );
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-
+    /**
+     * Récupère tous les MFCs d'un projet.
+     * @param idProjet
+     * @return
+     */
     public List<MFCDetailResponse> getMFCByProjet(Long idProjet) {
         List<MFC> mfcList = mfcRepository.findByProjetIdProjet(idProjet);
         return mfcList.stream()
@@ -150,8 +162,11 @@ public class MFCService {
         return persiste;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-
+    /**
+     * Transforme un MFC en MFCDetailResponse.
+     * @param mfc
+     * @return
+     */
     private MFCDetailResponse toDetailResponse(MFC mfc) {
         List<FluxDto> fluxDtos = mfc.getFlux().stream()
                 .map(f -> new FluxDto(
@@ -175,7 +190,6 @@ public class MFCService {
                 ))
                 .collect(Collectors.toList());
 
-        // idProjet depuis le MFC directement (plus fiable que passer par les acteurs)
         Long idProjet = mfc.getProjet() != null ? mfc.getProjet().getIdProjet() : null;
 
         return new MFCDetailResponse(

@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service gérant les opérations liées aux MCDs des projets.
+ */
 @Service
 public class MCDService {
 
@@ -31,7 +34,11 @@ public class MCDService {
         this.mistralService   = mistralService;
     }
 
-
+    /**
+     * Créer un nouveau MCD.
+     * @param request
+     * @return
+     */
     public MCDResponse creer(MCDRequest request) {
         Projet projet = projetRepository.findById(request.getIdProjet())
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -47,7 +54,11 @@ public class MCDService {
         return toResponse(saved);
     }
 
-
+    /**
+     * Récupère tous les MCDs d'un projet.
+     * @param idProjet
+     * @return
+     */
     public List<MCDResponse> getByProjet(Long idProjet) {
         return mcdRepository.findByProjetIdProjet(idProjet)
                 .stream()
@@ -55,14 +66,23 @@ public class MCDService {
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * Récupère un MCD par son ID.
+     * @param idMcd
+     * @return
+     */
     public MCDResponse getById(Long idMcd) {
         MCD mcd = mcdRepository.findById(idMcd)
                 .orElseThrow(() -> new ResourceNotFoundException("MCD non trouvé : " + idMcd));
         return toResponse(mcd);
     }
 
-
+    /**
+     * Met à jour un MCD.
+     * @param idMcd
+     * @param request
+     * @return
+     */
     public MCDResponse mettreAJour(Long idMcd, MCDRequest request) {
         MCD mcd = mcdRepository.findById(idMcd)
                 .orElseThrow(() -> new ResourceNotFoundException("MCD non trouvé : " + idMcd));
@@ -74,14 +94,22 @@ public class MCDService {
         return toResponse(mcdRepository.save(mcd));
     }
 
-
+    /**
+     * Supprime un MCD.
+     * @param idMcd
+     */
     public void supprimer(Long idMcd) {
         if (!mcdRepository.existsById(idMcd))
             throw new ResourceNotFoundException("MCD non trouvé : " + idMcd);
         mcdRepository.deleteById(idMcd);
     }
 
-
+    /**
+     * Analyse un MCD.
+     * @param contenuPlantuml
+     * @return
+     * @throws MistralApiException
+     */
     public MCDAnalyseResponse analyser(String contenuPlantuml) throws MistralApiException {
         if (contenuPlantuml == null || contenuPlantuml.isBlank())
             throw new IllegalArgumentException("Le contenu PlantUML ne peut pas être vide.");
@@ -93,7 +121,11 @@ public class MCDService {
         );
     }
 
-
+    /**
+     * Transforme un MCD en MCDResponse.
+     * @param mcd
+     * @return
+     */
     private MCDResponse toResponse(MCD mcd) {
         return new MCDResponse(
                 mcd.getIdMcd(),
@@ -104,6 +136,12 @@ public class MCDService {
         );
     }
 
+    /**
+     * Tronque une chaîne à une longueur maximale.
+     * @param value
+     * @param max
+     * @return
+     */
     private String truncate(String value, int max) {
         if (value == null) return null;
         return value.length() > max ? value.substring(0, max) : value;

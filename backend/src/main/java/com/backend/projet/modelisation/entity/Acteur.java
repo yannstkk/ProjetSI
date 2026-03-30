@@ -18,6 +18,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+/**
+ *  * Représente un acteur intervenant dans le système (interne ou externe).
+ * Un acteur peut être lié à des processus BPMN, des modèles de flux (MFC),
+ * des flux de données et des User Stories.
+ */
 @Entity
 @Table(name = "ACTEUR")
 public class Acteur {

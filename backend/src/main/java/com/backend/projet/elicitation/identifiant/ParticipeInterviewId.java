@@ -5,6 +5,9 @@ import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * Composite key for ParticipeInterview entity.
+ */
 @Embeddable
 public class ParticipeInterviewId implements Serializable {
 

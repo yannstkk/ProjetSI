@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller responsable des opérations liées aux MFC.
+ */
 @RestController
 @RequestMapping("/api/modelisation/mfc")
 public class MFCController {

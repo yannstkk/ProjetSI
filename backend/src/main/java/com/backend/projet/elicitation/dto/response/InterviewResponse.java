@@ -3,6 +3,10 @@ package com.backend.projet.elicitation.dto.response;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * Data Transfer Object representing the response for an interview.
+ * Contains the interview details including its ID, project ID, date, time, title, interviewer name, and objectives.
+ */
 public class InterviewResponse {
 
     private Long numeroInterview;

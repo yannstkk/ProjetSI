@@ -1,5 +1,8 @@
 package com.backend.projet.projet.dto.request;
 
+/**
+ * DTO for creating or updating a project.
+ */
 public class ProjetRequest {
 
     private String nom;

@@ -13,6 +13,9 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+/**
+ * Représente un flux.
+ */
 @Entity
 @Table(name = "FLUX")
 public class Flux {

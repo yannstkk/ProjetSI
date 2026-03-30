@@ -12,6 +12,9 @@ import com.backend.projet.projet.entity.Projet;
 import com.backend.projet.projet.exception.ResourceNotFoundException;
 import com.backend.projet.projet.repository.ProjetRepository;
 
+/**
+ * Service gérant les opérations liées aux acteurs des projets.
+ */
 @Service
 public class ActeurService {
 
@@ -24,6 +27,11 @@ public class ActeurService {
         this.projetRepository = projetRepository;
     }
 
+    /**
+     * Récupère tous les acteurs d'un projet.
+     * @param idProjet
+     * @return
+     */
     public List<ActeurResponse> getByProjet(Long idProjet) {
         return acteurRepository.findByProjetIdProjet(idProjet)
                 .stream()
@@ -31,6 +39,11 @@ public class ActeurService {
                 .toList();
     }
 
+    /**
+     * Récupère un acteur par son ID.
+     * @param idActeur
+     * @return
+     */
     private ActeurResponse toResponse(Acteur acteur) {
         return new ActeurResponse(
                 acteur.getIdActeur(),
@@ -42,6 +55,11 @@ public class ActeurService {
         );
     }
 
+    /**
+     * Récupère un acteur par son ID.
+     * @param request
+     * @return
+     */
     public ActeurResponse create(ActeurRequest request) {
         Projet projet = projetRepository.findById(request.getIdProjet())
                 .orElseThrow(() -> new ResourceNotFoundException("Projet non trouvé : " + request.getIdProjet()));

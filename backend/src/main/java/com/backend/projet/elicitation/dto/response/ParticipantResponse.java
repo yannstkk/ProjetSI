@@ -1,5 +1,9 @@
 package com.backend.projet.elicitation.dto.response;
 
+/**
+ * Data Transfer Object representing the response for a participant.
+ * Contains the participant ID, name, and role.
+ */
 public class ParticipantResponse {
 
     private Long idParticipant;

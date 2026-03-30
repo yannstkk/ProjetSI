@@ -7,6 +7,9 @@ import org.springframework.stereotype.Repository;
 
 import com.backend.projet.projet.entity.Projet;
 
+/**
+ * Repository for managing project-related database operations.
+ */
 @Repository
 public interface ProjetRepository extends JpaRepository<Projet, Long> {
 

@@ -2,6 +2,9 @@ package com.backend.projet.projet.dto.response;
 
 import java.time.LocalDate;
 
+/**
+ * DTO representing the structured output of a project.
+ */
 public class ProjetResponse {
 
     private Long idProjet;

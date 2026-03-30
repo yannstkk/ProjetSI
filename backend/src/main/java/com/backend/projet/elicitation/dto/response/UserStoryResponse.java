@@ -1,5 +1,9 @@
 package com.backend.projet.elicitation.dto.response;
 
+/**
+ * Data Transfer Object representing the response for a User Story.
+ * Contains the User Story details including its ID, reference, requirements, priority, and associated project and actor.
+ */
 public class UserStoryResponse {
 
     private Long idUs;

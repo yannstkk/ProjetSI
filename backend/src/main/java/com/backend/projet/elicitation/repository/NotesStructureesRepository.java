@@ -6,6 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository interface for NotesStructurees entity.
+ * Provides methods to perform CRUD operations and custom queries.
+ */
 @Repository
 public interface NotesStructureesRepository extends JpaRepository<NotesStructurees, Long> {
 

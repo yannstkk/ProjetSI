@@ -17,6 +17,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+/* * Entity representing an Interview within a project.
+ * It contains details about the schedule, the interviewer, objectives,
+ * and maintains relationships with questions, notes, and participants.
+ */
 @Entity
 @Table(name = "INTERVIEW")
 public class Interview {

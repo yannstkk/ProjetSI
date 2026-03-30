@@ -11,6 +11,9 @@ import com.backend.projet.projet.entity.Projet;
 import com.backend.projet.projet.exception.ResourceNotFoundException;
 import com.backend.projet.projet.repository.ProjetRepository;
 
+/**
+ * Service for managing project-related operations.
+ */
 @Service
 public class ProjetService {
 
@@ -20,6 +23,10 @@ public class ProjetService {
         this.projetRepository = projetRepository;
     }
 
+    /**
+     * Retrieves a list of all projects.
+     * @return
+     */
     public List<ProjetResponse> getAllProjets() {
         return projetRepository.findAll()
                 .stream()
@@ -32,6 +39,11 @@ public class ProjetService {
                 .toList();
     }
 
+    /**
+     * Retrieves a list of projects associated with a specific user.
+     * @param idUser
+     * @return
+     */
     public List<ProjetResponse> getProjetsByUser(String idUser) {
         return projetRepository.findByIdUser(idUser)
                 .stream()
@@ -44,6 +56,11 @@ public class ProjetService {
                 .toList();
     }
 
+    /**
+     * Creates a new project.
+     * @param request
+     * @return
+     */
     public ProjetResponse creerProjet(ProjetRequest request) {
         Projet projet = new Projet();
         projet.setNom(request.getNom());
@@ -60,6 +77,11 @@ public class ProjetService {
         );
     }
     
+    /**
+     * Retrieves a project by its ID.
+     * @param id
+     * @return
+     */
     public ProjetResponse getProjetById(Long id) {
         Projet projet = projetRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Projet non trouvé : " + id));

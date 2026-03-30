@@ -17,6 +17,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+/**
+ * Représente un processus BPMN.
+ */
 @Entity
 @Table(name = "BPMN")
 public class BPMN {

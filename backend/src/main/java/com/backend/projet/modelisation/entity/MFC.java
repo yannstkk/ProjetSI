@@ -17,6 +17,9 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
+/**
+ * Représente un modèle de flux de données.
+ */
 @Entity
 public class MFC {
 

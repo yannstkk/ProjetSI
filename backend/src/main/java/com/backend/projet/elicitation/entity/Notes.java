@@ -9,6 +9,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+/**
+ * Entity representing notes taken during an interview.
+ */
 @Entity
 @Table(name = "NOTES")
 public class Notes {

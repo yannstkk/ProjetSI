@@ -1,5 +1,9 @@
 package com.backend.projet.elicitation.dto.response;
 
+/**
+ * Data Transfer Object representing the response for interview notes.
+ * Contains the notes ID, the associated interview ID, and the raw content of the notes.
+ */
 public class NotesResponse {
 
     private Long numeroNotes;

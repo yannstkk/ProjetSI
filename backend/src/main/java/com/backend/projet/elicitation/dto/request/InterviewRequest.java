@@ -3,6 +3,9 @@ package com.backend.projet.elicitation.dto.request;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * Data Transfer Object for creating or updating an interview session.
+ */
 public class InterviewRequest {
 
     private Long idProjet;

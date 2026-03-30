@@ -1,5 +1,9 @@
 package com.backend.projet.elicitation.dto.response;
 
+/**
+ * Data Transfer Object representing the response for structured notes.
+ * Contains the structured notes ID, the associated interview ID, the category, and the content.
+ */
 public class NotesStructureesResponse {
 
     private Long idNotesStructurees;

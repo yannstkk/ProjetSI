@@ -16,6 +16,10 @@ import com.backend.projet.elicitation.dto.request.UserStoryRequest;
 import com.backend.projet.elicitation.dto.response.UserStoryResponse;
 import com.backend.projet.elicitation.service.UserStoryService;
 
+/**
+ * Controller for managing user stories within a project.
+ * Provides endpoints for creating, retrieving, and deleting user stories.
+ */
 @RestController
 @RequestMapping("/api/userstories")
 public class UserStoryController {
@@ -26,17 +30,29 @@ public class UserStoryController {
         this.userStoryService = userStoryService;
     }
 
+    /**
+     * Retrieves all user stories associated with a specific project.
+     * 
+     * */
     @GetMapping("/projet/{idProjet}")
     public ResponseEntity<List<UserStoryResponse>> getByProjet(@PathVariable Long idProjet) {
         return ResponseEntity.ok(userStoryService.getByProjet(idProjet));
     }
 
+    /**
+     * Creates a new user story for a specific project.
+     * 
+     * */
     @PostMapping
     public ResponseEntity<UserStoryResponse> add(@RequestBody UserStoryRequest request) {
         UserStoryResponse response = userStoryService.add(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    /**
+     * Deletes a user story by its ID.
+     * 
+     * */
     @DeleteMapping("/{idUs}")
     public ResponseEntity<Void> delete(@PathVariable Long idUs) {
         userStoryService.delete(idUs);

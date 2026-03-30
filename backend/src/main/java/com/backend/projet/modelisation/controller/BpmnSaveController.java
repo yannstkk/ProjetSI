@@ -5,11 +5,19 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controller responsable des opérations de sauvegarde de diagrammes BPMN.
+ */
 @RestController
 @RequestMapping("/api/bpmn")
 @CrossOrigin(origins = "*")
 public class BpmnSaveController {
 
+    /**
+     * Sauvegarde un diagramme BPMN.
+     * @param data
+     * @return
+     */
     @PostMapping("/save")
     public ResponseEntity<?> saveBpmn(@RequestBody Map<String, Object> data) {
 

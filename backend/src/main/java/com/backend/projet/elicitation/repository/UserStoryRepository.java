@@ -7,6 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import com.backend.projet.elicitation.entity.UserStory;
 
+/**
+ * Repository interface for UserStory entity.
+ * Provides methods to perform CRUD operations and custom queries.
+ */
 @Repository
 public interface UserStoryRepository extends JpaRepository<UserStory, Long> {
 

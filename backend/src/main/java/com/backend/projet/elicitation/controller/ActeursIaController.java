@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controller for handling AI-based actor detection from interview notes.
+ * This controller interacts with the ActeursIaService to process raw text
+ * and identify potential system actors using Mistral AI.
+*/
 @RestController
 @RequestMapping("/api/mistral")
 public class ActeursIaController {
@@ -19,6 +24,12 @@ public class ActeursIaController {
         this.ais = ais;
     }
 
+    /**
+     * Detects potential system actors from the provided interview notes using AI.
+     * 
+     * @param notes The request body containing the raw text to analyze.
+     * @return A ResponseEntity containing the detected actors or an error status.
+     */
     @PostMapping("/detecter-acteurs")
     public ResponseEntity<?> detecter(@RequestBody NotesRequest notes){ // de ce que j'ai compris le ? c'est pour plsr types.
         String contenu = notes.getContenu();
@@ -32,7 +43,5 @@ public class ActeursIaController {
             return ResponseEntity.internalServerError().build();
         }
     }
-
-    // Pareil, les acteurs ne sont pas sauvegardés en base à cette étape ...
 
 }

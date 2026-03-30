@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entity representing a Participant who can take part in interviews.
+ */
 @Entity
 @Table(name = "PARTICIPANT")
 public class Participant {

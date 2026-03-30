@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller for handling structured interview notes.
+ * */
 @RestController
 @RequestMapping("/api/notes-structurees")
 public class NotesStructureesController {
@@ -19,12 +22,20 @@ public class NotesStructureesController {
         this.notesStructureesService = notesStructureesService;
     }
 
+    /**
+     * Retrieves all structured interview notes associated with a specific interview.
+     * 
+     * */
     @GetMapping("/interview/{numeroInterview}")
     public ResponseEntity<List<NotesStructureesResponse>> getByInterview(
             @PathVariable Long numeroInterview) {
         return ResponseEntity.ok(notesStructureesService.getByInterview(numeroInterview));
     }
 
+    /**
+     * Creates a new structured interview note.
+     * 
+     * */
     @PostMapping
     public ResponseEntity<NotesStructureesResponse> creer(
             @RequestBody NotesStructureesRequest request) {
@@ -36,6 +47,10 @@ public class NotesStructureesController {
         }
     }
 
+    /**
+     * Deletes all structured notes associated with a specific interview.
+     * 
+     * */
     @DeleteMapping("/interview/{numeroInterview}")
     public ResponseEntity<Void> deleteByInterview(
             @PathVariable Long numeroInterview) {

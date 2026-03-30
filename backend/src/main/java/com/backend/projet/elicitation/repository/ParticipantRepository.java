@@ -6,6 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * Repository interface for Participant entity.
+ * Provides methods to perform CRUD operations and custom queries.
+ */
 @Repository
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
 

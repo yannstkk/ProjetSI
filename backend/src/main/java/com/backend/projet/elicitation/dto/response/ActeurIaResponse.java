@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
+/**
+ * Data Transfer Object representing the AI's response when detecting actors.
+ * Contains a list of detected actors with their roles and source context.
+ */
 public class ActeurIaResponse {
     public List<ActeurIaResponse.acteursDetecte> acteurs;
 

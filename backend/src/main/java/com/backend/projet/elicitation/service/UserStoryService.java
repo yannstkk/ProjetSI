@@ -14,6 +14,9 @@ import com.backend.projet.projet.entity.Projet;
 import com.backend.projet.projet.exception.ResourceNotFoundException;
 import com.backend.projet.projet.repository.ProjetRepository;
 
+/**
+ * Service responsable des opérations liées aux User Stories.
+ */
 @Service
 public class UserStoryService {
 
@@ -29,6 +32,11 @@ public class UserStoryService {
         this.acteurRepository = acteurRepository;
     }
 
+    /**
+     * Récupère toutes les User Stories d'un projet.
+     * @param idProjet
+     * @return
+     */
     public List<UserStoryResponse> getByProjet(Long idProjet) {
         return userStoryRepository.findByProjetIdProjet(idProjet)
                 .stream()
@@ -36,6 +44,11 @@ public class UserStoryService {
                 .toList();
     }
 
+    /**
+     * Ajoute une nouvelle User Story.
+     * @param request
+     * @return
+     */
     public UserStoryResponse add(UserStoryRequest request) {
         Projet projet = projetRepository.findById(request.getIdProjet())
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -63,6 +76,11 @@ public class UserStoryService {
         return toResponse(saved);
     }
 
+    /**
+     * Met à jour une User Story existante.
+     * @param idUs
+     * @return
+     */
     public void delete(Long idUs) {
         if (!userStoryRepository.existsById(idUs)) {
             throw new ResourceNotFoundException("User Story non trouvée : " + idUs);
@@ -70,6 +88,10 @@ public class UserStoryService {
         userStoryRepository.deleteById(idUs);
     }
 
+    /**
+     * Supprime toutes les User Stories d'un projet.
+     * @param idProjet
+     */
     private UserStoryResponse toResponse(UserStory us) {
         return new UserStoryResponse(
                 us.getIdUs(),

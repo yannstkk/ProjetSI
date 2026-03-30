@@ -3,6 +3,9 @@ package com.backend.projet.modelisation.entity;
 import com.backend.projet.projet.entity.Projet;
 import jakarta.persistence.*;
 
+/**
+ * Représente un modèle de conception de données.
+ */
 @Entity
 @Table(name = "MCD")
 public class MCD {

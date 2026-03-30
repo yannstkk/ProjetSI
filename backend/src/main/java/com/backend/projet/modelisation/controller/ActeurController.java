@@ -17,22 +17,38 @@ import com.backend.projet.modelisation.service.ActeurService;
 
 
 
-
+/**
+ * Controller responsable des opérations liées aux acteurs.
+ */
 @RestController
 @RequestMapping("/api/acteur")
 public class ActeurController {
 
     private final ActeurService acteurService;
 
+    /**
+     * Constructeur du controller ActeurController.
+     * @param acteurService
+     */
     public ActeurController(ActeurService acteurService) {
         this.acteurService = acteurService;
     }
 
+    /**
+     * Récupère tous les acteurs d'un projet.
+     * @param idProjet
+     * @return
+     */
     @GetMapping("/projet/{idProjet}")
     public ResponseEntity<List<ActeurResponse>> getByProjet(@PathVariable Long idProjet) {
         return ResponseEntity.ok(acteurService.getByProjet(idProjet));
     }
 
+    /**
+     * Ajoute un nouvel acteur.
+     * @param request
+     * @return
+     */
     @PostMapping
     public ResponseEntity<ActeurResponse> create(@RequestBody ActeurRequest request) {
         try {

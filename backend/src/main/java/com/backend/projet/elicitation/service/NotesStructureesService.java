@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Service responsable des opérations liées aux notes structurées.
+ */
 @Service
 public class NotesStructureesService {
 
@@ -23,6 +26,11 @@ public class NotesStructureesService {
         this.interviewRepository = interviewRepository;
     }
 
+    /**
+     * Récupère toutes les notes structurées d'une interview.
+     * @param numeroInterview
+     * @return
+     */
     public List<NotesStructureesResponse> getByInterview(Long numeroInterview) {
         return notesStructureesRepository
                 .findByInterviewNumeroInterview(numeroInterview)
@@ -36,6 +44,11 @@ public class NotesStructureesService {
                 .toList();
     }
 
+    /**
+     * Crée une nouvelle note structurée pour une interview.
+     * @param request
+     * @return
+     */
     public NotesStructureesResponse creer(NotesStructureesRequest request) {
         Interview interview = interviewRepository
                 .findById(request.getNumeroInterview())
@@ -57,6 +70,10 @@ public class NotesStructureesService {
         );
     }
 
+    /**
+     * Supprime toutes les notes structurées d'une interview.
+     * @param numeroInterview
+     */
     public void deleteByInterview(Long numeroInterview) {
         List<NotesStructurees> liste =
                 notesStructureesRepository.findByInterviewNumeroInterview(numeroInterview);

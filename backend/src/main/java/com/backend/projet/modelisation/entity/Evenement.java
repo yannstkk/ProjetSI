@@ -14,6 +14,9 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+/**
+ * Représente un événement.
+ */
 @Entity
 @Table(name = "EVENEMENT")
 public class Evenement {

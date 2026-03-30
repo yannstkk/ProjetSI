@@ -6,6 +6,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository interface pour l'entité MCD.
+ */
 @Repository
 public interface MCDRepository extends JpaRepository<MCD, Long> {
 

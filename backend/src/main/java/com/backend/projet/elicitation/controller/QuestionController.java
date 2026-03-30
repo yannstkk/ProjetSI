@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller for managing interview questions.
+ * */
 @RestController
 @RequestMapping("/api/questions")
 public class QuestionController {
@@ -19,12 +22,20 @@ public class QuestionController {
         this.questionService = questionService;
     }
 
+    /**
+     * Retrieves all questions associated with a specific interview.
+     * 
+     * */
     @GetMapping("/interview/{numeroInterview}")
     public ResponseEntity<List<QuestionResponse>> getByInterview(
             @PathVariable Long numeroInterview) {
         return ResponseEntity.ok(questionService.getByInterview(numeroInterview));
     }
 
+    /**
+     * Creates a new question for a specific interview.
+     * 
+     * */
     @PostMapping
     public ResponseEntity<QuestionResponse> creer(
             @RequestBody QuestionRequest request) {
@@ -36,6 +47,10 @@ public class QuestionController {
         }
     }
 
+    /**
+     * Deletes all questions associated with a specific interview.
+     * 
+     * */
     @DeleteMapping("/interview/{numeroInterview}")
     public ResponseEntity<Void> deleteByInterview(
             @PathVariable Long numeroInterview) {

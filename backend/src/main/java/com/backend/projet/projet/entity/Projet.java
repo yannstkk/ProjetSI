@@ -24,6 +24,10 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+
+/**
+ * Entity representing a project.
+ */
 @Entity
 @Table(name = "PROJET")
 public class Projet {

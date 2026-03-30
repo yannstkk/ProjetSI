@@ -15,6 +15,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+/**
+ * Représente un dictionnaire de données.
+ */
 @Entity
 @Table(name = "DICTIONNAIRE_DONNEE")
 public class DictionnaireDonnee {

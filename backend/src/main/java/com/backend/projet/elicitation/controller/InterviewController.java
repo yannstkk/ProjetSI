@@ -16,6 +16,10 @@ import com.backend.projet.elicitation.dto.request.InterviewRequest;
 import com.backend.projet.elicitation.dto.response.InterviewResponse;
 import com.backend.projet.elicitation.service.InterviewService;
 
+/*/**
+ * Controller for managing interview sessions within a project.
+ * Provides endpoints for creating, retrieving, and updating interview details.
+ */
 @RestController
 @RequestMapping("/api/interviews")
 public class InterviewController {
@@ -26,11 +30,19 @@ public class InterviewController {
         this.interviewService = interviewService;
     }
 
+    /**
+     * Retrieves all interview sessions associated with a specific project.
+     * 
+     * */
     @GetMapping("/projet/{idProjet}")
     public ResponseEntity<List<InterviewResponse>> getByProjet(@PathVariable Long idProjet) {
     	return ResponseEntity.ok(interviewService.getByProjet(idProjet));
     }
 
+    /**
+     * Creates a new interview session for a specific project.
+     * 
+     * */
     @PostMapping
     public ResponseEntity<InterviewResponse> create(@RequestBody InterviewRequest request) {
         try {
@@ -41,6 +53,10 @@ public class InterviewController {
         }
     }
 
+    /**
+     * Updates an existing interview session for a specific project.
+     * 
+     * */
     @PutMapping("/{idProjet}")
     public ResponseEntity<InterviewResponse> update(
             @PathVariable Long idProjet,

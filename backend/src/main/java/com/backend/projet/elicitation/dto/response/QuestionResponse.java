@@ -1,5 +1,9 @@
 package com.backend.projet.elicitation.dto.response;
 
+/**
+ * Data Transfer Object representing the response for an interview question.
+ * Contains the question ID, the associated interview ID, and the text of the question.
+ */
 public class QuestionResponse {
 
     private Long numeroQuestion;

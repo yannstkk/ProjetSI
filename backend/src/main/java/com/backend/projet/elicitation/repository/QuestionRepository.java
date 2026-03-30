@@ -6,6 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository interface for Question entity.
+ * Provides methods to perform CRUD operations and custom queries.
+ */
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 

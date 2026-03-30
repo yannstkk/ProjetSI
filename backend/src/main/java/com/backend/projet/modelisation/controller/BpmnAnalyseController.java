@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/** 
+ * Controller responsable de l'analyse de cohérence des diagrammes BPMN via l'IA.
+ */
 @RestController
 @RequestMapping("/api/bpmn")
 public class BpmnAnalyseController {
@@ -19,6 +22,11 @@ public class BpmnAnalyseController {
         this.mistralService = mistralService;
     }
 
+    /**
+     * Analyse la cohérence entre un diagramme BPMN et les User Stories associées.
+     * @param request Contient le XML BPMN et les User Stories.
+     * @return Un objet BpmnCoherenceIaResponse contenant le score et les explications.
+     */
     @PostMapping("/analyser-coherence")
     public ResponseEntity<?> analyserCoherence(@RequestBody BpmnAnalyseRequest request) {
         try {

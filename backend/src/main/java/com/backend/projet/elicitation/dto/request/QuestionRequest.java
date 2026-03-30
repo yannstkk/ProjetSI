@@ -1,5 +1,8 @@
 package com.backend.projet.elicitation.dto.request;
 
+/**
+ * Data Transfer Object for creating or updating interview questions.
+ */
 public class QuestionRequest {
 
     private Long numeroInterview;

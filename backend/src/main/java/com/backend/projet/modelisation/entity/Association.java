@@ -15,6 +15,9 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+/**
+ * Représente une association entre deux entités.
+ */
 @Entity
 @Table(name = "ASSOCIATION")
 public class Association {

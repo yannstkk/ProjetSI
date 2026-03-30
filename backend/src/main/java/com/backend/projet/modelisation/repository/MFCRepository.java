@@ -6,6 +6,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository interface pour l'entité MFC.
+ */
 @Repository
 public interface MFCRepository extends JpaRepository<MFC, Long> {
     List<MFC> findByProjetIdProjet(Long idProjet);

@@ -1,6 +1,8 @@
 package com.backend.projet.elicitation.dto.request;
 
-
+/**
+ * Data Transfer Object for creating or updating raw interview notes.
+ */
 public class NotesRequest {
 
     private Long numeroInterview;

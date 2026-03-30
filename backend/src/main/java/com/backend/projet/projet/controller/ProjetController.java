@@ -15,6 +15,10 @@ import com.backend.projet.projet.dto.request.ProjetRequest;
 import com.backend.projet.projet.dto.response.ProjetResponse;
 import com.backend.projet.projet.service.ProjetService;
 
+/**
+ *  * Controller for managing project-related operations.
+ * Provides endpoints for retrieving, creating, and filtering projects by user.
+ */
 @RestController
 @RequestMapping("/api/projets")
 public class ProjetController {
@@ -24,17 +28,31 @@ public class ProjetController {
         this.projetService = projetService;
     }
 
+    /**
+     * Retrieves a list of all projects.
+     * @return
+     */
     @GetMapping
     public ResponseEntity<List<ProjetResponse>> getAllProjets() {
         return ResponseEntity.ok(projetService.getAllProjets());
     }
 
+    /**
+     * Retrieves a list of projects associated with a specific user.
+     * @param idUtilisateur
+     * @return
+     */
     @GetMapping("/user/{idUtilisateur}")
     public ResponseEntity<List<ProjetResponse>> getProjetsByUser(
             @PathVariable String idUtilisateur) {
         return ResponseEntity.ok(projetService.getProjetsByUser(idUtilisateur));
     }
 
+    /**
+     * Retrieves a project by its ID.
+     * @param id
+     * @return
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ProjetResponse> getProjetById(@PathVariable Long id) {
         try {
@@ -44,6 +62,11 @@ public class ProjetController {
         }
     }
 
+    /**
+     * Creates a new project.
+     * @param request
+     * @return
+     */
     @PostMapping
     public ResponseEntity<ProjetResponse> creerProjet(@RequestBody ProjetRequest request) {
         ProjetResponse response = projetService.creerProjet(request);

@@ -7,6 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import com.backend.projet.elicitation.entity.Notes;
 
+/**
+ * Repository interface for Notes entity.
+ * Provides methods to perform CRUD operations and custom queries.
+ */
 @Repository
 public interface NotesRepository extends JpaRepository<Notes, Long> {
 

@@ -1,5 +1,8 @@
 package com.backend.projet.modelisation.dto.request;
 
+/**
+ * DTO pour la création ou la mise à jour d'un acteur.
+ */
 public class ActeurRequest {
 
     private Long idProjet;

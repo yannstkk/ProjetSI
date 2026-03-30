@@ -6,6 +6,9 @@ import java.util.Objects;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
+/**
+ * Composite key for QuestionReponse entity.
+ */
 @Embeddable
 public class QuestionReponseId implements Serializable {
 

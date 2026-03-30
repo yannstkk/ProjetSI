@@ -11,18 +11,31 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Service responsable des opérations liées aux questions.
+ */
 @Service
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
     private final InterviewRepository interviewRepository;
 
+    /**
+     * Constructeur du service QuestionService.
+     * @param questionRepository
+     * @param interviewRepository
+     */
     public QuestionService(QuestionRepository questionRepository,
                            InterviewRepository interviewRepository) {
         this.questionRepository = questionRepository;
         this.interviewRepository = interviewRepository;
     }
 
+    /**
+     * Récupère toutes les questions d'une interview.
+     * @param numeroInterview
+     * @return
+     */
     public List<QuestionResponse> getByInterview(Long numeroInterview) {
         return questionRepository
                 .findByInterviewNumeroInterview(numeroInterview)
@@ -35,6 +48,11 @@ public class QuestionService {
                 .toList();
     }
 
+    /**
+     * Crée une nouvelle question pour une interview.
+     * @param request
+     * @return
+     */
     public QuestionResponse creer(QuestionRequest request) {
         Interview interview = interviewRepository
                 .findById(request.getNumeroInterview())
@@ -54,6 +72,10 @@ public class QuestionService {
         );
     }
 
+    /**
+     * Supprime toutes les questions d'une interview.
+     * @param numeroInterview
+     */
     public void deleteByInterview(Long numeroInterview) {
         List<Question> liste =
                 questionRepository.findByInterviewNumeroInterview(numeroInterview);

@@ -12,6 +12,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+/**
+ * Entity representing a User Story in a project.
+ */
 @Entity
 @Table(name = "USER_STORY")
 public class UserStory {

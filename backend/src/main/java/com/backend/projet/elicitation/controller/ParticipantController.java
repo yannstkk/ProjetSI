@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller for managing interview participants.
+ * */
 @RestController
 @RequestMapping("/api/participants")
 public class ParticipantController {
@@ -19,12 +22,20 @@ public class ParticipantController {
         this.participantService = participantService;
     }
 
+    /**
+     * Retrieves all participants associated with a specific interview.
+     * 
+     * */
     @GetMapping("/interview/{numeroInterview}")
     public ResponseEntity<List<ParticipantResponse>> getByInterview(
             @PathVariable Long numeroInterview) {
         return ResponseEntity.ok(participantService.getByInterview(numeroInterview));
     }
 
+    /**
+     * Creates a new participant for a specific interview.
+     * 
+     * */
     @PostMapping("/interview/{numeroInterview}")
     public ResponseEntity<ParticipantResponse> ajouterParticipant(
             @PathVariable Long numeroInterview,
@@ -38,6 +49,10 @@ public class ParticipantController {
         }
     }
 
+    /**
+     * Deletes all participants associated with a specific interview.
+     * 
+     * */
     @DeleteMapping("/interview/{numeroInterview}")
     public ResponseEntity<Void> deleteByInterview(
             @PathVariable Long numeroInterview) {

@@ -3,6 +3,9 @@ package com.backend.projet.elicitation.entity;
 import com.backend.projet.elicitation.identifiant.ParticipeInterviewId;
 import jakarta.persistence.*;
 
+/**
+ * Join entity representing the participation of a Participant in an Interview with a specific role.
+ */
 @Entity
 @Table(name = "PARTICIPE_INTERVIEW")
 public class ParticipeInterview {

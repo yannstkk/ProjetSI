@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller responsable des opérations liées aux MCD.
+ */
 @RestController
 @RequestMapping("/api/mcd")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
@@ -23,7 +26,11 @@ public class MCDController {
         this.mcdService = mcdService;
     }
 
-    /* POST /api/mcd — Créer */
+    /**
+     * Créer un nouveau MCD.
+     * @param request
+     * @return
+     */
     @PostMapping
     public ResponseEntity<MCDResponse> creer(@RequestBody MCDRequest request) {
         try {
@@ -34,7 +41,11 @@ public class MCDController {
         }
     }
 
-    /* GET /api/mcd/projet/{idProjet} — Lister par projet */
+    /**
+     * Récupère tous les MCD d'un projet.
+     * @param idProjet
+     * @return
+     */
     @GetMapping("/projet/{idProjet}")
     public ResponseEntity<List<MCDResponse>> getByProjet(@PathVariable Long idProjet) {
         try {
@@ -44,7 +55,11 @@ public class MCDController {
         }
     }
 
-    /* GET /api/mcd/{idMcd} — Récupérer un MCD */
+    /**
+     * Récupère un MCD par son ID.
+     * @param idMcd
+     * @return
+     */
     @GetMapping("/{idMcd}")
     public ResponseEntity<MCDResponse> getById(@PathVariable Long idMcd) {
         try {
@@ -54,7 +69,11 @@ public class MCDController {
         }
     }
 
-    /* PUT /api/mcd/{idMcd} — Mettre à jour */
+    /**
+     * Met à jour un MCD existant.
+     * @param idMcd
+     * @return
+     */
     @PutMapping("/{idMcd}")
     public ResponseEntity<MCDResponse> mettreAJour(
             @PathVariable Long idMcd,
@@ -66,7 +85,11 @@ public class MCDController {
         }
     }
 
-    /* DELETE /api/mcd/{idMcd} — Supprimer */
+    /**
+     * Supprime un MCD.
+     * @param idMcd
+     * @return
+     */
     @DeleteMapping("/{idMcd}")
     public ResponseEntity<Void> supprimer(@PathVariable Long idMcd) {
         try {
@@ -77,7 +100,12 @@ public class MCDController {
         }
     }
 
-    /* POST /api/mcd/analyser — Analyse Mistral */
+    /**
+     * Analyse un contenu PlantUML pour en extraire les flux sans persistance.
+     * Utile pour un aperçu avant sauvegarde.
+     * @param request
+     * @return
+     */
     @PostMapping("/analyser")
     public ResponseEntity<?> analyser(@RequestBody MCDAnalyseRequest request) {
         if (request.getContenuPlantuml() == null

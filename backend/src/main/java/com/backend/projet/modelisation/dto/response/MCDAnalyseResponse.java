@@ -3,6 +3,9 @@ package com.backend.projet.modelisation.dto.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
+/**
+ * DTO représentant le résultat de l'analyse d'un MCD par l'IA.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MCDAnalyseResponse {
 
