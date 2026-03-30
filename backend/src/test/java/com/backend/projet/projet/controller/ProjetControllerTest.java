@@ -1,11 +1,10 @@
-package com.backend.projet.projet;
+package com.backend.projet.projet.controller;
 
 import com.backend.projet.projet.dto.request.ProjetRequest;
 import com.backend.projet.projet.dto.response.ProjetResponse;
 import com.backend.projet.projet.service.ProjetService;
 import com.backend.projet.auth.security.JwtUtil;
 import com.backend.projet.config.JwtConfig;
-import com.backend.projet.projet.controller.ProjetController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 

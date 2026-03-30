@@ -1,8 +1,7 @@
-package com.backend.projet.elicitation;
+package com.backend.projet.elicitation.controller;
 
 import com.backend.projet.auth.security.JwtUtil;
 import com.backend.projet.config.JwtConfig;
-import com.backend.projet.elicitation.controller.InterviewController;
 import com.backend.projet.elicitation.dto.request.InterviewRequest;
 import com.backend.projet.elicitation.dto.response.InterviewResponse;
 import com.backend.projet.elicitation.service.InterviewService;
